@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>Diffusion and Osmosis</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a lab bench — tabbed stations, each with the apparatus + controls on the left and the results book on the right */
+:root{
+  --bg:#eef2ef; --panel:#ffffff; --ink:#18241f; --muted:#56655e; --line:#cfd8d3;
+  --leaf:#2f7d4f; --leaf-soft:#dcefe3; --lamp:#f2b632; --water:#cfe6f2; --water-edge:#7fb0c8;
+  --warn:#b4501e; --warn-soft:#fbe9df; --ok:#2f7d4f; --ok-soft:#e1f2e7; --navy:#1d2140; --iodine:#c9772a;
+  --scene:#f7faf8; --glass:#ffffff;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,38px);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:2px 0 0}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--leaf)}
+nav.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+nav.tabs button{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:10px 16px;border-radius:999px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+nav.tabs button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:3px solid var(--lamp);outline-offset:2px}
+.station{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.station{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 4px}
+.card h3{font-size:15px;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.aim{margin:0 0 10px;color:var(--muted)}
+svg.scene{width:100%;height:auto;display:block;background:var(--scene);border-radius:10px;border:1px solid var(--line)}
+.controls{display:grid;gap:12px;margin-top:12px}
+.ctrl{display:grid;gap:4px}
+.ctrl label,.ctrl .lbl{font-weight:700}
+.ctrl .val{font-family:var(--mono);color:var(--leaf)}
+input[type=range]{width:100%;accent-color:var(--leaf)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--leaf);background:var(--leaf-soft);font-weight:700}
+.iv{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.iv .chip{border:2px dashed var(--leaf);border-radius:8px;padding:4px 10px;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-weight:700;border:0;background:var(--leaf);color:var(--panel);padding:10px 16px;border-radius:10px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.readout{font-family:var(--mono);font-size:15px;background:var(--scene);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.msg{border-radius:10px;padding:10px 12px;margin-top:10px}
+.msg.ok{background:var(--ok-soft)}
+.msg.warn{background:var(--warn-soft)}
+.msg>b:first-child{display:block}
+.check{display:flex;gap:8px;align-items:center;font-weight:700}
+.check input{width:20px;height:20px;accent-color:var(--leaf)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--scene);font-size:14px}
+td.mean{font-weight:700;color:var(--leaf)}
+td .x{font:inherit;border:0;background:none;color:var(--muted);cursor:pointer;text-decoration:underline}
+.empty{color:var(--muted);font-style:italic;padding:10px 0}
+.fair{margin-top:8px}
+svg.graph{width:100%;height:auto;display:block}
+.graph text{fill:var(--ink);font-family:var(--body);font-size:12px}
+.graph .axis{stroke:var(--ink)}
+.graph .grid{stroke:var(--line)}
+.graph .pt{fill:var(--leaf)}
+.graph .ln{stroke:var(--leaf);fill:none;stroke-width:2.5}
+.graph .bar{fill:var(--leaf)}
+.limit{font-weight:700}
+.steps{display:grid;gap:8px}
+.step{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.step .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--scene);border:2px solid var(--line);font-weight:700}
+.step.done .n{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+.step.now{border-color:var(--leaf)}
+.step p{margin:2px 0 6px;color:var(--muted)}
+.pred{display:grid;gap:6px;margin-top:6px}
+.pred .prow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pred .prow span{min-width:180px;font-weight:700}
+.key{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.key span{display:flex;gap:6px;align-items:center}
+.sw{width:18px;height:18px;border-radius:4px;border:1px solid var(--line);display:inline-block}
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.reffig{margin:0;background:#fff;border-radius:10px;padding:8px;border:1px solid var(--line)}
+.reffig img{width:100%;height:auto;display:block}
+.reffig figcaption{font-size:12px;color:#56655e;text-align:right}
+footer{color:var(--muted);font-size:13px;margin-top:20px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.wide{grid-column:1/-1}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatches div{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--scene)}
+.swatches i{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);display:inline-block}
+select{font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.small{font-size:13px;color:var(--muted)}
+
+.twocol{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:600px){.twocol{grid-template-columns:1fr}}
+.meter{height:26px;border-radius:13px;background:var(--scene);border:1px solid var(--line);overflow:hidden}
+.meter div{height:100%;background:var(--leaf);transition:width .4s}
+.phscale{height:14px;border-radius:7px;background:linear-gradient(90deg,#d2343a,#ee9a2c,#f2d23a,#7cc04a,#2f7d4f,#3d7be0,#5a3fa0)}
+canvas.scene{width:100%;height:auto;display:block;background:var(--scene);border-radius:10px;border:1px solid var(--line)}
+.qwrap{display:grid;gap:14px}
+.qcard{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel);display:grid;gap:8px}
+.qhead{display:flex;justify-content:space-between;align-items:center}
+.qnum{font-family:var(--mono);font-size:13px;color:var(--leaf);letter-spacing:.04em}
+.qmarks{font-weight:700;color:var(--muted)}
+.qstem{margin:0;color:var(--muted)}
+.qtext{margin:0}
+.qimg{max-width:min(100%,520px);height:auto;background:#fff;border-radius:8px;border:1px solid var(--line);padding:6px}
+.opts{display:grid;gap:6px}
+.opt{display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.opt input{margin-top:3px;width:18px;height:18px;accent-color:var(--leaf);flex:none}
+.ol{font-weight:700;min-width:16px}
+textarea{width:100%;font:inherit;padding:8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink);resize:vertical}
+.numin{font:inherit;width:120px;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.qcard .btn{justify-self:start}
+.fb{border-radius:10px;padding:10px 12px}
+.fb.ok{background:var(--ok-soft)}.fb.warn{background:var(--warn-soft)}.fb.ms{background:var(--scene);border:1px solid var(--line);display:grid;gap:6px}
+.fb p{margin:0}
+.score{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--leaf);color:var(--panel);padding:10px 14px;border-radius:10px}
+</style>
+</head>
+<body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<div class="wrap">
+<header class="top"><div>
+  <div class="tag">Animation · Biology</div>
+  <h1>Diffusion and Osmosis</h1>
+  <p class="sub">See how particles spread out, how water moves through a partially permeable membrane, and what happens to cells in different solutions.</p>
+</div></header>
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tab-a" aria-selected="true" data-st="a">1 · Diffusion</button>
+  <button role="tab" id="tab-e" aria-selected="false" data-st="e">2 · Surface area : volume</button>
+  <button role="tab" id="tab-b" aria-selected="false" data-st="b">3 · Osmosis</button>
+  <button role="tab" id="tab-c" aria-selected="false" data-st="c">4 · Cells in solutions</button>
+  <button role="tab" id="tab-q" aria-selected="false" data-st="q">5 · Check your understanding</button>
+</nav>
+
+<section id="st-a" class="station">
+  <div class="card">
+    <h2>Diffusion</h2>
+    <p class="aim">Particles move about randomly. They spread out until they are evenly spread. The <b>net</b> movement is from a <b>high</b> concentration to a <b>low</b> concentration.</p>
+    <canvas id="cA" width="900" height="400" class="scene" aria-label="Particles diffusing through a membrane between two sides"></canvas>
+    <div class="controls">
+      <div class="ctrl"><span class="lbl">Concentration gradient</span>
+        <div class="seg" id="aGrad"><button data-v="big" aria-pressed="true">Big (80 : 0)</button><button data-v="small" aria-pressed="false">Small (50 : 30)</button><button data-v="none" aria-pressed="false">None (40 : 40)</button></div></div>
+      <div class="ctrl"><label for="aT">Temperature <span class="val" id="aTV">20 °C</span></label><input type="range" id="aT" min="5" max="60" step="5" value="20"></div>
+      <div class="ctrl"><span class="lbl">Distance (thickness of the membrane)</span>
+        <div class="seg" id="aD"><button data-v="16" aria-pressed="true">Thin</button><button data-v="70" aria-pressed="false">Thick</button></div></div>
+      <div class="row"><button class="btn" id="aReset">Start again</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>What is happening?</h2>
+    <div class="twocol">
+      <div><h3 style="margin-top:0">Particles on each side</h3><canvas id="cA2" width="420" height="220" class="scene" aria-label="Bar chart of particles on each side"></canvas></div>
+      <div><h3 style="margin-top:0">Net movement</h3><div class="readout" id="aNet">–</div><div id="aMsg" class="msg ok" style="margin-top:8px"></div></div>
+    </div>
+    <h3>Diffusion is faster when…</h3>
+    <div class="tablewrap"><table class="reftab"><tbody>
+      <tr><td><b>the concentration gradient is bigger</b></td><td>a bigger difference between the two sides</td></tr>
+      <tr><td><b>the temperature is higher</b></td><td>particles have more kinetic energy and move faster</td></tr>
+      <tr><td><b>the surface area to volume ratio is larger</b></td><td>more surface for each cm³ of volume (see tab 2)</td></tr>
+      <tr><td><b>the distance is shorter</b></td><td>particles have less far to travel (a thin membrane)</td></tr>
+    </tbody></table></div>
+    <p class="small">Particles still move both ways when they are evenly spread, but there is <b>no net movement</b>.</p>
+  </div>
+</section>
+
+<section id="st-e" class="station" hidden>
+  <div class="card">
+    <h2>Surface area to volume ratio</h2>
+    <p class="aim">Cubes of pink agar are put into acid. The acid <b>diffuses</b> in from every face and the pink colour disappears. Which cube goes colourless all the way through first?</p>
+    <canvas id="cE" width="900" height="380" class="scene" aria-label="Three agar cubes of different sizes, cut in half, losing their pink colour from the outside in"></canvas>
+    <div class="controls">
+      <div class="row"><button class="btn" id="eGo">Start</button><button class="btn" id="eReset">Reset</button><span class="val" id="eTime" style="margin-left:12px">Time: 0 min</span></div>
+    </div>
+    <div id="eMsg" class="msg ok" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+    <h2>Work out the ratio</h2>
+    <div class="tablewrap"><table class="reftab"><thead><tr><th>Cube side</th><th>Surface area<br>(side × side × 6)</th><th>Volume<br>(side × side × side)</th><th>SA : volume</th></tr></thead><tbody>
+      <tr><td><b>1 cm</b></td><td>6 cm²</td><td>1 cm³</td><td><b>6 : 1</b></td></tr>
+      <tr><td><b>2 cm</b></td><td>24 cm²</td><td>8 cm³</td><td><b>3 : 1</b></td></tr>
+      <tr><td><b>3 cm</b></td><td>54 cm²</td><td>27 cm³</td><td><b>2 : 1</b></td></tr>
+    </tbody></table></div>
+    <h3>What does this mean?</h3>
+    <ul>
+      <li>The <b>bigger</b> the cube, the <b>smaller</b> its surface area to volume ratio.</li>
+      <li>In a big cube, the middle is a <b>long distance</b> from the surface, so substances take longer to get there.</li>
+      <li><b>Small organisms</b> (like single cells) have a large SA : volume ratio, so diffusion through their surface is enough.</li>
+      <li><b>Large organisms</b> have a small SA : volume ratio, so they need <b>exchange surfaces</b> (like the lungs and villi) and a <b>transport system</b> (like the blood).</li>
+    </ul>
+  </div>
+</section>
+<section id="st-b" class="station" hidden>
+  <div class="card">
+    <h2>Osmosis</h2>
+    <p class="aim">The membrane is <b>partially permeable</b>: small <b style="color:#3d7be0">water molecules</b> can pass through, but large <b style="color:#c9772a">sugar molecules</b> cannot. Water moves from the <b>dilute</b> side to the <b>more concentrated</b> side.</p>
+    <canvas id="cB" width="900" height="440" class="scene" aria-label="Two solutions separated by a partially permeable membrane; water moves and the levels change"></canvas>
+    <div class="controls">
+      <div class="ctrl"><span class="lbl">Sugar on the left : right</span>
+        <div class="seg" id="bSug"><button data-v="2,14" aria-pressed="true">Dilute : concentrated</button><button data-v="8,8" aria-pressed="false">Equal</button><button data-v="14,2" aria-pressed="false">Concentrated : dilute</button><button data-v="0,10" aria-pressed="false">Pure water : sugar</button></div></div>
+      <div class="row"><button class="btn" id="bReset">Start again</button><span class="readout" id="bNet">–</span></div>
+      <div id="bMsg" class="msg ok"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Key words</h2>
+    <div class="tablewrap"><table class="reftab"><tbody>
+      <tr><td><b>osmosis</b></td><td>the net movement of water from a dilute solution to a more concentrated solution through a partially permeable membrane</td></tr>
+      <tr><td><b>partially permeable membrane</b></td><td>lets small molecules (like water) through, but not large ones (like sugar)</td></tr>
+      <tr><td><b>dilute solution</b></td><td>a lot of water and a little solute (sugar)</td></tr>
+      <tr><td><b>concentrated solution</b></td><td>less water and more solute</td></tr>
+      <tr><td><b>passive</b></td><td>diffusion and osmosis do not need energy from respiration</td></tr>
+    </tbody></table></div>
+    <p class="small">Watch the water levels: the level rises on the side with more sugar. When both sides have the same concentration, water still moves both ways but there is no net movement.</p>
+  </div>
+</section>
+
+<section id="st-c" class="station" hidden>
+  <div class="card">
+    <h2>Cells in different solutions</h2>
+    <div class="ctrl"><span class="lbl">Put the cells in…</span>
+      <div class="seg" id="cSol"><button data-v="water" aria-pressed="true">Pure water (dilute)</button><button data-v="same" aria-pressed="false">Same concentration as the cell</button><button data-v="conc" aria-pressed="false">Concentrated sugar solution</button></div></div>
+    <canvas id="cC" width="900" height="400" class="scene" aria-label="A plant cell and a red blood cell in the chosen solution" style="margin-top:10px"></canvas>
+    <div class="row" style="margin-top:8px"><button class="btn alt" id="cAgain">Play again</button></div>
+  </div>
+  <div class="card">
+    <h2>What happens?</h2>
+    <div id="cText" class="msg ok"></div>
+    <div class="tablewrap" style="margin-top:10px"><table class="reftab">
+      <thead><tr><th>Solution</th><th>Plant cell</th><th>Red blood cell</th></tr></thead><tbody>
+      <tr><td>pure water (more dilute than the cell)</td><td>water enters: <b>turgid</b> (firm). The cell wall stops it bursting.</td><td>water enters: it swells and may <b>burst</b></td></tr>
+      <tr><td>same concentration</td><td>no net movement of water: no change</td><td>no net movement of water: no change</td></tr>
+      <tr><td>concentrated (more than the cell)</td><td>water leaves: <b>flaccid</b>, then <b>plasmolysed</b> (membrane pulls away from the cell wall)</td><td>water leaves: it <b>shrinks</b></td></tr>
+    </tbody></table></div>
+  </div>
+</section>
+
+<section id="st-q" hidden>
+  <div class="card">
+    <h2>Check your understanding</h2>
+    <p class="aim">Multiple-choice questions are marked for you. For written answers, write your answer first, then press <b>Show mark scheme</b> and tick each point you made.</p>
+    <div id="qScore" class="score"></div>
+    <div id="qList" class="qwrap" style="margin-top:14px"></div>
+    <p class="small"><span id="qSrc"></span> Your score is not saved: take a screenshot of it when you finish.</p>
+  </div>
+</section>
+
+<footer>Simplified model for teaching. Particles are not to scale.</footer>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const VP=['fill','stroke','font-family','stop-color'];
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a){const v=String(a[k]);if(VP.includes(k)&&v.includes('var('))e.style.setProperty(k,v);else e.setAttribute(k,v)}if(p)p.appendChild(e);return e};
+document.querySelectorAll('svg *').forEach(n=>{[...n.attributes].forEach(at=>{if(VP.includes(at.name)&&at.value.includes('var(')){n.style.setProperty(at.name,at.value);n.removeAttribute(at.name)}})});
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const tabsEls=[...document.querySelectorAll('nav.tabs button')];
+tabsEls.forEach(b=>b.addEventListener('click',()=>{
+  tabsEls.forEach(x=>x.setAttribute('aria-selected',x===b));
+  tabsEls.forEach(x=>{const st=document.getElementById('st-'+x.dataset.st);if(st)st.hidden=(x!==b)});
+}));
+const isOn=id=>!document.getElementById(id).hidden;
+function seg(id,onChange){
+  const box=$(id);
+  box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));onChange(b.dataset.v)});
+  return ()=>box.querySelector('[aria-pressed="true"]').dataset.v;
+}
+function setSeg(id,v){$(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===String(v)))}
+function showMsg(id,kind,title,body){const m=$(id);m.hidden=false;m.className='msg '+kind;m.innerHTML='<b>'+title+'</b>'+body}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function mkHead(t,cols){ // cols: [[text,rowspan,colspan]...] rows
+  const th0=t.createTHead();cols.forEach(rw=>{const r=th0.insertRow();rw.forEach(([x,rs,cs])=>{const th=document.createElement('th');th.textContent=x;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;r.appendChild(th)})});
+}
+function barChart(g,labels,vals,yLabel,xLabel,colours){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const yMaxRaw=Math.max(1,...vals.filter(v=>v!=null));const st=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/st)*st;
+  const sy=v=>H-B-(v/yMax)*(H-B-T);
+  for(let v=0;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  const bw=(W-L-R)/Math.max(labels.length,1);
+  labels.forEach((lb,i)=>{const v=vals[i];const x=L+i*bw+bw*.18;
+    if(v!=null)el('rect',{x,y:sy(v),width:bw*.64,height:H-B-sy(v),class:'bar',fill:colours?colours[i]:'var(--leaf)'},g);
+    const t=el('text',{x:x+bw*.32,y:H-B+16,'text-anchor':'middle','font-size':11},g);t.textContent=lb});
+}
+function lineChart(g,pts,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const ys=pts.map(p=>p.y);const yMinRaw=Math.min(0,...ys);const yMaxRaw=Math.max(1,...ys);
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xs=pts.map(p=>p.x);const xMaxRaw=Math.max(1e-9,...xs, opts.xMax||0);const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;const xMin=opts.xMin||0;
+  const sx=v=>L+((v-xMin)/(xMax-xMin))*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(3)}
+  for(let v=xMin;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:sy(Math.max(0,yMin)),y2:sy(Math.max(0,yMin)),class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+  const sorted=[...pts].sort((a,b)=>a.x-b.x);
+  if(!opts.noLine)el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+  sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+}
+function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+function Book(opts){
+  // opts: table, graph, fair, ivLabel(), unitLabel, fmt, controls(), isBar(), xMode()
+  const st={rows:new Map(),snap:null,changed:new Set()};
+  function add(iv,val,controlSnap){
+    if(!st.snap) st.snap=controlSnap;
+    for(const k in controlSnap) if(st.snap[k]!==controlSnap[k]) st.changed.add(k);
+    const arr=st.rows.get(iv)||[];
+    if(arr.length>=3) return false;
+    arr.push(val);st.rows.set(iv,arr);render();return true;
+  }
+  function count(iv){return (st.rows.get(iv)||[]).length}
+  function clear(){st.rows.clear();st.snap=null;st.changed.clear();render()}
+  function del(iv){st.rows.delete(iv);if(!st.rows.size){st.snap=null;st.changed.clear()}render()}
+  function mean(a){const n=a.filter(v=>v!=null);return n.length?n.reduce((s,v)=>s+v,0)/n.length:null}
+  function render(){
+    const t=opts.table;t.innerHTML='';
+    const keys=[...st.rows.keys()].sort(opts.sort);
+    const th0=t.createTHead();const h1=th0.insertRow(),h=th0.insertRow();
+    const mk=(row,txt,rs,cs)=>{const th=document.createElement('th');th.textContent=txt;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;row.appendChild(th)};
+    mk(h1,opts.ivLabel(),2);mk(h1,typeof opts.dvHead==='function'?opts.dvHead():opts.dvHead,0,4);mk(h1,'',2);
+    ['Trial 1','Trial 2','Trial 3','Mean'].forEach(x=>mk(h,x));
+    const tb=t.createTBody();
+    if(!keys.length){const r=tb.insertRow();const c=r.insertCell();c.colSpan=6;c.className='empty';c.textContent='No results yet. Set up, then press the button to measure.'}
+    keys.forEach(k=>{const r=tb.insertRow();const a=st.rows.get(k);
+      r.insertCell().textContent=opts.fmtIV(k);
+      for(let i=0;i<3;i++)r.insertCell().textContent=a[i]===undefined?'':(a[i]===null?(opts.nullLabel||'none'):opts.fmt(a[i]));
+      const m=r.insertCell();m.className='mean';const mv=mean(a);m.textContent=mv==null?(a.length?'–':''):opts.fmt(mv,true);
+      const x=r.insertCell();const b=document.createElement('button');b.className='x';b.textContent='delete';b.onclick=()=>del(k);x.appendChild(b)});
+    if(st.changed.size){opts.fair.hidden=false;opts.fair.innerHTML='<b>Not a fair test</b>You changed: '+[...st.changed].join(', ')+'. Only the independent variable should change. Clear the results and start again.'}
+    else opts.fair.hidden=true;
+    if(opts.graphFn) opts.graphFn(keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null)); else graph(keys);
+  }
+  function graph(keys){
+    const g=opts.graph;g.innerHTML='';
+    const W=460,H=280,L=58,R=14,T=14,B=52;
+    const pts=keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null);
+    const yMaxRaw=Math.max(1,...pts.map(p=>p.y));
+    const step=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/step)*step||step*5;
+    const sy=v=>H-B-(v/yMax)*(H-B-T);
+    for(let v=0;v<=yMax+1e-9;v+=step){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+    el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+    const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=opts.yLabel;
+    const xl=el('text',{x:(L+W-R)/2,y:H-10,'text-anchor':'middle'},g);xl.textContent=opts.xLabel();
+    if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+    if(opts.isBar()){
+      const bw=(W-L-R)/Math.max(pts.length,1);
+      pts.forEach((p,i)=>{const x=L+i*bw+bw*.2;el('rect',{x,y:sy(p.y),width:bw*.6,height:H-B-sy(p.y),class:'bar',fill:opts.barColour?opts.barColour(p.k):'var(--leaf)'},g);
+        const t=el('text',{x:x+bw*.3,y:H-B+16,'text-anchor':'middle'},g);t.textContent=opts.fmtIV(p.k)});
+      return;
+    }
+    const xs=pts.map(p=>opts.xVal(p.k));const xMaxRaw=Math.max(...xs,1e-9);
+    const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+    const sx=v=>L+(v/xMax)*(W-L-R);
+    for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+    const sorted=pts.map(p=>({x:opts.xVal(p.k),y:p.y})).sort((a,b)=>a.x-b.x);
+    el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+    sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+  }
+  function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+  render();
+  return {add,count,clear,render,rows:st.rows};
+}
+
+function multiLine(g,series,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const all=series.flatMap(s=>s.pts);
+  const yMinRaw=opts.yMin!=null?opts.yMin:Math.min(0,...all.map(p=>p.y));const yMaxRaw=Math.max(opts.yMaxMin||1,...all.map(p=>p.y));
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xMaxRaw=Math.max(opts.xMax||1,...all.map(p=>p.x));const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+  const sx=v=>L+(v/xMax)*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  series.forEach((s,i)=>{const p=[...s.pts].sort((a,b)=>a.x-b.x);
+    if(p.length>1)el('polyline',{points:p.map(q=>sx(q.x)+','+sy(q.y)).join(' '),fill:'none',stroke:s.colour,'stroke-width':2.5,'stroke-dasharray':s.dash||''},g);
+    p.forEach(q=>el('circle',{cx:sx(q.x),cy:sy(q.y),r:4.5,fill:s.colour},g));
+    const lx=L+10+i*150;el('rect',{x:lx,y:T+2,width:14,height:4,fill:s.colour},g);const t=el('text',{x:lx+20,y:T+8,'font-size':12},g);t.textContent=s.name});
+}
+
+
+const BLUE='#3d7be0',ORANGE='#e0a020',GREEN='#2f7d4f';
+function ink(){return getComputedStyle(document.body).color}
+/* ================= DIFFUSION ================= */
+const cA=$('#cA'),gA=cA.getContext('2d'),W=900,H=400,MX=450;
+const A={grad:'big',T:20,ml:H,th:16,p:[],hist:[],cross:[]};
+function gapList(){return [{y0:H/2-A.ml/2,y1:H/2+A.ml/2}]}
+function resetA(){const [l,r]={big:[80,0],small:[50,30],none:[40,40]}[A.grad];A.p=[];
+  for(let i=0;i<l;i++)A.p.push({x:rnd(15,MX-A.th/2-10),y:rnd(15,H-15),a:rnd(0,6.28)});
+  for(let i=0;i<r;i++)A.p.push({x:rnd(MX+A.th/2+10,W-15),y:rnd(15,H-15),a:rnd(0,6.28)});A.cross=[]}
+function stepA(dt){const sp=60+A.T*5;const gl=gapList();const h=A.th/2;
+  A.p.forEach(q=>{q.a+=gauss()*dt*4;let nx=q.x+Math.cos(q.a)*sp*dt,ny=q.y+Math.sin(q.a)*sp*dt;
+    if(ny<8||ny>H-8){q.a=-q.a;ny=q.y}if(nx<8||nx>W-8){q.a=Math.PI-q.a;nx=q.x}
+    const inGap=gl.some(g=>ny>g.y0+4&&ny<g.y1-4);
+    const wasL=q.x<MX,nowInWall=nx>MX-h-6&&nx<MX+h+6;
+    if(nowInWall&&!inGap&&!(q.x>MX-h-6&&q.x<MX+h+6)){q.a=Math.PI-q.a;nx=q.x}
+    if(nowInWall&&!inGap&&q.x>MX-h-6&&q.x<MX+h+6){ny=q.y} // inside a gap channel: stay in channel vertically
+    q.x=nx;q.y=ny;const nowL=q.x<MX;if(wasL!==nowL)A.cross.push({t:performance.now(),d:nowL?-1:1})});
+  const now=performance.now();A.cross=A.cross.filter(c=>now-c.t<5000)}
+function drawA(){const c=ink();gA.clearRect(0,0,W,H);const gl=gapList();const h=A.th/2;
+  const m=gl[0];gA.fillStyle='rgba(76,160,90,.35)';gA.fillRect(MX-h,0,A.th,H);gA.strokeStyle='#2f8a45';gA.lineWidth=2;gA.setLineDash([6,5]);
+  gA.beginPath();gA.moveTo(MX-h,0);gA.lineTo(MX-h,H);gA.moveTo(MX+h,0);gA.lineTo(MX+h,H);gA.stroke();gA.setLineDash([]);
+  gA.save();gA.fillStyle='#2f8a45';gA.font='bold 17px "Atkinson Hyperlegible",system-ui,sans-serif';gA.textAlign='center';gA.fillStyle='#fff';gA.fillRect(MX-50,H-30,100,24);gA.fillStyle='#2f8a45';gA.fillText('membrane',MX,H-12);gA.restore();
+  A.p.forEach(q=>{gA.beginPath();gA.arc(q.x,q.y,6,0,7);gA.fillStyle='#d2343a';gA.fill();gA.lineWidth=1.5;gA.strokeStyle=c;gA.stroke()});
+  gA.fillStyle=c;gA.font='bold 24px "Atkinson Hyperlegible",system-ui,sans-serif';gA.fillText('Left',16,30);gA.textAlign='right';gA.fillText('Right',W-16,30);gA.textAlign='left';
+  // bars
+  const L=A.p.filter(q=>q.x<MX).length,R=A.p.length-L;const g2=$('#cA2').getContext('2d');g2.clearRect(0,0,420,220);
+  const mx=Math.max(80,L,R);[[L,'Left',90],[R,'Right',270]].forEach(([n,t,x])=>{const hh=n/mx*150;g2.fillStyle='#d2343a';g2.fillRect(x-40,180-hh,80,hh);g2.fillStyle=c;g2.font='bold 20px "Atkinson Hyperlegible",system-ui,sans-serif';g2.textAlign='center';g2.fillText(t+': '+n,x,206)});
+  const net=A.cross.reduce((s,x)=>s+x.d,0);const both=A.cross.length;
+  $('#aNet').textContent=Math.abs(L-R)<=6&&A.grad!=='big'||Math.abs(L-R)<=6?'No net movement (evenly spread)':(L>R?'Net movement: left → right':'Net movement: right → left');
+  $('#aMsg').innerHTML=Math.abs(L-R)<=6?'<b>Evenly spread</b>Particles still cross both ways, but the numbers going each way are about the same, so there is no <b>net</b> movement.':'<b>Down the concentration gradient</b>More particles cross from the side with the higher concentration, so the net movement is from high to low. Crossings in the last 5 s: '+both+'.';
+}
+let lA=performance.now();function loopA(now){const dt=Math.min(.05,(now-lA)/1000);lA=now;if(isOn('st-a')){stepA(dt);drawA()}requestAnimationFrame(loopA)}requestAnimationFrame(loopA);
+seg('#aGrad',v=>{A.grad=v;resetA()});seg('#aD',v=>{A.th=+v;resetA()});
+$('#aT').oninput=e=>{A.T=+e.target.value;$('#aTV').textContent=A.T+' °C'};$('#aReset').onclick=resetA;resetA();
+
+
+/* ================= SA : V ================= */
+const cE=$('#cE'),gE=cE.getContext('2d');const E={t:0,run:false,K:0.25};// depth (cm) = K*sqrt(t min)
+const cubes=[1,2,3];const PX=80;// px per cm
+function cleared(s,t){const d=Math.min(s/2,E.K*Math.sqrt(t));const inner=Math.max(0,s-2*d);return 1-Math.pow(inner/s,3)}
+function tDone(s){return Math.pow(s/2/E.K,2)}
+function drawE(){const c=ink();gE.clearRect(0,0,900,380);const base=300;const xs=[110,330,640];
+  gE.font='bold 20px "Atkinson Hyperlegible",system-ui,sans-serif';gE.textAlign='center';
+  cubes.forEach((s,i)=>{const w=s*PX,x=xs[i]-w/2,y=base-w;const d=Math.min(s/2,E.K*Math.sqrt(E.t))*PX;
+    gE.fillStyle='#f4f1e6';gE.fillRect(x,y,w,w);
+    if(w-2*d>0.5){gE.fillStyle='#e0559a';gE.fillRect(x+d,y+d,w-2*d,w-2*d)}
+    gE.lineWidth=2.5;gE.strokeStyle=c;gE.strokeRect(x,y,w,w);
+    gE.fillStyle=c;gE.fillText(s+' cm cube',xs[i],base+28);
+    const pc=Math.round(cleared(s,E.t)*100);gE.font='17px "Atkinson Hyperlegible",system-ui,sans-serif';
+    gE.fillText(pc>=100?'colourless after '+Math.round(tDone(s))+' min':pc+'% colourless',xs[i],base+52);
+    gE.font='bold 20px "Atkinson Hyperlegible",system-ui,sans-serif'});
+  gE.font='15px "Atkinson Hyperlegible",system-ui,sans-serif';gE.fillStyle=c;gE.textAlign='left';gE.fillText('Each cube is shown cut in half so you can see inside. Pink = acid not reached yet.',14,22);
+  $('#eTime').textContent='Time: '+Math.floor(E.t)+' min';
+  const done=cubes.filter(s=>E.t>=tDone(s));
+  $('#eMsg').innerHTML=E.t===0?'<b>Predict first</b>Which cube will go colourless all the way through first? Then press <b>Start</b>.':
+    done.length<3?'<b>The acid moves in at the same speed in every cube</b>The smallest cube has the largest surface area to volume ratio, and its middle is closest to the surface, so it goes colourless first.':
+    '<b>All done</b>1 cm cube (SA:V 6:1): '+Math.round(tDone(1))+' min. 2 cm cube (3:1): '+Math.round(tDone(2))+' min. 3 cm cube (2:1): '+Math.round(tDone(3))+' min. The <b>larger</b> the SA:V ratio, the <b>faster</b> the whole cube is reached.'}
+let lE=performance.now();function loopE(now){const dt=Math.min(.05,(now-lE)/1000);lE=now;if(isOn('st-e')){if(E.run){E.t=Math.min(E.t+dt*1.2,tDone(3)+1);if(E.t>=tDone(3)+1){E.run=false;$('#eGo').textContent='Start'}}drawE()}requestAnimationFrame(loopE)}requestAnimationFrame(loopE);
+$('#eGo').onclick=()=>{if(E.t>=tDone(3)+1)E.t=0;E.run=!E.run;$('#eGo').textContent=E.run?'Pause':'Start'};$('#eReset').onclick=()=>{E.t=0;E.run=false;$('#eGo').textContent='Start'};
+
+/* ================= OSMOSIS ================= */
+const cB=$('#cB'),gB=cB.getContext('2d'),BW=900,BH=440,BM=450,FLOOR=420;
+const O={sL:2,sR:14,w:[],s:[],net:0,cr:[]};
+const WAREA=1.9; // px of height per water molecule
+function levelY(side){const n=O.w.filter(q=>q.side===side).length+O.s.filter(q=>q.side===side).length*3;return FLOOR-n*WAREA}
+function resetB(){O.w=[];O.s=[];for(const side of ['L','R']){for(let i=0;i<110;i++)O.w.push({side,x:0,y:0,a:rnd(0,6.28)});
+  for(let i=0;i<(side==='L'?O.sL:O.sR);i++)O.s.push({side,x:0,y:0,a:rnd(0,6.28)})}
+  [...O.w,...O.s].forEach(q=>{q.x=q.side==='L'?rnd(20,BM-20):rnd(BM+20,BW-20);q.y=rnd(levelY(q.side)+12,FLOOR-10)});O.cr=[]}
+function stepB(dt){const sp=110;const yL=levelY('L'),yR=levelY('R');
+  const free=side=>{const w=O.w.filter(q=>q.side===side).length,s=O.s.filter(q=>q.side===side).length;return w/(w+s*6)};
+  const fL=free('L'),fR=free('R');
+  const mv=(q,r,canCross)=>{q.a+=gauss()*dt*4;let nx=q.x+Math.cos(q.a)*sp*dt*(r>5?0.5:1),ny=q.y+Math.sin(q.a)*sp*dt*(r>5?0.5:1);
+    const top=(q.side==='L'?yL:yR)+r+2;if(ny<top){ny=top;q.a=-Math.abs(q.a)+Math.PI*2}if(ny>FLOOR-r){q.a=-q.a;ny=FLOOR-r}
+    if(nx<r+4||nx>BW-r-4){q.a=Math.PI-q.a;nx=q.x}
+    if(q.side==='L'&&nx>BM-6||q.side==='R'&&nx<BM+6){
+      const other=q.side==='L'?'R':'L';const otherTop=(other==='L'?yL:yR)+r+2;
+      if(canCross&&ny>otherTop&&Math.random()<Math.min(1,(q.side==='L'?fL:fR)**6*Math.exp(0.02*((q.side==='L'?yR:yL)-(q.side==='L'?yL:yR))))){q.side=other;O.cr.push({t:performance.now(),d:other==='R'?1:-1})}else{q.a=Math.PI-q.a;nx=q.x}}
+    q.x=nx;q.y=ny};
+  O.w.forEach(q=>mv(q,3.5,true));O.s.forEach(q=>mv(q,10,false));
+  const now=performance.now();O.cr=O.cr.filter(c=>now-c.t<5000)}
+function drawB(){const c=ink();gB.clearRect(0,0,BW,BH);const yL=levelY('L'),yR=levelY('R');
+  gB.fillStyle='rgba(61,123,224,0.15)';gB.fillRect(6,yL,BM-12,FLOOR-yL);gB.fillRect(BM+6,yR,BW-BM-12,FLOOR-yR);
+  gB.strokeStyle=c;gB.lineWidth=3;gB.beginPath();gB.moveTo(4,20);gB.lineTo(4,FLOOR);gB.lineTo(BW-4,FLOOR);gB.lineTo(BW-4,20);gB.stroke();
+  gB.strokeStyle='#2f7d4f';gB.lineWidth=5;gB.setLineDash([10,8]);gB.beginPath();gB.moveTo(BM,30);gB.lineTo(BM,FLOOR);gB.stroke();gB.setLineDash([]);
+  gB.strokeStyle=BLUE;gB.lineWidth=2;[yL,yR].forEach((y,i)=>{gB.beginPath();gB.moveTo(i?BM+6:6,y);gB.lineTo(i?BW-6:BM-6,y);gB.stroke()});
+  O.w.forEach(q=>{gB.beginPath();gB.arc(q.x,q.y,3.5,0,7);gB.fillStyle=BLUE;gB.fill()});
+  O.s.forEach(q=>{gB.beginPath();gB.arc(q.x,q.y,10,0,7);gB.fillStyle=ORANGE;gB.fill();gB.lineWidth=2;gB.strokeStyle=c;gB.stroke()});
+  gB.fillStyle=c;gB.font='bold 22px "Atkinson Hyperlegible",system-ui,sans-serif';
+  const lab=s=>s===0?'pure water':s<6?'dilute':s<10?'medium':'concentrated';
+  gB.textAlign='left';gB.fillText('Left: '+lab(O.sL),14,44);gB.textAlign='right';gB.fillText('Right: '+lab(O.sR),BW-14,44);gB.textAlign='center';gB.font='18px "Atkinson Hyperlegible",system-ui,sans-serif';gB.fillText('partially permeable membrane',BM,20);
+  const net=O.cr.reduce((s,x)=>s+x.d,0);
+  $('#bNet').textContent=Math.abs(yL-yR)<4&&O.sL===O.sR?'No net movement of water':(net>1?'Net movement of water: left → right':net<-1?'Net movement of water: right → left':'Water moving both ways: nearly balanced');
+  $('#bMsg').innerHTML=O.sL===O.sR?'<b>Same concentration</b>Water crosses both ways at the same rate, so the levels stay the same.':'<b>Water moves to the more concentrated side</b>The '+(O.sL>O.sR?'left':'right')+' side has more sugar, so water moves into it by osmosis and its level rises. Sugar molecules are too big to cross the membrane.';
+}
+let lB=performance.now();function loopB(now){const dt=Math.min(.05,(now-lB)/1000);lB=now;if(isOn('st-b')){stepB(dt);drawB()}requestAnimationFrame(loopB)}requestAnimationFrame(loopB);
+seg('#bSug',v=>{[O.sL,O.sR]=v.split(',').map(Number);resetB()});$('#bReset').onclick=resetB;resetB();
+
+/* ================= CELLS ================= */
+const cC=$('#cC'),gC=cC.getContext('2d');
+const C={sol:'water',t:0,arrows:[]};
+const TXT={water:'<b>Pure water: water moves INTO the cells</b>The solution outside is more dilute than the cytoplasm, so water enters by osmosis. The plant cell becomes <b>turgid</b>: the vacuole swells and pushes the cytoplasm against the cell wall. The wall stops it bursting. The red blood cell has no cell wall, so it swells and may <b>burst</b>.',
+  same:'<b>Same concentration: no net movement</b>Water moves in and out at the same rate, so the cells do not change.',
+  conc:'<b>Concentrated solution: water moves OUT of the cells</b>The solution outside is more concentrated, so water leaves by osmosis. The plant cell becomes <b>flaccid</b>, then <b>plasmolysed</b>: the vacuole shrinks and the membrane pulls away from the cell wall. The red blood cell <b>shrinks</b>.'};
+function drawC(){const c=ink();gC.clearRect(0,0,900,400);const k=Math.min(1,C.t/3);const s=C.sol==='water'?1:C.sol==='same'?0:-1;
+  gC.fillStyle=C.sol==='conc'?'rgba(224,160,32,0.15)':'rgba(61,123,224,0.10)';gC.fillRect(0,0,900,400);
+  // plant cell
+  const px=230,py=190;gC.lineWidth=6;gC.strokeStyle='#2f7d4f';gC.strokeRect(px-140,py-120,280,240);
+  const shrink=s<0?k*0.38:0,swell=s>0?k*0.04:0;const iw=(268)*(1-shrink+swell),ih=(228)*(1-shrink*0.7+swell);
+  gC.fillStyle='#bfe3b4';gC.strokeStyle=c;gC.lineWidth=2.5;roundRect(gC,px-iw/2,py-ih/2,iw,ih,14);gC.fill();gC.stroke();
+  const vw=iw*0.72*(1-(s<0?k*0.25:0)),vh=ih*0.62*(1-(s<0?k*0.25:0));gC.fillStyle='#e3f1fb';roundRect(gC,px-vw/2,py-vh/2,vw,vh,30);gC.fill();gC.stroke();
+  gC.beginPath();gC.arc(px-iw/2+30,py+ih/2-30,14,0,7);gC.fillStyle='#8a6fb0';gC.fill();
+  [[px,py-ih/2+12],[px+iw/2-20,py]].forEach(([x,y])=>{gC.beginPath();gC.ellipse(x,y,12,7,0,0,7);gC.fillStyle='#2f7d4f';gC.fill()});
+  gC.fillStyle=c;gC.font='bold 22px "Atkinson Hyperlegible",system-ui,sans-serif';gC.textAlign='center';
+  gC.fillText('Plant cell: '+(s>0?'turgid':s<0?(k<0.5?'flaccid':'plasmolysed'):'no change'),px,385);
+  gC.font='16px "Atkinson Hyperlegible",system-ui,sans-serif';gC.fillText('cell wall',px,py-128);gC.fillText('vacuole',px,py+4);
+  // red blood cell
+  const rx=660,ry=190;const burst=s>0&&k>=1;const r=80*(1+(s>0?k*0.35:0)-(s<0?k*0.3:0));
+  if(!burst){gC.beginPath();if(s<0){for(let i=0;i<=40;i++){const a=i/40*2*Math.PI;const rr=r*(1+0.08*Math.sin(a*10)*k);const x=rx+Math.cos(a)*rr,y=ry+Math.sin(a)*rr*0.9;i?gC.lineTo(x,y):gC.moveTo(x,y)}}else gC.ellipse(rx,ry,r,r*0.9,0,0,7);
+    gC.fillStyle='#d2343a';gC.fill();gC.strokeStyle=c;gC.lineWidth=2.5;gC.stroke();if(s<=0||k<0.6){gC.beginPath();gC.ellipse(rx,ry,r*0.45,r*0.38,0,0,7);gC.fillStyle='rgba(255,255,255,0.25)';gC.fill()}}
+  else{for(let i=0;i<10;i++){const a=i/10*2*Math.PI;gC.save();gC.translate(rx+Math.cos(a)*110,ry+Math.sin(a)*100);gC.rotate(a);gC.fillStyle='#d2343a';gC.fillRect(-18,-8,36,16);gC.restore()}}
+  gC.fillStyle=c;gC.font='bold 22px "Atkinson Hyperlegible",system-ui,sans-serif';gC.fillText('Red blood cell: '+(s>0?(burst?'burst':'swelling'):s<0?'shrunk':'no change'),rx,385);
+  // water arrows
+  if(s!==0&&k<1){C.arrows.forEach(a=>{const f=(a.p+C.t*0.6)%1;const inw=s>0;const d=inw?1-f:f;const x=a.cx+Math.cos(a.ang)*(a.r+d*70),y=a.cy+Math.sin(a.ang)*(a.r+d*70);
+    gC.save();gC.translate(x,y);gC.rotate(a.ang+(inw?Math.PI:0));gC.fillStyle=BLUE;gC.beginPath();gC.moveTo(12,0);gC.lineTo(-8,-7);gC.lineTo(-8,7);gC.closePath();gC.fill();gC.restore()})}
+  gC.textAlign='left';gC.fillStyle=c;gC.font='18px "Atkinson Hyperlegible",system-ui,sans-serif';gC.fillText(s>0?'Blue arrows: water moving in':s<0?'Blue arrows: water moving out':'',16,26);
+}
+function roundRect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+C.arrows=[...Array.from({length:10},(_,i)=>({cx:230,cy:190,r:150,ang:i/10*2*Math.PI,p:Math.random()})),...Array.from({length:10},(_,i)=>({cx:660,cy:190,r:100,ang:i/10*2*Math.PI,p:Math.random()}))];
+let lC=performance.now();function loopC(now){const dt=Math.min(.05,(now-lC)/1000);lC=now;if(isOn('st-c')){C.t+=dt;drawC()}requestAnimationFrame(loopC)}requestAnimationFrame(loopC);
+seg('#cSol',v=>{C.sol=v;C.t=0;$('#cText').innerHTML=TXT[v]});$('#cAgain').onclick=()=>{C.t=0};$('#cText').innerHTML=TXT.water;
+
+const IMGS={};
+/* ---------- self-marking exam practice ---------- */
+function Quiz(rootSel,scoreSel,Qs){
+  const root=$(rootSel);const st=Qs.map(()=>({got:0,done:false}));
+  function total(){const max=Qs.reduce((s,q)=>s+q.marks,0),got=st.reduce((s,x)=>s+x.got,0),done=st.filter(x=>x.done).length;
+    $(scoreSel).innerHTML=`<b>Score: ${got} / ${max}</b> · ${done} of ${Qs.length} questions marked`+(done===Qs.length?` · <b>${Math.round(got/max*100)}%</b>`:'')}
+  Qs.forEach((q,i)=>{
+    const c=document.createElement('div');c.className='qcard';
+    let h=`<div class="qhead"><span class="qnum">${q.n}</span><span class="qmarks">(${q.marks} mark${q.marks>1?'s':''})</span></div>`;
+    if(q.stem)h+=`<p class="qstem">${q.stem}</p>`;
+    if(q.img)h+=`<img class="qimg" src="${IMGS[q.img]}" alt="${q.alt||''}">`;
+    h+=`<p class="qtext"><b>${q.text}</b></p>`;
+    if(q.type==='mcq')h+=`<div class="opts">${q.opts.map((o,j)=>`<label class="opt"><input type="radio" name="q${i}" value="${j}"> <span class="ol">${'ABCD'[j]}</span> ${o}</label>`).join('')}</div><button class="btn" data-a="check">Check</button>`;
+    else if(q.type==='str')h+=`<div class="row"><input type="text" class="numin" aria-label="Your answer"><button class="btn" data-a="check">Check</button></div>`;
+    else if(q.type==='num')h+=`<div class="row"><input type="text" inputmode="decimal" class="numin" id="n${i}" aria-label="Your answer"> <span>${q.unit||''}</span><button class="btn" data-a="check">Check</button></div>`;
+    else h+=`<textarea id="t${i}" rows="${Math.max(2,q.marks+1)}" placeholder="Write your answer here, then press Show mark scheme." aria-label="Your answer"></textarea><button class="btn" data-a="ms">Show mark scheme</button>`;
+    h+=`<div class="fb" hidden></div>`;
+    c.innerHTML=h;root.appendChild(c);
+    const fb=c.querySelector('.fb');
+    c.addEventListener('click',e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;
+      if(a==='check'&&q.type==='mcq'){const sel=c.querySelector('input:checked');if(!sel){fb.hidden=false;fb.className='fb warn';fb.innerHTML='Choose an answer first.';return}
+        const ok=+sel.value===q.ans;st[i]={got:ok?1:0,done:true};fb.hidden=false;fb.className='fb '+(ok?'ok':'warn');
+        fb.innerHTML=(ok?'<b>Correct.</b> ':'<b>Not quite.</b> The answer is <b>'+'ABCD'[q.ans]+' '+q.opts[q.ans]+'</b>. ')+(q.why||'');total()}
+      if(a==='check'&&q.type==='str'){const v=c.querySelector('.numin').value.trim();if(!v){fb.hidden=false;fb.className='fb warn';fb.innerHTML='Type your answer first.';return}
+        const g=q.grade(v);st[i]={got:g,done:true};fb.hidden=false;fb.className='fb '+(g===q.marks?'ok':'warn');fb.innerHTML=`<b>${g} / ${q.marks}.</b> `+q.working;total()}
+      if(a==='check'&&q.type==='num'){const v=parseFloat(String(c.querySelector('.numin').value).replace(',','.'));if(isNaN(v)){fb.hidden=false;fb.className='fb warn';fb.innerHTML='Type a number first.';return}
+        const ok=q.accept(v);st[i]={got:ok?q.marks:0,done:true};fb.hidden=false;fb.className='fb '+(ok?'ok':'warn');fb.innerHTML=(ok?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.working;total()}
+      if(a==='ms'){fb.hidden=false;fb.className='fb ms';
+        fb.innerHTML=`<p><b>Mark scheme.</b> Tick each point your answer makes${q.max?' (maximum '+q.max+')':''}:</p>`+q.points.map((p,j)=>`<label class="opt"><input type="checkbox" data-p="${j}"> ${p}</label>`).join('')+(q.note?`<p class="small">${q.note}</p>`:'')+`<p class="mk">Your mark: <b>0</b> / ${q.marks}</p>`;
+        fb.querySelectorAll('input').forEach(x=>x.onchange=()=>{const k=fb.querySelectorAll('input:checked').length;const n=q.score?q.score(k):Math.min(q.max||q.marks,q.marks,k);st[i]={got:n,done:true};fb.querySelector('.mk b').textContent=n;total()});
+        st[i].done=true;total()}
+    });
+  });
+  total();
+}
+const Qs=[
+ {n:'Check 1',type:'text',marks:2,text:'What is diffusion?',points:['The net movement of particles (molecules)','From a high concentration to a low concentration (down a concentration gradient)']},
+ {n:'Check 2',type:'mcq',marks:1,text:'Which change would make diffusion faster?',opts:['a lower temperature','a smaller concentration gradient','a smaller surface area to volume ratio','a shorter distance'],ans:3},
+ {n:'Check 2b',type:'num',marks:2,text:'A cube has sides of 2 cm. Calculate its surface area to volume ratio. Give your answer as ? : 1',accept:v=>Math.abs(v-3)<0.01,unit:': 1',working:'Surface area = 2 × 2 × 6 = 24 cm². Volume = 2 × 2 × 2 = 8 cm³. Ratio = 24 ÷ 8 = 3, so 3 : 1.'},
+ {n:'Check 2c',type:'mcq',marks:1,text:'Why do large organisms need exchange surfaces such as lungs?',opts:['They have a larger surface area to volume ratio','They have a smaller surface area to volume ratio','Diffusion is faster in large organisms','Large organisms do not use diffusion'],ans:1,why:'As an organism gets bigger, its volume increases faster than its surface area, so its SA : volume ratio gets smaller. Diffusion through the body surface alone is too slow.'},
+ {n:'Check 3',type:'mcq',marks:1,text:'A membrane lets water molecules through but not sugar molecules. What is this membrane called?',opts:['fully permeable','partially permeable','impermeable','a cell wall'],ans:1},
+ {n:'Check 4',type:'mcq',marks:1,text:'A plant cell is put in a concentrated sugar solution. What happens?',opts:['Water enters and the cell becomes turgid','Water leaves and the cell becomes plasmolysed','Sugar leaves the cell','Nothing changes'],ans:1},
+ {n:'Check 5',type:'text',marks:2,text:'Explain why a red blood cell placed in pure water swells and bursts, but a plant cell in pure water does not burst.',points:['Water enters both cells by osmosis','The plant cell has a cell wall that stops it bursting; the red blood cell has no cell wall']}
+];
+const QSRC='These questions were written for this page.';
+
+Quiz('#qList','#qScore',Qs);document.getElementById('qSrc').textContent='Questions: '+QSRC;
+
+})();
+</script>
+
+</body>
+</html>

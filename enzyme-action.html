@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>Enzyme Action</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a lab bench — tabbed stations, each with the apparatus + controls on the left and the results book on the right */
+:root{
+  --bg:#eef2ef; --panel:#ffffff; --ink:#18241f; --muted:#56655e; --line:#cfd8d3;
+  --leaf:#2f7d4f; --leaf-soft:#dcefe3; --lamp:#f2b632; --water:#cfe6f2; --water-edge:#7fb0c8;
+  --warn:#b4501e; --warn-soft:#fbe9df; --ok:#2f7d4f; --ok-soft:#e1f2e7; --navy:#1d2140; --iodine:#c9772a;
+  --scene:#f7faf8; --glass:#ffffff;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,38px);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:2px 0 0}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--leaf)}
+nav.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+nav.tabs button{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:10px 16px;border-radius:999px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+nav.tabs button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:3px solid var(--lamp);outline-offset:2px}
+.station{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.station{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 4px}
+.card h3{font-size:15px;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.aim{margin:0 0 10px;color:var(--muted)}
+svg.scene{width:100%;height:auto;display:block;background:var(--scene);border-radius:10px;border:1px solid var(--line)}
+.controls{display:grid;gap:12px;margin-top:12px}
+.ctrl{display:grid;gap:4px}
+.ctrl label,.ctrl .lbl{font-weight:700}
+.ctrl .val{font-family:var(--mono);color:var(--leaf)}
+input[type=range]{width:100%;accent-color:var(--leaf)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--leaf);background:var(--leaf-soft);font-weight:700}
+.iv{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.iv .chip{border:2px dashed var(--leaf);border-radius:8px;padding:4px 10px;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-weight:700;border:0;background:var(--leaf);color:var(--panel);padding:10px 16px;border-radius:10px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.readout{font-family:var(--mono);font-size:15px;background:var(--scene);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.msg{border-radius:10px;padding:10px 12px;margin-top:10px}
+.msg.ok{background:var(--ok-soft)}
+.msg.warn{background:var(--warn-soft)}
+.msg>b:first-child{display:block}
+.check{display:flex;gap:8px;align-items:center;font-weight:700}
+.check input{width:20px;height:20px;accent-color:var(--leaf)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--scene);font-size:14px}
+td.mean{font-weight:700;color:var(--leaf)}
+td .x{font:inherit;border:0;background:none;color:var(--muted);cursor:pointer;text-decoration:underline}
+.empty{color:var(--muted);font-style:italic;padding:10px 0}
+.fair{margin-top:8px}
+svg.graph{width:100%;height:auto;display:block}
+.graph text{fill:var(--ink);font-family:var(--body);font-size:12px}
+.graph .axis{stroke:var(--ink)}
+.graph .grid{stroke:var(--line)}
+.graph .pt{fill:var(--leaf)}
+.graph .ln{stroke:var(--leaf);fill:none;stroke-width:2.5}
+.graph .bar{fill:var(--leaf)}
+.limit{font-weight:700}
+.steps{display:grid;gap:8px}
+.step{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.step .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--scene);border:2px solid var(--line);font-weight:700}
+.step.done .n{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+.step.now{border-color:var(--leaf)}
+.step p{margin:2px 0 6px;color:var(--muted)}
+.pred{display:grid;gap:6px;margin-top:6px}
+.pred .prow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pred .prow span{min-width:180px;font-weight:700}
+.key{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.key span{display:flex;gap:6px;align-items:center}
+.sw{width:18px;height:18px;border-radius:4px;border:1px solid var(--line);display:inline-block}
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.reffig{margin:0;background:#fff;border-radius:10px;padding:8px;border:1px solid var(--line)}
+.reffig img{width:100%;height:auto;display:block}
+.reffig figcaption{font-size:12px;color:#56655e;text-align:right}
+footer{color:var(--muted);font-size:13px;margin-top:20px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.wide{grid-column:1/-1}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatches div{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--scene)}
+.swatches i{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);display:inline-block}
+select{font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.small{font-size:13px;color:var(--muted)}
+
+.twocol{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:600px){.twocol{grid-template-columns:1fr}}
+.meter{height:26px;border-radius:13px;background:var(--scene);border:1px solid var(--line);overflow:hidden}
+.meter div{height:100%;background:var(--leaf);transition:width .4s}
+.phscale{height:14px;border-radius:7px;background:linear-gradient(90deg,#d2343a,#ee9a2c,#f2d23a,#7cc04a,#2f7d4f,#3d7be0,#5a3fa0)}
+canvas.scene{width:100%;height:auto;display:block;background:var(--scene);border-radius:10px;border:1px solid var(--line)}
+.qwrap{display:grid;gap:14px}
+.qcard{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel);display:grid;gap:8px}
+.qhead{display:flex;justify-content:space-between;align-items:center}
+.qnum{font-family:var(--mono);font-size:13px;color:var(--leaf);letter-spacing:.04em}
+.qmarks{font-weight:700;color:var(--muted)}
+.qstem{margin:0;color:var(--muted)}
+.qtext{margin:0}
+.qimg{max-width:min(100%,520px);height:auto;background:#fff;border-radius:8px;border:1px solid var(--line);padding:6px}
+.opts{display:grid;gap:6px}
+.opt{display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.opt input{margin-top:3px;width:18px;height:18px;accent-color:var(--leaf);flex:none}
+.ol{font-weight:700;min-width:16px}
+textarea{width:100%;font:inherit;padding:8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink);resize:vertical}
+.numin{font:inherit;width:120px;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.qcard .btn{justify-self:start}
+.fb{border-radius:10px;padding:10px 12px}
+.fb.ok{background:var(--ok-soft)}.fb.warn{background:var(--warn-soft)}.fb.ms{background:var(--scene);border:1px solid var(--line);display:grid;gap:6px}
+.fb p{margin:0}
+.score{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--leaf);color:var(--panel);padding:10px 14px;border-radius:10px}
+</style>
+</head>
+<body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<div class="wrap">
+<header class="top"><div>
+  <div class="tag">Animation · Biology</div>
+  <h1>Enzyme Action</h1>
+  <p class="sub">How enzymes work: the active site, the lock and key model, and how temperature and pH affect them.</p>
+</div></header>
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tab-a" aria-selected="true" data-st="a">1 · Lock and key</button>
+  <button role="tab" id="tab-b" aria-selected="false" data-st="b">2 · Temperature and pH</button>
+  <button role="tab" id="tab-q" aria-selected="false" data-st="q">3 · Check your understanding</button>
+</nav>
+
+<section id="st-a" class="station">
+  <div class="card">
+    <h2>Lock and key: one reaction, step by step</h2>
+    <p class="aim">Press <b>Next</b> to go through the reaction. Press <b>Play</b> to watch it all.</p>
+    <canvas id="cA" width="900" height="460" class="scene" aria-label="Animation of an enzyme and a substrate"></canvas>
+    <div class="row" style="margin-top:10px">
+      <button class="btn alt" id="aBack">Back</button>
+      <button class="btn" id="aNext">Next</button>
+      <button class="btn alt" id="aPlay">Play</button>
+      <span class="readout" id="aStep">Step 1 of 5</span>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <span class="lbl">Try a different molecule:</span>
+      <div class="seg" id="aSub"><button data-v="good" aria-pressed="true">Starch (fits)</button><button data-v="bad" aria-pressed="false">Protein (wrong shape)</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>What is happening?</h2>
+    <div id="aText" class="msg ok" style="min-height:150px"></div>
+    <h3>Key words</h3>
+    <div class="tablewrap"><table class="reftab">
+      <tbody>
+      <tr><td><b>enzyme</b></td><td>a protein that is a biological catalyst: it speeds up reactions without being used up</td></tr>
+      <tr><td><b>substrate</b></td><td>the molecule the enzyme acts on</td></tr>
+      <tr><td><b>active site</b></td><td>the part of the enzyme where the substrate fits</td></tr>
+      <tr><td><b>complementary</b></td><td>the shapes fit together exactly, like a lock and key</td></tr>
+      <tr><td><b>enzyme–substrate complex</b></td><td>the enzyme with the substrate in its active site</td></tr>
+      <tr><td><b>products</b></td><td>the new molecules made in the reaction</td></tr>
+      </tbody></table></div>
+    <p class="small">The example is amylase breaking down starch into maltose. Shapes are simplified.</p>
+  </div>
+</section>
+
+<section id="st-b" class="station" hidden>
+  <div class="card">
+    <h2>Temperature, pH and enzyme activity</h2>
+    <div class="controls" style="margin-top:0">
+      <div class="ctrl"><span class="lbl">Enzyme</span>
+        <div class="seg" id="enz"><button data-v="amy" aria-pressed="true">Amylase (mouth, pH 7)</button><button data-v="pep" aria-pressed="false">Protease (stomach, pH 2)</button><button data-v="pro" aria-pressed="false">Protease (small intestine, pH 8)</button></div></div>
+      <div class="ctrl"><span class="lbl">What will you change?</span>
+        <div class="seg" id="mode"><button data-v="T" aria-pressed="true">Temperature</button><button data-v="pH" aria-pressed="false">pH</button></div></div>
+      <div class="ctrl" id="tBox"><label for="temp">Temperature <span class="val" id="tempV">20 °C</span></label>
+        <input type="range" id="temp" min="0" max="70" step="1" value="20"></div>
+      <div class="ctrl" id="pBox"><label for="ph">pH <span class="val" id="phV">7</span></label>
+        <input type="range" id="ph" min="1" max="13" step="1" value="7">
+        <div class="phscale" aria-hidden="true"></div>
+        <div class="row small" style="justify-content:space-between"><span>1 acid</span><span>7 neutral</span><span>alkali 13</span></div></div>
+    </div>
+    <canvas id="cB" width="900" height="420" class="scene" aria-label="Four enzymes and substrate molecules" style="margin-top:12px"></canvas>
+    <div class="swatches" style="margin-top:8px">
+      <div><svg width="30" height="26" viewBox="-30 -26 60 52" aria-hidden="true"><path d="M-22-18C-8-30 18-26 24-8L6 0L24 8C18 26-8 30-22 18C-30 8-30-8-22-18Z" fill="#2f7d4f" stroke="currentColor" stroke-width="3"/></svg>working enzyme</div>
+      <div><svg width="30" height="26" viewBox="-30 -26 60 52" aria-hidden="true"><path d="M-22-18C-8-30 18-26 24-8L20 0L24 8C18 26-8 30-22 18C-30 8-30-8-22-18Z" fill="#9aa29c" stroke="currentColor" stroke-width="3"/></svg>denatured enzyme (active site changed shape)</div>
+      <div><svg width="30" height="26" viewBox="-20 -14 40 28" aria-hidden="true"><path d="M-16 0L7-12L26-12L26 12L7 12Z" fill="#e0a020" stroke="currentColor" stroke-width="2.5"/></svg>substrate</div>
+      <div><svg width="30" height="26" viewBox="-20 -14 40 28" aria-hidden="true"><path d="M-16 0L7-12L26-12L26 12L7 12Z" fill="#e0a020" stroke="#d2343a" stroke-width="4"/></svg>substrate that did not fit</div>
+      <div><svg width="30" height="26" viewBox="-20 -14 40 28" aria-hidden="true"><path d="M-16-2L7-12L26-12L26-2Z M-16 4L7 12L26 12L26 4Z" fill="#b4501e" stroke="currentColor" stroke-width="2"/></svg>products</div>
+    </div>
+    <p class="small">Substrate molecules (orange) move towards the active sites of the four enzymes. If the shape fits, the enzyme flashes and the substrate splits into two products. If it does not fit, it bounces off with a red outline. Hotter = faster molecules = more collisions.</p>
+  </div>
+  <div class="card">
+    <h2>What is happening to the enzyme?</h2>
+    <div class="twocol">
+      <div><h3 style="margin-top:0">Active site close-up</h3><canvas id="cC" width="420" height="260" class="scene" aria-label="Close-up of the active site and the substrate"></canvas></div>
+      <div><h3 style="margin-top:0">Rate of reaction</h3><div class="meter"><div id="bar"></div></div><div class="readout" id="rateR" style="margin-top:8px">–</div>
+        <div id="status" class="msg ok" style="margin-top:8px"></div></div>
+    </div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="rec">Record this rate on the graph</button><button class="btn alt" id="fresh">Fresh enzyme</button><button class="btn alt" id="clearG">Clear graph</button></div>
+    <svg class="graph" id="graph" viewBox="0 0 460 280" role="img" aria-label="Graph of rate of reaction"></svg>
+    <div id="explain" class="msg ok"></div>
+  </div>
+</section>
+
+<section id="st-q" hidden>
+  <div class="card">
+    <h2>Check your understanding</h2>
+    <p class="aim">Multiple-choice questions are marked for you. For written answers, write your answer first, then press <b>Show mark scheme</b> and tick each point you made.</p>
+    <div id="qScore" class="score"></div>
+    <div id="qList" class="qwrap" style="margin-top:14px"></div>
+    <p class="small"><span id="qSrc"></span> Your score is not saved: take a screenshot of it when you finish.</p>
+  </div>
+</section>
+
+<footer>Simplified model for teaching. Real enzymes and substrates are 3D molecules. Rates are in arbitrary units.</footer>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const VP=['fill','stroke','font-family','stop-color'];
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a){const v=String(a[k]);if(VP.includes(k)&&v.includes('var('))e.style.setProperty(k,v);else e.setAttribute(k,v)}if(p)p.appendChild(e);return e};
+document.querySelectorAll('svg *').forEach(n=>{[...n.attributes].forEach(at=>{if(VP.includes(at.name)&&at.value.includes('var(')){n.style.setProperty(at.name,at.value);n.removeAttribute(at.name)}})});
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const tabsEls=[...document.querySelectorAll('nav.tabs button')];
+tabsEls.forEach(b=>b.addEventListener('click',()=>{
+  tabsEls.forEach(x=>x.setAttribute('aria-selected',x===b));
+  tabsEls.forEach(x=>{const st=document.getElementById('st-'+x.dataset.st);if(st)st.hidden=(x!==b)});
+}));
+const isOn=id=>!document.getElementById(id).hidden;
+function seg(id,onChange){
+  const box=$(id);
+  box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));onChange(b.dataset.v)});
+  return ()=>box.querySelector('[aria-pressed="true"]').dataset.v;
+}
+function setSeg(id,v){$(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===String(v)))}
+function showMsg(id,kind,title,body){const m=$(id);m.hidden=false;m.className='msg '+kind;m.innerHTML='<b>'+title+'</b>'+body}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function mkHead(t,cols){ // cols: [[text,rowspan,colspan]...] rows
+  const th0=t.createTHead();cols.forEach(rw=>{const r=th0.insertRow();rw.forEach(([x,rs,cs])=>{const th=document.createElement('th');th.textContent=x;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;r.appendChild(th)})});
+}
+function barChart(g,labels,vals,yLabel,xLabel,colours){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const yMaxRaw=Math.max(1,...vals.filter(v=>v!=null));const st=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/st)*st;
+  const sy=v=>H-B-(v/yMax)*(H-B-T);
+  for(let v=0;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  const bw=(W-L-R)/Math.max(labels.length,1);
+  labels.forEach((lb,i)=>{const v=vals[i];const x=L+i*bw+bw*.18;
+    if(v!=null)el('rect',{x,y:sy(v),width:bw*.64,height:H-B-sy(v),class:'bar',fill:colours?colours[i]:'var(--leaf)'},g);
+    const t=el('text',{x:x+bw*.32,y:H-B+16,'text-anchor':'middle','font-size':11},g);t.textContent=lb});
+}
+function lineChart(g,pts,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const ys=pts.map(p=>p.y);const yMinRaw=Math.min(0,...ys);const yMaxRaw=Math.max(1,...ys);
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xs=pts.map(p=>p.x);const xMaxRaw=Math.max(1e-9,...xs, opts.xMax||0);const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;const xMin=opts.xMin||0;
+  const sx=v=>L+((v-xMin)/(xMax-xMin))*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(3)}
+  for(let v=xMin;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:sy(Math.max(0,yMin)),y2:sy(Math.max(0,yMin)),class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+  const sorted=[...pts].sort((a,b)=>a.x-b.x);
+  if(!opts.noLine)el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+  sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+}
+function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+function Book(opts){
+  // opts: table, graph, fair, ivLabel(), unitLabel, fmt, controls(), isBar(), xMode()
+  const st={rows:new Map(),snap:null,changed:new Set()};
+  function add(iv,val,controlSnap){
+    if(!st.snap) st.snap=controlSnap;
+    for(const k in controlSnap) if(st.snap[k]!==controlSnap[k]) st.changed.add(k);
+    const arr=st.rows.get(iv)||[];
+    if(arr.length>=3) return false;
+    arr.push(val);st.rows.set(iv,arr);render();return true;
+  }
+  function count(iv){return (st.rows.get(iv)||[]).length}
+  function clear(){st.rows.clear();st.snap=null;st.changed.clear();render()}
+  function del(iv){st.rows.delete(iv);if(!st.rows.size){st.snap=null;st.changed.clear()}render()}
+  function mean(a){const n=a.filter(v=>v!=null);return n.length?n.reduce((s,v)=>s+v,0)/n.length:null}
+  function render(){
+    const t=opts.table;t.innerHTML='';
+    const keys=[...st.rows.keys()].sort(opts.sort);
+    const th0=t.createTHead();const h1=th0.insertRow(),h=th0.insertRow();
+    const mk=(row,txt,rs,cs)=>{const th=document.createElement('th');th.textContent=txt;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;row.appendChild(th)};
+    mk(h1,opts.ivLabel(),2);mk(h1,typeof opts.dvHead==='function'?opts.dvHead():opts.dvHead,0,4);mk(h1,'',2);
+    ['Trial 1','Trial 2','Trial 3','Mean'].forEach(x=>mk(h,x));
+    const tb=t.createTBody();
+    if(!keys.length){const r=tb.insertRow();const c=r.insertCell();c.colSpan=6;c.className='empty';c.textContent='No results yet. Set up, then press the button to measure.'}
+    keys.forEach(k=>{const r=tb.insertRow();const a=st.rows.get(k);
+      r.insertCell().textContent=opts.fmtIV(k);
+      for(let i=0;i<3;i++)r.insertCell().textContent=a[i]===undefined?'':(a[i]===null?(opts.nullLabel||'none'):opts.fmt(a[i]));
+      const m=r.insertCell();m.className='mean';const mv=mean(a);m.textContent=mv==null?(a.length?'–':''):opts.fmt(mv,true);
+      const x=r.insertCell();const b=document.createElement('button');b.className='x';b.textContent='delete';b.onclick=()=>del(k);x.appendChild(b)});
+    if(st.changed.size){opts.fair.hidden=false;opts.fair.innerHTML='<b>Not a fair test</b>You changed: '+[...st.changed].join(', ')+'. Only the independent variable should change. Clear the results and start again.'}
+    else opts.fair.hidden=true;
+    if(opts.graphFn) opts.graphFn(keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null)); else graph(keys);
+  }
+  function graph(keys){
+    const g=opts.graph;g.innerHTML='';
+    const W=460,H=280,L=58,R=14,T=14,B=52;
+    const pts=keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null);
+    const yMaxRaw=Math.max(1,...pts.map(p=>p.y));
+    const step=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/step)*step||step*5;
+    const sy=v=>H-B-(v/yMax)*(H-B-T);
+    for(let v=0;v<=yMax+1e-9;v+=step){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+    el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+    const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=opts.yLabel;
+    const xl=el('text',{x:(L+W-R)/2,y:H-10,'text-anchor':'middle'},g);xl.textContent=opts.xLabel();
+    if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+    if(opts.isBar()){
+      const bw=(W-L-R)/Math.max(pts.length,1);
+      pts.forEach((p,i)=>{const x=L+i*bw+bw*.2;el('rect',{x,y:sy(p.y),width:bw*.6,height:H-B-sy(p.y),class:'bar',fill:opts.barColour?opts.barColour(p.k):'var(--leaf)'},g);
+        const t=el('text',{x:x+bw*.3,y:H-B+16,'text-anchor':'middle'},g);t.textContent=opts.fmtIV(p.k)});
+      return;
+    }
+    const xs=pts.map(p=>opts.xVal(p.k));const xMaxRaw=Math.max(...xs,1e-9);
+    const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+    const sx=v=>L+(v/xMax)*(W-L-R);
+    for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+    const sorted=pts.map(p=>({x:opts.xVal(p.k),y:p.y})).sort((a,b)=>a.x-b.x);
+    el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+    sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+  }
+  function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+  render();
+  return {add,count,clear,render,rows:st.rows};
+}
+
+function multiLine(g,series,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const all=series.flatMap(s=>s.pts);
+  const yMinRaw=opts.yMin!=null?opts.yMin:Math.min(0,...all.map(p=>p.y));const yMaxRaw=Math.max(opts.yMaxMin||1,...all.map(p=>p.y));
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xMaxRaw=Math.max(opts.xMax||1,...all.map(p=>p.x));const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+  const sx=v=>L+(v/xMax)*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  series.forEach((s,i)=>{const p=[...s.pts].sort((a,b)=>a.x-b.x);
+    if(p.length>1)el('polyline',{points:p.map(q=>sx(q.x)+','+sy(q.y)).join(' '),fill:'none',stroke:s.colour,'stroke-width':2.5,'stroke-dasharray':s.dash||''},g);
+    p.forEach(q=>el('circle',{cx:sx(q.x),cy:sy(q.y),r:4.5,fill:s.colour},g));
+    const lx=L+10+i*150;el('rect',{x:lx,y:T+2,width:14,height:4,fill:s.colour},g);const t=el('text',{x:lx+20,y:T+8,'font-size':12},g);t.textContent=s.name});
+}
+
+
+/* ---------- shapes ---------- */
+const GREEN='#2f7d4f',GREY='#9aa29c',SUB='#e0a020',PROD='#b4501e',BAD='#4a7fd6';
+function enzymePath(R,closed){ // blob with V-notch active site on the right (+x)
+  const p=new Path2D();const n=60;
+  for(let i=0;i<=n;i++){const a=i/n*2*Math.PI;let r=R*(1+0.06*Math.sin(a*5));
+    const da=Math.atan2(Math.sin(a),Math.cos(a));
+    if(Math.abs(da)<0.42){const t=Math.abs(da)/0.42;r=R*(closed?0.9+0.1*t:0.45+0.55*t)}
+    const x=Math.cos(a)*r,y=Math.sin(a)*r;i?p.lineTo(x,y):p.moveTo(x,y)}
+  p.closePath();return p}
+function subPath(s){ // wedge that fits the notch: point to the left
+  const p=new Path2D();p.moveTo(-s*0.55,0);p.lineTo(s*0.25,-s*0.42);p.lineTo(s*0.9,-s*0.42);p.lineTo(s*0.9,s*0.42);p.lineTo(s*0.25,s*0.42);p.closePath();return p}
+function halfPath(s,top){const p=new Path2D();const y=top?-1:1;p.moveTo(-s*0.55,0);p.lineTo(s*0.25,y*s*0.42);p.lineTo(s*0.9,y*s*0.42);p.lineTo(s*0.9,0);p.closePath();return p}
+function badPath(s){const p=new Path2D();p.rect(-s*0.3,-s*0.5,s*1.1,s);return p}
+function fit(c){const r=c.canvas.getBoundingClientRect();return c}
+function ink(){return getComputedStyle(document.body).color}
+
+/* ---------- tab 1: step by step ---------- */
+const cA=$('#cA'),gA=cA.getContext('2d');
+const STEPS=[
+ ['The enzyme and the substrate','This is an enzyme (amylase). The dip on its right is the <b>active site</b>. The orange molecule is the <b>substrate</b> (starch). Its shape is <b>complementary</b> to the active site.'],
+ ['They collide','Molecules move around all the time. The substrate <b>collides</b> with the enzyme and fits into the active site, like a key in a lock.'],
+ ['Enzyme–substrate complex','The substrate is held in the active site. This is the <b>enzyme–substrate complex</b>.'],
+ ['The reaction happens','The substrate is broken down into <b>products</b> (maltose).'],
+ ['Products leave','The products are released. The enzyme is <b>unchanged</b>, so it can be used again and again.']];
+const BADSTEPS=[
+ ['A different molecule','This molecule (a protein) has a <b>different shape</b>.'],
+ ['It collides…','It collides with the enzyme, but it <b>does not fit</b> the active site.'],
+ ['No complex forms','The shapes are not complementary, so <b>no enzyme–substrate complex</b> forms.'],
+ ['No reaction','The molecule bounces away unchanged. This is why enzymes are <b>specific</b>: each enzyme only works on one substrate.'],
+ ['Specific','Amylase only breaks down starch. A protease is needed to break down protein.']];
+const A={step:0,t:1,playing:false,sub:'good'};
+const ER=110,EX=330,EY=230,SS=90;
+function lerp(a,b,t){return a+(b-a)*t}
+function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+function drawA(){
+  const w=cA.width,h=cA.height;gA.clearRect(0,0,w,h);
+  const c=ink();gA.lineWidth=3;
+  // enzyme
+  gA.save();gA.translate(EX,EY);gA.fillStyle=GREEN;gA.fill(enzymePath(ER,false));gA.strokeStyle=c;gA.stroke(enzymePath(ER,false));gA.restore();
+  label('enzyme (amylase)',EX-30,EY+ER+40);
+  if(A.step===0||A.sub==='bad'&&A.step===0) {gA.save();gA.setLineDash([6,5]);gA.strokeStyle=c;gA.beginPath();gA.arc(EX+ER*0.75,EY,48,0,7);gA.stroke();gA.restore();label('active site',EX+ER*0.75,EY-70)}
+  const t=ease(A.t);const siteX=EX+ER*0.45+SS*0.55;
+  if(A.sub==='good'){
+    let x,y,rot=0;
+    if(A.step===0){x=760;y=120}
+    else if(A.step===1){x=lerp(760,siteX,t);y=lerp(120,EY,t)}
+    else {x=siteX;y=EY}
+    if(A.step<3){gA.save();gA.translate(x,y);gA.fillStyle=SUB;gA.fill(subPath(SS));gA.strokeStyle=c;gA.stroke(subPath(SS));gA.restore();
+      if(A.step===0)label('substrate (starch)',760,60);
+      if(A.step===2)label('enzyme–substrate complex',EX+60,60)}
+    else{const sep=A.step===3?t*14:14+t*90;const dx=A.step===4?t*230:0;
+      [[true,-1],[false,1]].forEach(([top,sg])=>{gA.save();gA.translate(siteX+dx,EY+sg*sep);gA.fillStyle=PROD;gA.fill(halfPath(SS,top));gA.strokeStyle=c;gA.stroke(halfPath(SS,top));gA.restore()});
+      label(A.step===3?'reaction: substrate splits':'products (maltose) released',A.step===3?620:660,A.step===3?60:445);
+      if(A.step===4)label('enzyme unchanged',EX-30,EY-ER-30)}
+  } else {
+    let x,y;const contact=EX+ER+SS*0.35;
+    if(A.step===0){x=760;y=120}
+    else if(A.step===1){x=lerp(760,contact,t);y=lerp(120,EY,t)}
+    else if(A.step===2){x=contact+Math.sin(t*20)*4;y=EY}
+    else {x=lerp(contact,780,t);y=lerp(EY,400,t)}
+    gA.save();gA.translate(x,y);gA.fillStyle=BAD;gA.fill(badPath(SS));gA.strokeStyle=c;gA.stroke(badPath(SS));gA.restore();
+    if(A.step===0)label('protein molecule',760,60);
+    if(A.step===2){gA.save();gA.strokeStyle='#d2343a';gA.lineWidth=6;gA.beginPath();gA.moveTo(contact-30,EY-60);gA.lineTo(contact+30,EY+60);gA.moveTo(contact+30,EY-60);gA.lineTo(contact-30,EY+60);gA.stroke();gA.restore();label('does not fit',contact,EY-90)}
+  }
+  const S=(A.sub==='good'?STEPS:BADSTEPS)[A.step];
+  $('#aText').innerHTML='<b>'+(A.step+1)+'. '+S[0]+'</b>'+S[1];$('#aStep').textContent='Step '+(A.step+1)+' of 5';
+}
+function label(t,x,y){gA.save();gA.fillStyle=ink();gA.font='bold 28px "Atkinson Hyperlegible", system-ui, sans-serif';gA.textAlign='center';gA.fillText(t,x,y);gA.restore()}
+let lastA=performance.now();
+function loopA(now){const dt=Math.min(.05,(now-lastA)/1000);lastA=now;
+  if(A.t<1){A.t=Math.min(1,A.t+dt/1.4);drawA()}
+  else if(A.playing){if(A.step<4){A.step++;A.t=0;A.hold=0}else A.playing=false}
+  requestAnimationFrame(loopA)}
+requestAnimationFrame(loopA);
+$('#aNext').onclick=()=>{A.playing=false;if(A.step<4){A.step++;A.t=0}};
+$('#aBack').onclick=()=>{A.playing=false;if(A.step>0){A.step--;A.t=1;drawA()}};
+$('#aPlay').onclick=()=>{A.step=0;A.t=0;A.playing=true};
+seg('#aSub',v=>{A.sub=v;A.step=0;A.t=1;A.playing=false;drawA()});
+drawA();
+
+/* ---------- tab 2: temperature and pH ---------- */
+const ENZ={amy:{name:'Amylase',sub:'starch',opt:7,where:'the mouth'},pep:{name:'Stomach protease',sub:'protein',opt:2,where:'the stomach (hydrochloric acid)'},pro:{name:'Small intestine protease',sub:'protein',opt:8,where:'the small intestine (alkaline)'}};
+const OPT_T=37;
+const E={enz:'amy',mode:'T',T:20,pH:7,maxT:20,subs:[],prods:[],count:0,flash:0,held:null,hold:0,pts:[]};
+function kinetic(T){return Math.max(0.05,2**((T-OPT_T)/10))} // collision factor, 1 at 37
+function heatDen(){return Math.min(1,Math.max(0,(E.maxT-38)/17))} // 0 = fine, 1 = fully denatured (permanent)
+function phFit(){const d=Math.abs(E.pH-ENZ[E.enz].opt);return Math.max(0,1-(d/3.2)**2)}
+function fit(){return Math.max(0,(1-heatDen())*phFit())}
+function shapeChange(){return 1-fit()} // 0 = perfect active site
+function rate(){return Math.round(60*Math.min(kinetic(E.T),1)*fit())}
+const cB=$('#cB'),gB=cB.getContext('2d'),W=cB.width,H=cB.height,CX=W/2,CY=H/2,ER2=95;
+function enzPath(R,def){const p=new Path2D();const n=80;
+  for(let i=0;i<=n;i++){const a=i/n*2*Math.PI;let r=R*(1+0.05*Math.sin(a*5));const da=Math.atan2(Math.sin(a),Math.cos(a));
+    if(Math.abs(da)<0.45){const t=Math.abs(da)/0.45;const depth=0.45+0.5*def;r=R*(depth+(1-depth)*t)+R*0.18*def*Math.sin(da*9)}
+    const x=Math.cos(a)*r,y=Math.sin(a)*r;i?p.lineTo(x,y):p.moveTo(x,y)}p.closePath();return p}
+E.coll=0;E.spawn=0.3;
+const ERs=60,SS2=30;
+const ENZS=[{x:220,y:120},{x:220,y:290},{x:500,y:120},{x:500,y:290}].map(e=>({...e,held:null,hold:0,flash:0}));
+const site=e=>({x:e.x+ERs*0.45+SS2*0.55,y:e.y});
+function spawnSub(){const free=ENZS.filter(e=>!e.held&&!E.subs.some(s=>s.state==='in'&&s.tgt===e));if(!free.length)return;
+  const e=free[Math.floor(Math.random()*free.length)];const st=site(e);
+  const x=W+30,y=rnd(40,H-40);const sp=(70+110*Math.min(kinetic(E.T),1.2));const dx=st.x-x,dy=st.y-y,dd=Math.hypot(dx,dy);
+  E.subs.push({x,y,a:0,vx:dx/dd*sp,vy:dy/dd*sp,state:'in',tgt:e,life:8})}
+function stepE(dt){
+  E.spawn-=dt;if(E.spawn<=0){spawnSub();E.spawn=0.55/Math.min(kinetic(E.T),1.2)*rnd(.7,1.3)}
+  ENZS.forEach(e=>{e.flash=Math.max(0,e.flash-dt);if(e.held){e.hold-=dt;if(e.hold<=0){const st=site(e);
+    [-1,1].forEach(sg=>E.prods.push({x:st.x+8,y:st.y+sg*8,top:sg<0,vx:90+rnd(0,40),vy:sg*rnd(40,70),life:2.2}));e.held=null;E.count++;e.flash=0.4}}});
+  for(let i=E.subs.length-1;i>=0;i--){const s=E.subs[i];s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;
+    if(s.state==='in'){const st=site(s.tgt);const rem=Math.hypot(st.x-s.x,st.y-s.y);
+      if(rem<8){E.coll++;
+        if(!s.tgt.held&&Math.random()<fit()){s.tgt.held=s;s.tgt.hold=0.7;E.subs.splice(i,1);continue}
+        s.state='out';s.miss=1;const ang=rnd(-1,1);const sp=Math.hypot(s.vx,s.vy);s.vx=Math.cos(ang)*sp;s.vy=Math.sin(ang)*sp}}
+    if(s.miss)s.miss=Math.max(0,s.miss-dt);
+    if(s.life<=0||s.x>W+60||s.y<-60||s.y>H+60)E.subs.splice(i,1)}
+  for(let i=E.prods.length-1;i>=0;i--){const p=E.prods[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;if(p.life<=0)E.prods.splice(i,1)}
+}
+function drawE(){
+  const c=ink();gB.clearRect(0,0,W,H);gB.lineWidth=3;
+  const def=shapeChange();const col=def>0.6?GREY:GREEN;
+  ENZS.forEach(e=>{gB.save();gB.translate(e.x,e.y);if(e.flash>0){gB.shadowColor='#f2d23a';gB.shadowBlur=35*e.flash/0.4}
+    gB.fillStyle=col;gB.fill(enzPath(ERs,def));gB.shadowBlur=0;gB.strokeStyle=c;gB.stroke(enzPath(ERs,def));gB.restore();
+    if(e.held){const st=site(e);gB.save();gB.translate(st.x,st.y);gB.fillStyle=SUB;gB.fill(subPath(SS2));gB.strokeStyle=c;gB.stroke(subPath(SS2));gB.restore()}});
+  E.subs.forEach(s=>{gB.save();gB.translate(s.x,s.y);gB.fillStyle=SUB;gB.fill(subPath(SS2));gB.strokeStyle=s.miss?'#d2343a':c;gB.lineWidth=s.miss?5:3;gB.stroke(subPath(SS2));gB.restore()});
+  E.prods.forEach(p=>{gB.save();gB.globalAlpha=Math.min(1,p.life);gB.translate(p.x,p.y);gB.fillStyle=PROD;gB.fill(halfPath(SS2,p.top));gB.strokeStyle=c;gB.stroke(halfPath(SS2,p.top));gB.restore()});
+  gB.save();gB.fillStyle=c;gB.font='bold 26px "Atkinson Hyperlegible", system-ui, sans-serif';
+  gB.fillText('Collisions: '+E.coll+'    Reactions: '+E.count,20,H-18);
+  gB.font='22px "Atkinson Hyperlegible", system-ui, sans-serif';gB.textAlign='right';gB.fillText('Red outline = did not fit',W-20,H-18);
+  gB.font='bold 24px "Atkinson Hyperlegible", system-ui, sans-serif';gB.textAlign='left';gB.fillText(ENZ[E.enz].name+' (4 enzymes)',20,32);gB.restore();
+}
+const cC=$('#cC'),gC=cC.getContext('2d');
+function drawC(){
+  const c=ink();gC.clearRect(0,0,420,260);gC.lineWidth=3;const def=shapeChange();
+  gC.save();gC.translate(70,130);gC.scale(1.6,1.6);gC.fillStyle=def>0.6?GREY:GREEN;gC.fill(enzPath(80,def));gC.strokeStyle=c;gC.stroke(enzPath(80,def));gC.restore();
+  // substrate outline trying to fit
+  const sx=70+1.6*(80*0.45+60*0.55)+(def>0.15?40*def:0);
+  gC.save();gC.translate(sx,130);gC.fillStyle=SUB;gC.globalAlpha=0.9;gC.fill(subPath(60*1.0));gC.strokeStyle=c;gC.stroke(subPath(60));gC.restore();
+  const ok=fit()>0.7,mid=fit()>0.25;
+  gC.save();gC.font='bold 22px "Atkinson Hyperlegible", system-ui, sans-serif';gC.fillStyle=ok?'#2f7d4f':mid?'#b4501e':'#d2343a';gC.textAlign='right';
+  gC.fillText(ok?'Fits ✓':mid?'Poor fit':'Does not fit ✗',410,30);gC.restore();
+}
+function status(){
+  const T=E.T,pH=E.pH,en=ENZ[E.enz];const hd=heatDen(),pf=phFit();let t='';
+  if(hd>=1)t='<b>Denatured by heat</b>The active site has changed shape for good. The substrate cannot fit, so no reaction happens. Cooling it down does not fix it: press Fresh enzyme.';
+  else if(hd>0)t='<b>Starting to denature</b>Above the optimum (about 37 °C) the bonds holding the enzyme in shape start to break, so the active site changes shape. Fewer substrates fit.';
+  else if(pf<0.3)t='<b>Wrong pH</b>pH '+pH+' is too far from this enzyme\'s optimum (pH '+en.opt+'). The active site changes shape, so the '+en.sub+' cannot fit.';
+  else if(Math.abs(pH-en.opt)>=1)t='<b>Not the optimum pH</b>The optimum pH for this enzyme is '+en.opt+' (it works in '+en.where+'). At pH '+pH+' the active site is a slightly different shape, so fewer substrates fit.';
+  else if(T<30)t='<b>Cool: slow reaction</b>Molecules have little kinetic energy. They move slowly, so they collide with the active site less often.';
+  else t='<b>Near the optimum</b>The molecules move quickly and the active site is the right shape, so many enzyme–substrate complexes form.';
+  $('#status').innerHTML=t;
+  const r=rate();$('#rateR').textContent='Rate: '+r+' (arbitrary units)';$('#bar').style.width=Math.min(100,r/60*100)+'%';
+}
+let lastE=performance.now();
+function loopE(now){const dt=Math.min(.05,(now-lastE)/1000);lastE=now;if(isOn('st-b')){stepE(dt);drawE();drawC()}requestAnimationFrame(loopE)}
+requestAnimationFrame(loopE);
+function setMode(m){E.mode=m;$('#tBox').hidden=m!=='T';$('#pBox').hidden=m!=='pH';
+  if(m==='T'){E.pH=ENZ[E.enz].opt;$('#ph').value=E.pH;$('#phV').textContent=E.pH}else{E.T=37;E.maxT=37;$('#temp').value=37;$('#tempV').textContent='37 °C'}
+  E.pts=[];graph();status()}
+$('#temp').oninput=e=>{E.T=+e.target.value;E.maxT=Math.max(E.maxT,E.T);$('#tempV').textContent=E.T+' °C';status()};
+$('#ph').oninput=e=>{E.pH=+e.target.value;$('#phV').textContent=E.pH;status()};
+seg('#mode',setMode);
+seg('#enz',v=>{E.enz=v;E.maxT=E.T;E.count=0;E.coll=0;setMode(E.mode)});
+$('#fresh').onclick=()=>{E.maxT=E.T;E.count=0;E.coll=0;status()};
+$('#rec').onclick=()=>{const x=E.mode==='T'?E.T:E.pH;E.pts=E.pts.filter(p=>p.x!==x);E.pts.push({x,y:rate()});graph()};
+$('#clearG').onclick=()=>{E.pts=[];graph()};
+function graph(){
+  if(E.mode==='T')lineChart($('#graph'),E.pts,'Rate (arbitrary units)','Temperature (°C)',{xMax:70});
+  else lineChart($('#graph'),E.pts,'Rate (arbitrary units)','pH',{xMax:14});
+  const en=ENZ[E.enz];
+  $('#explain').innerHTML=E.pts.length<4?'<b>Tip</b>Record the rate at 5 or more '+(E.mode==='T'?'temperatures (use Fresh enzyme after going above 45 °C).':'pH values, from 1 to 13.'):
+   (E.mode==='T'?'<b>What the graph shows</b>The rate rises as temperature increases because molecules have more kinetic energy and collide more often. The fastest rate is at the <b>optimum temperature</b> (about 37 °C for human enzymes). Above this, the enzyme is <b>denatured</b>: the active site changes shape, so the substrate no longer fits and the rate falls.'
+   :'<b>What the graph shows</b>Each enzyme has an <b>optimum pH</b>. '+en.name+' works best at pH '+en.opt+' because it works in '+en.where+'. Above or below the optimum, the active site changes shape, so the substrate does not fit as well and the rate falls.')}
+setMode('T');
+
+const IMGS={};
+/* ---------- self-marking exam practice ---------- */
+function Quiz(rootSel,scoreSel,Qs){
+  const root=$(rootSel);const st=Qs.map(()=>({got:0,done:false}));
+  function total(){const max=Qs.reduce((s,q)=>s+q.marks,0),got=st.reduce((s,x)=>s+x.got,0),done=st.filter(x=>x.done).length;
+    $(scoreSel).innerHTML=`<b>Score: ${got} / ${max}</b> · ${done} of ${Qs.length} questions marked`+(done===Qs.length?` · <b>${Math.round(got/max*100)}%</b>`:'')}
+  Qs.forEach((q,i)=>{
+    const c=document.createElement('div');c.className='qcard';
+    let h=`<div class="qhead"><span class="qnum">${q.n}</span><span class="qmarks">(${q.marks} mark${q.marks>1?'s':''})</span></div>`;
+    if(q.stem)h+=`<p class="qstem">${q.stem}</p>`;
+    if(q.img)h+=`<img class="qimg" src="${IMGS[q.img]}" alt="${q.alt||''}">`;
+    h+=`<p class="qtext"><b>${q.text}</b></p>`;
+    if(q.type==='mcq')h+=`<div class="opts">${q.opts.map((o,j)=>`<label class="opt"><input type="radio" name="q${i}" value="${j}"> <span class="ol">${'ABCD'[j]}</span> ${o}</label>`).join('')}</div><button class="btn" data-a="check">Check</button>`;
+    else if(q.type==='str')h+=`<div class="row"><input type="text" class="numin" aria-label="Your answer"><button class="btn" data-a="check">Check</button></div>`;
+    else if(q.type==='num')h+=`<div class="row"><input type="text" inputmode="decimal" class="numin" id="n${i}" aria-label="Your answer"> <span>${q.unit||''}</span><button class="btn" data-a="check">Check</button></div>`;
+    else h+=`<textarea id="t${i}" rows="${Math.max(2,q.marks+1)}" placeholder="Write your answer here, then press Show mark scheme." aria-label="Your answer"></textarea><button class="btn" data-a="ms">Show mark scheme</button>`;
+    h+=`<div class="fb" hidden></div>`;
+    c.innerHTML=h;root.appendChild(c);
+    const fb=c.querySelector('.fb');
+    c.addEventListener('click',e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;
+      if(a==='check'&&q.type==='mcq'){const sel=c.querySelector('input:checked');if(!sel){fb.hidden=false;fb.className='fb warn';fb.innerHTML='Choose an answer first.';return}
+        const ok=+sel.value===q.ans;st[i]={got:ok?1:0,done:true};fb.hidden=false;fb.className='fb '+(ok?'ok':'warn');
+        fb.innerHTML=(ok?'<b>Correct.</b> ':'<b>Not quite.</b> The answer is <b>'+'ABCD'[q.ans]+' '+q.opts[q.ans]+'</b>. ')+(q.why||'');total()}
+      if(a==='check'&&q.type==='str'){const v=c.querySelector('.numin').value.trim();if(!v){fb.hidden=false;fb.className='fb warn';fb.innerHTML='Type your answer first.';return}
+        const g=q.grade(v);st[i]={got:g,done:true};fb.hidden=false;fb.className='fb '+(g===q.marks?'ok':'warn');fb.innerHTML=`<b>${g} / ${q.marks}.</b> `+q.working;total()}
+      if(a==='check'&&q.type==='num'){const v=parseFloat(String(c.querySelector('.numin').value).replace(',','.'));if(isNaN(v)){fb.hidden=false;fb.className='fb warn';fb.innerHTML='Type a number first.';return}
+        const ok=q.accept(v);st[i]={got:ok?q.marks:0,done:true};fb.hidden=false;fb.className='fb '+(ok?'ok':'warn');fb.innerHTML=(ok?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.working;total()}
+      if(a==='ms'){fb.hidden=false;fb.className='fb ms';
+        fb.innerHTML=`<p><b>Mark scheme.</b> Tick each point your answer makes${q.max?' (maximum '+q.max+')':''}:</p>`+q.points.map((p,j)=>`<label class="opt"><input type="checkbox" data-p="${j}"> ${p}</label>`).join('')+(q.note?`<p class="small">${q.note}</p>`:'')+`<p class="mk">Your mark: <b>0</b> / ${q.marks}</p>`;
+        fb.querySelectorAll('input').forEach(x=>x.onchange=()=>{const k=fb.querySelectorAll('input:checked').length;const n=q.score?q.score(k):Math.min(q.max||q.marks,q.marks,k);st[i]={got:n,done:true};fb.querySelector('.mk b').textContent=n;total()});
+        st[i].done=true;total()}
+    });
+  });
+  total();
+}
+const Qs=[
+ {n:'Check 1',type:'mcq',marks:1,text:'What is the active site of an enzyme?',opts:['the place where the enzyme is made','the part of the enzyme where the substrate fits','the product of the reaction','the temperature where the enzyme works best'],ans:1},
+ {n:'Check 2',type:'mcq',marks:1,text:'Why does each enzyme only work on one type of substrate?',opts:['The substrate is too big for other enzymes','Only that substrate has a shape that is complementary to the active site','Enzymes are used up after one reaction','Other substrates are denatured'],ans:1,why:'The active site and the substrate have complementary shapes, like a lock and key.'},
+ {n:'Check 3',type:'mcq',marks:1,text:'What happens to an enzyme at the end of a reaction?',opts:['It is used up','It becomes the product','It is unchanged and can be used again','It is denatured'],ans:2},
+ {n:'Check 4',type:'mcq',marks:1,text:'Why does the rate of reaction increase from 10 °C to 40 °C?',opts:['The active site changes shape','Molecules have more kinetic energy, so there are more collisions','The enzyme is denatured','There is more substrate'],ans:1},
+ {n:'Check 5',type:'mcq',marks:1,text:'An enzyme is heated to 70 °C and then cooled to 37 °C. What happens?',opts:['It works at its fastest rate again','It works slowly at first, then speeds up','It stays denatured and does not work','It makes a different product'],ans:2,why:'Denaturing is permanent. The active site has changed shape and does not change back.'},
+ {n:'Check 6',type:'text',marks:3,max:3,text:'Explain why the rate of an enzyme-controlled reaction falls above the optimum temperature.',points:['The enzyme is denatured','The shape of the active site changes','The substrate no longer fits / is no longer complementary, so fewer enzyme–substrate complexes form']},
+ {n:'Check 7',type:'text',marks:4,max:4,text:'Describe how an enzyme breaks down a substrate molecule.',points:['The substrate collides with the enzyme','The substrate fits into the active site (complementary shape)','An enzyme–substrate complex forms','The substrate is broken down into products','The products are released and the enzyme is unchanged / can be used again']}
+];
+const QSRC='These questions were written for this page.';
+Qs.splice(6,0,
+ {n:'Check pH 1',type:'mcq',marks:1,text:'Protease enzymes in the stomach work best at which pH?',opts:['pH 2','pH 7','pH 9','pH 12'],ans:0,why:'The stomach makes hydrochloric acid, so stomach proteases have an optimum pH of about 2.'},
+ {n:'Check pH 2',type:'text',marks:2,max:2,text:'The stomach protease passes into the small intestine, where the pH is about 8. Explain why it stops working.',points:['pH 8 is far from its optimum (pH 2)','The active site changes shape (the enzyme is denatured), so the protein no longer fits']});
+
+Quiz('#qList','#qScore',Qs);document.getElementById('qSrc').textContent='Questions: '+QSRC;
+
+})();
+</script>
+
+</body>
+</html>

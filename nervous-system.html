@@ -1,0 +1,792 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<title>Nervous System Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: lab-bench pages — one large animated diagram per tab with a live status card beside it, exam answers and quiz underneath */
+:root{
+  --bg:#eef3f6; --surface:#ffffff; --ink:#13222c; --muted:#556874; --line:#d2dce3;
+  --accent:#1d6a86; --accent-soft:#d9ebf2;
+  --impulse:#e39a12; --sens:#2f6db3; --relayc:#7b4fb0; --motor:#cf4f39; --motor-soft:#f8ddd6;
+  --skin:#f1d2bd; --skin-edge:#9c6f55; --cord:#f3eef6; --grey:#c9bfd2; --hot:#e2492c; --plate:#7a8791; --hob:#30373d; --ring:#4b545b; --nail:#fbeae0;
+  --cell:#e6f0f5; --cell-edge:#5d8ca0; --vesicle:#fff6df; --nt:#e39a12; --rec:#2f7d4f;
+  --good:#2f7d4f; --good-soft:#dcefe3; --bad:#b3412f; --bad-soft:#f6dfda;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e161c; --surface:#15212a; --ink:#e4edf2; --muted:#93a7b4; --line:#293a46;
+  --accent:#62b4d2; --accent-soft:#183544;
+  --impulse:#f4bd45; --sens:#6aa5ea; --relayc:#b18be0; --motor:#ef7b63; --motor-soft:#3d2420;
+  --skin:#6b4e3e; --skin-edge:#c79a7f; --cord:#231d2b; --grey:#4a3f57; --hot:#f0715a; --plate:#8a98a2; --hob:#262c31; --ring:#3d464d; --nail:#8c6b5a;
+  --cell:#1b2f3a; --cell-edge:#7db3c8; --vesicle:#3b3420; --nt:#f4bd45; --rec:#6cc191;
+  --good:#6cc191; --good-soft:#173326; --bad:#f08a76; --bad-soft:#3a201b; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0e161c; --surface:#15212a; --ink:#e4edf2; --muted:#93a7b4; --line:#293a46;
+  --accent:#62b4d2; --accent-soft:#183544;
+  --impulse:#f4bd45; --sens:#6aa5ea; --relayc:#b18be0; --motor:#ef7b63; --motor-soft:#3d2420;
+  --skin:#6b4e3e; --skin-edge:#c79a7f; --cord:#231d2b; --grey:#4a3f57; --hot:#f0715a; --plate:#8a98a2; --hob:#262c31; --ring:#3d464d; --nail:#8c6b5a;
+  --cell:#1b2f3a; --cell-edge:#7db3c8; --vesicle:#3b3420; --nt:#f4bd45; --rec:#6cc191;
+  --good:#6cc191; --good-soft:#173326; --bad:#f08a76; --bad-soft:#3a201b; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:grid;gap:22px}
+header{display:grid;gap:6px}
+.eyebrow{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font:800 clamp(1.7rem,4.2vw,2.6rem)/1.08 var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font:700 1.25rem/1.2 var(--f-display);margin:0;text-wrap:balance}
+h3{font:700 1rem/1.25 var(--f-display);margin:0}
+.lede{color:var(--muted);margin:0;max-width:65ch}
+
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tab{font:700 1rem var(--f-display);background:none;border:0;color:var(--muted);padding:10px 14px 12px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.panel{display:grid;gap:20px}
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+@media (max-width:880px){.lab{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:12px;min-width:0}
+.stage svg{width:100%;height:auto;display:block}
+.side{display:grid;gap:14px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px;min-width:0}
+
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:700 .92rem var(--f-body);border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn:disabled{opacity:.55;cursor:default}
+fieldset{border:0;margin:0;padding:0;display:grid;gap:6px}
+legend{font-weight:700;margin-bottom:4px;padding:0}
+.radio{display:flex;gap:8px;align-items:flex-start;font-size:.92rem}
+.radio input{margin-top:4px;accent-color:var(--accent)}
+
+dl.status{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;align-items:center}
+dl.status dt{font-size:.88rem;color:var(--muted)}
+dl.status dd{margin:0;justify-self:start;font-weight:700;font-size:.92rem}
+.chip{display:inline-block;font-weight:700;font-size:.88rem;padding:3px 10px;border-radius:999px;background:var(--bg);color:var(--ink)}
+.chip.good{background:var(--good-soft);color:var(--good)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.note{font-size:.85rem;color:var(--muted);margin:0}
+.message{font-weight:700;min-height:1.5em;margin:0}
+
+.key{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key i{display:inline-block;width:22px;height:4px;border-radius:2px}
+
+.path{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.path.five{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:760px){.path,.path.five{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.step{border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.84rem;line-height:1.3;background:var(--bg);transition:background .15s,border-color .15s,transform .15s;min-width:0}
+.step b{display:block;font-family:var(--f-display);font-size:.9rem}
+.step .role{color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
+.step.active{background:var(--accent-soft);border-color:var(--accent);transform:translateY(-2px)}
+.step.stopped{background:var(--bad-soft);border-color:var(--bad)}
+
+.timebars{display:grid;gap:8px}
+.tb{display:grid;grid-template-columns:90px minmax(0,1fr);gap:8px;align-items:center;font-size:.85rem}
+.tb .bar{height:12px;border-radius:6px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.tb .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+
+.answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:640px){.answers{grid-template-columns:minmax(0,1fr)}}
+.answer{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:8px;min-width:0}
+.answer ol{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.answer .tag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+
+/* scenarios + ordering */
+.scen-btns{display:flex;gap:8px;flex-wrap:wrap}
+.scen-btns .btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.scen{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:760px){.scen{grid-template-columns:minmax(0,1fr)}}
+.scen div{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);min-width:0}
+.scen .role{display:block;color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
+.scen b{font-family:var(--f-display)}
+.order-pool,.order-done{display:flex;flex-wrap:wrap;gap:8px;min-height:44px}
+.order-done{padding:8px;border:2px dashed var(--line);border-radius:10px}
+.tile{font:700 .95rem var(--f-body);padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tile.placed{background:var(--good-soft);border-color:var(--good);color:var(--good);cursor:default}
+.tile.shake{animation:shake .35s;border-color:var(--bad);background:var(--bad-soft)}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:480px;font-size:.92rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-display)}
+
+/* svg */
+.s-skin{fill:none;stroke:var(--skin);stroke-linecap:round}
+.s-skin-edge{fill:none;stroke:var(--skin-edge);stroke-linecap:round}
+.s-hand{fill:var(--skin);stroke:var(--skin-edge);stroke-width:2}
+.s-plate{fill:var(--plate)}
+.s-arm{fill:var(--skin);stroke:var(--skin-edge);stroke-width:2.5;stroke-linejoin:round}
+.s-palm{fill:var(--skin)}
+.s-finger-o path{fill:none;stroke:var(--skin-edge);stroke-width:18;stroke-linecap:round}
+.s-finger path{fill:none;stroke:var(--skin);stroke-width:14;stroke-linecap:round}
+.s-nail{fill:var(--nail);stroke:var(--skin-edge);stroke-width:.8}
+.s-crease path{fill:none;stroke:var(--skin-edge);stroke-width:1.3;stroke-linecap:round;opacity:.55}
+.s-hob{fill:var(--hob);stroke:var(--ink);stroke-width:1.5}
+.s-ring{fill:none;stroke:var(--ring);stroke-width:6}
+.s-glow{fill:none;stroke:var(--hot);stroke-width:6}
+.s-hotline{fill:none;stroke:var(--hot);stroke-width:2.5;stroke-linecap:round}
+.s-cord{fill:var(--cord);stroke:var(--ink);stroke-width:2}
+.s-grey{fill:var(--grey)}
+.s-brain{fill:var(--cord);stroke:var(--ink);stroke-width:2}
+.s-sens{fill:none;stroke:var(--sens);stroke-width:4;stroke-linecap:round}
+.s-relay{fill:none;stroke:var(--relayc);stroke-width:4;stroke-linecap:round}
+.s-motor{fill:none;stroke:var(--motor);stroke-width:4;stroke-linecap:round}
+.s-brainpath{fill:none;stroke:var(--muted);stroke-width:3;stroke-dasharray:6 5}
+.s-muscle{fill:var(--motor-soft);stroke:var(--motor);stroke-width:2}
+.s-recp{fill:var(--sens)}
+.s-dot{fill:var(--impulse);stroke:var(--surface);stroke-width:2}
+.s-cut{stroke:var(--bad);stroke-width:4;stroke-linecap:round}
+.s-label{fill:var(--ink);font:700 13px var(--f-body)}
+.s-small{fill:var(--muted);font:12px var(--f-body)}
+.s-lead{stroke:var(--muted);stroke-width:1}
+.s-pop{fill:var(--bad);font:700 14px var(--f-body)}
+.s-cell{fill:var(--cell);stroke:var(--cell-edge);stroke-width:2.5}
+.s-ves{fill:var(--vesicle);stroke:var(--impulse);stroke-width:1.5}
+.s-nt{fill:var(--nt)}
+.s-rec{fill:var(--rec)}
+.s-gap{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:3 4}
+
+.hidden-svg{display:none}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">IGCSE Biology · Coordination and response</div>
+    <h1>The nervous system: reflexes and synapses</h1>
+    <p class="lede">Start each simulation and watch the electrical impulse travel. The animations are slowed down so you can follow them. Real nervous responses happen in a fraction of a second.</p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Simulations">
+    <button class="tab" role="tab" id="tab-reflex" aria-controls="reflex-arc" aria-selected="true">1. Reflex arc</button>
+    <button class="tab" role="tab" id="tab-syn" aria-controls="synapse" aria-selected="false">2. Synapse</button>
+    <button class="tab" role="tab" id="tab-sr" aria-controls="stimulus-response" aria-selected="false">3. Stimulus to response</button>
+  </div>
+
+  <!-- ===================== REFLEX ARC ===================== -->
+  <section id="reflex-arc" class="panel" role="tabpanel" aria-labelledby="tab-reflex">
+    <div class="lab">
+      <div class="stage">
+        <svg id="rxSvg" viewBox="0 0 800 440" role="img" aria-label="A hand touching a hot plate, with the sensory, relay and motor neurones linking the skin, spinal cord and biceps muscle">
+          <!-- hot plate (cooker hob seen from above) -->
+          <rect class="s-hob" x="8" y="276" width="262" height="140" rx="12"/>
+          <ellipse class="s-ring" cx="112" cy="346" rx="92" ry="52"/>
+          <ellipse class="s-ring" cx="112" cy="346" rx="64" ry="36"/>
+          <ellipse class="s-ring" cx="112" cy="346" rx="36" ry="20"/>
+          <g id="heat" opacity=".25">
+            <ellipse class="s-glow" cx="112" cy="346" rx="92" ry="52"/>
+            <ellipse class="s-glow" cx="112" cy="346" rx="64" ry="36"/>
+            <ellipse class="s-glow" cx="112" cy="346" rx="36" ry="20"/>
+            <path class="s-hotline" d="M236 316 q7 -9 0 -18 q-7 -9 0 -18"/>
+            <path class="s-hotline" d="M254 332 q7 -9 0 -18 q-7 -9 0 -18"/>
+            <path class="s-hotline" d="M22 404 q7 -9 0 -18 q-7 -9 0 -18"/>
+          </g>
+          <text class="s-label" x="104" y="434">Hot plate</text>
+
+          <!-- upper arm (static) -->
+          <path class="s-arm" d="M319 299 C 380 240, 440 180, 500 124 A 36 36 0 0 0 448 74 C 390 130, 330 190, 281 261 Z"/>
+          <ellipse id="biceps" class="s-muscle" cx="388" cy="188" rx="58" ry="14" transform="rotate(-45 388 188)"/>
+
+          <!-- forearm + hand (rotates about elbow) -->
+          <g id="forearm">
+            <path class="s-arm" d="M204 356 C 242 336, 280 318, 313 302 A 25 25 0 0 0 287 258 C 250 280, 214 300, 182 318 Z"/>
+            <!-- right hand, palm down, seen from above -->
+            <g transform="translate(194 336) rotate(-4) scale(1.35)">
+              <path class="s-arm" d="M4 -21 C -18 -27, -44 -31, -58 -28 Q -67 0 -58 30 C -42 33, -18 29, 4 21 Z"/>
+              <g class="s-finger-o">
+                <path d="M-54 -21 L -104 -28"/><path d="M-58 -7 L -114 -10"/><path d="M-58 8 L -108 11"/>
+                <path d="M-54 22 L -92 30" style="stroke-width:16"/><path d="M-14 22 C -26 36, -44 44, -66 47" style="stroke-width:20"/>
+              </g>
+              <g class="s-finger">
+                <path d="M-54 -21 L -104 -28"/><path d="M-58 -7 L -114 -10"/><path d="M-58 8 L -108 11"/>
+                <path d="M-54 22 L -92 30" style="stroke-width:12"/><path d="M-14 22 C -26 36, -44 44, -66 47" style="stroke-width:16"/>
+              </g>
+              <path class="s-palm" d="M2 -19 C -18 -25, -44 -29, -56 -26 Q -64 0 -56 28 C -42 31, -18 27, 2 19 Z"/>
+              <g class="s-nail">
+                <ellipse cx="-98" cy="-27" rx="5" ry="4.5"/><ellipse cx="-108" cy="-9.6" rx="5" ry="4.5"/>
+                <ellipse cx="-102" cy="10.6" rx="5" ry="4.5"/><ellipse cx="-87" cy="29.3" rx="4.3" ry="4"/>
+                <ellipse cx="-60" cy="46.5" rx="5.5" ry="5" transform="rotate(-8 -60 46.5)"/>
+              </g>
+              <g class="s-crease">
+                <path d="M-74 -27 q2 3 0 6"/><path d="M-80 -12 q2 3 0 6"/><path d="M-78 7 q2 3 0 6"/><path d="M-68 23 q2 3 0 6"/>
+                <path d="M-46 -24 q3 2 1 6"/><path d="M-50 -9 q3 2 1 6"/><path d="M-50 6 q3 2 1 6"/>
+              </g>
+            </g>
+            <circle class="s-recp" cx="58" cy="333" r="6"/>
+            <path id="sensA" class="s-sens" d="M58 333 C 110 336, 160 336, 200 326 C 232 312, 270 298, 300 280"/>
+            <circle id="dotA" class="s-dot" r="7" cx="-50" cy="-50"/>
+          </g>
+
+          <!-- spinal cord cross section -->
+          <ellipse class="s-cord" cx="640" cy="230" rx="78" ry="64"/>
+          <path class="s-grey" d="M610 196 q-24 -6 -26 14 q12 16 30 18 q-14 4 -24 22 q6 18 26 10 q8 -12 14 -14 q8 2 14 14 q20 8 26 -10 q-10 -18 -24 -22 q18 -2 30 -18 q-2 -20 -26 -14 q-8 14 -20 16 q-12 -2 -20 -16z"/>
+          <path class="s-brainpath" d="M640 166 L 640 70"/>
+          <rect class="s-brain" x="586" y="18" width="108" height="48" rx="22"/>
+          <text class="s-label" x="620" y="47">Brain</text>
+
+          <path id="sensB" class="s-sens" d="M300 280 C 420 330, 520 330, 560 250 C 580 212, 600 205, 626 212"/>
+          <path id="relay" class="s-relay" d="M626 212 C 640 218, 650 232, 654 248"/>
+          <path id="motor" class="s-motor" d="M654 248 C 640 300, 560 300, 500 260 C 460 232, 430 210, 410 196"/>
+          <path id="brainUp" class="s-brainpath" d="M626 212 C 636 196, 640 180, 640 66" stroke="none"/>
+          <circle id="dotB" class="s-dot" r="7" cx="-50" cy="-50"/>
+          <circle id="dotBrain" class="s-dot" r="6" cx="-50" cy="-50"/>
+          <g id="cuts"></g>
+          <text id="painPop" class="s-pop" x="702" y="46" opacity="0">Pain felt!</text>
+
+          <g class="lbl">
+            <line class="s-lead" x1="40" y1="246" x2="56" y2="326"/><text class="s-label" x="10" y="240">Receptor in skin</text>
+            <line class="s-lead" x1="210" y1="232" x2="236" y2="312"/><text class="s-label" x="150" y="226" style="fill:var(--sens)">Sensory neurone</text>
+            <line class="s-lead" x1="700" y1="320" x2="654" y2="244"/><text class="s-label" x="650" y="336" style="fill:var(--relayc)">Relay neurone</text>
+            <text class="s-small" x="590" y="312">Spinal cord (CNS)</text>
+            <line class="s-lead" x1="520" y1="352" x2="540" y2="292"/><text class="s-label" x="470" y="368" style="fill:var(--motor)">Motor neurone</text>
+            <line class="s-lead" x1="330" y1="120" x2="368" y2="172"/><text class="s-label" x="250" y="112">Biceps muscle (effector)</text>
+          </g>
+        </svg>
+        <div class="key" aria-hidden="true">
+          <span><i style="background:var(--sens)"></i>Sensory neurone</span>
+          <span><i style="background:var(--relayc)"></i>Relay neurone</span>
+          <span><i style="background:var(--motor)"></i>Motor neurone</span>
+          <span><i style="background:var(--impulse);width:10px;height:10px;border-radius:50%"></i>Electrical impulse</span>
+        </div>
+        <p class="message" id="rxMsg" aria-live="polite">Press "Touch the hot plate" to start.</p>
+      </div>
+
+      <div class="side">
+        <div class="card">
+          <div class="btns">
+            <button class="btn primary" id="rxGo" type="button">Touch the hot plate</button>
+            <button class="btn" id="rxReset" type="button">Reset</button>
+          </div>
+          <fieldset>
+            <legend>Type of response</legend>
+            <label class="radio"><input type="radio" name="rxMode" id="modeReflex" value="reflex" checked> <span>Reflex (spinal cord coordinates)</span></label>
+            <label class="radio"><input type="radio" name="rxMode" id="modeVol" value="voluntary"> <span>Voluntary (the brain must decide first)</span></label>
+          </fieldset>
+          <fieldset>
+            <legend>Damage a neurone</legend>
+            <label class="radio"><input type="radio" name="rxDmg" id="dmgNone" value="none" checked> <span>No damage</span></label>
+            <label class="radio"><input type="radio" name="rxDmg" id="dmgSens" value="sensory"> <span>Sensory neurone cut</span></label>
+            <label class="radio"><input type="radio" name="rxDmg" id="dmgMotor" value="motor"> <span>Motor neurone cut</span></label>
+          </fieldset>
+        </div>
+        <div class="card">
+          <h3>Result</h3>
+          <dl class="status">
+            <dt>Hand moves away?</dt><dd><span class="chip" id="stMove">Not yet</span></dd>
+            <dt>Pain felt?</dt><dd><span class="chip" id="stPain">Not yet</span></dd>
+          </dl>
+          <div class="timebars">
+            <div class="tb"><span>Reflex</span><div class="bar"><i id="barR"></i></div></div>
+            <div class="tb"><span>Voluntary</span><div class="bar"><i id="barV"></i></div></div>
+          </div>
+          <p class="note">Bars show time from touching the plate to the hand moving. Run both types to compare.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>The reflex arc</h2>
+      <div class="path" id="rxPath">
+        <div class="step"><span class="role">Stimulus</span><b>Heat</b>from the hot plate</div>
+        <div class="step"><span class="role">Receptor</span><b>In the skin</b>makes an impulse</div>
+        <div class="step"><span class="role">Neurone 1</span><b>Sensory neurone</b>to spinal cord</div>
+        <div class="step"><span class="role">Coordinator</span><b>Relay neurone</b>in spinal cord</div>
+        <div class="step"><span class="role">Neurone 3</span><b>Motor neurone</b>to the muscle</div>
+        <div class="step"><span class="role">Effector</span><b>Biceps muscle</b>contracts</div>
+        <div class="step"><span class="role">Response</span><b>Hand pulled away</b></div>
+      </div>
+    </div>
+
+    <div class="answers">
+      <div class="answer">
+        <span class="tag">Exam answer · describe the reflex arc</span>
+        <ol>
+          <li><b>Receptors</b> in the skin detect the heat (stimulus).</li>
+          <li>An electrical <b>impulse</b> travels along a <b>sensory neurone</b> to the <b>spinal cord</b>.</li>
+          <li>The impulse passes across a <b>synapse</b> to a <b>relay neurone</b>.</li>
+          <li>The impulse passes to a <b>motor neurone</b>.</li>
+          <li>The motor neurone carries the impulse to the <b>effector</b> (biceps muscle).</li>
+          <li>The <b>muscle contracts</b> and the hand is pulled away.</li>
+        </ol>
+      </div>
+      <div class="answer">
+        <span class="tag">Exam answer · why are reflexes useful?</span>
+        <ol>
+          <li>Reflexes are <b>automatic</b>: you do not think about them.</li>
+          <li>They are <b>rapid</b>, because the conscious part of the brain is not involved.</li>
+          <li>This <b>reduces damage</b> to the body (for example, a burn).</li>
+          <li>You feel the pain <b>after</b> the hand has already moved.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SYNAPSE ===================== -->
+  <section id="synapse" class="panel" role="tabpanel" aria-labelledby="tab-syn" hidden>
+    <div class="lab">
+      <div class="stage">
+        <svg id="synSvg" viewBox="0 0 800 340" role="img" aria-label="Close-up of a synapse between two neurones, with vesicles of neurotransmitter and receptor molecules">
+          <path id="n1" class="s-cell" d="M0 148 L 290 148 C 320 96, 396 96, 396 170 C 396 244, 320 244, 290 192 L 0 192 Z"/>
+          <path id="n2" class="s-cell" d="M424 92 Q 440 170 424 248 L 800 214 L 800 126 Z"/>
+          <g id="recs"></g>
+          <g id="vesicles"></g>
+          <g id="nts"></g>
+          <circle id="synDot1" class="s-dot" r="8" cx="-50" cy="-50"/>
+          <circle id="synDot2" class="s-dot" r="8" cx="-50" cy="-50"/>
+          <line class="s-gap" x1="410" y1="60" x2="410" y2="96"/>
+          <g class="lbl">
+            <text class="s-label" x="16" y="132">Neurone 1</text>
+            <text class="s-label" x="690" y="112">Neurone 2</text>
+            <text class="s-label" x="362" y="52">Synapse (gap)</text>
+            <line class="s-lead" x1="300" y1="290" x2="340" y2="206"/><text class="s-label" x="214" y="306">Vesicle of neurotransmitter</text>
+            <line class="s-lead" x1="500" y1="290" x2="432" y2="214"/><text class="s-label" x="462" y="306">Receptor molecules</text>
+          </g>
+        </svg>
+        <p class="message" id="synMsg" aria-live="polite">Press "Send an impulse" to start.</p>
+      </div>
+      <div class="side">
+        <div class="card">
+          <div class="btns">
+            <button class="btn primary" id="synGo" type="button">Send an impulse</button>
+            <button class="btn" id="synReset" type="button">Reset</button>
+          </div>
+          <p class="note">Neurones do not touch each other. There is a tiny gap between them called a synapse. The electrical impulse cannot jump across the gap, so a chemical carries the message.</p>
+        </div>
+        <div class="card">
+          <h3>Watch out</h3>
+          <p class="note">The receptor molecules on neurone 2 are not the same as receptor cells in sense organs. They are proteins that the neurotransmitter binds to.</p>
+          <p class="note">Only neurone 1 releases neurotransmitter, and only neurone 2 has receptor molecules. This is why the impulse can only travel in one direction.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>What happens at a synapse</h2>
+      <div class="path five" id="synPath">
+        <div class="step"><span class="role">Step 1</span><b>Impulse arrives</b>at the end of neurone 1</div>
+        <div class="step"><span class="role">Step 2</span><b>Neurotransmitter released</b>from vesicles</div>
+        <div class="step"><span class="role">Step 3</span><b>Diffuses</b>across the synapse</div>
+        <div class="step"><span class="role">Step 4</span><b>Binds</b>to receptors on neurone 2</div>
+        <div class="step"><span class="role">Step 5</span><b>New impulse</b>starts in neurone 2</div>
+      </div>
+    </div>
+
+    <div class="answers">
+      <div class="answer">
+        <span class="tag">Exam answer · how an impulse crosses a synapse</span>
+        <ol>
+          <li>An electrical <b>impulse</b> arrives at the end of the neurone.</li>
+          <li>This causes the release of <b>neurotransmitter</b> (a chemical messenger).</li>
+          <li>The neurotransmitter <b>diffuses across the synapse</b>.</li>
+          <li>It <b>binds</b> to <b>receptors</b> on the next neurone.</li>
+          <li>This starts a <b>new electrical impulse</b> in the next neurone.</li>
+        </ol>
+      </div>
+      <div class="answer">
+        <span class="tag">Key words</span>
+        <ol>
+          <li><b>Synapse</b>: the tiny gap between two neurones.</li>
+          <li><b>Neurotransmitter</b>: a chemical that carries the message across the gap.</li>
+          <li><b>Diffuse</b>: move from a high concentration to a low concentration.</li>
+          <li><b>Impulse</b>: an electrical signal that travels along a neurone.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== STIMULUS → RESPONSE ===================== -->
+  <section id="stimulus-response" class="panel" role="tabpanel" aria-labelledby="tab-sr" hidden>
+    <div class="card">
+      <h2>Same pathway, different examples</h2>
+      <p class="note">Choose an example. Every response follows the same pattern: stimulus, receptor, coordinator, effector, response. Effectors are muscles or glands.</p>
+      <div class="scen-btns" id="scenBtns"></div>
+      <div class="scen" id="scen"></div>
+      <p class="message" id="scenType"></p>
+    </div>
+
+    <div class="card">
+      <h2>Put the pathway in order</h2>
+      <p class="note">Tap the cards in the correct order, from the stimulus to the response.</p>
+      <div class="order-done" id="orderDone" aria-live="polite"></div>
+      <div class="order-pool" id="orderPool"></div>
+      <div class="btns"><button class="btn" id="orderReset" type="button">Shuffle and try again</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Nervous system or hormones?</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th scope="col"></th><th scope="col">Nervous system</th><th scope="col">Hormones (endocrine system)</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Message</th><td>Electrical impulses</td><td>Chemicals (hormones)</td></tr>
+            <tr><th scope="row">Travels in</th><td>Neurones</td><td>The blood</td></tr>
+            <tr><th scope="row">Speed</th><td>Very fast</td><td>Slower</td></tr>
+            <tr><th scope="row">Effect lasts</th><td>A short time</td><td>A long time</td></tr>
+            <tr><th scope="row">Where it acts</th><td>One precise place</td><td>Target organs, can be widespread</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="answers">
+      <div class="answer">
+        <span class="tag">The central nervous system (CNS)</span>
+        <ol>
+          <li>The CNS is the <b>brain and spinal cord</b>.</li>
+          <li>It is linked to sense organs by <b>nerves</b>.</li>
+          <li>A nerve is a <b>bundle of neurones</b>.</li>
+          <li>The CNS <b>coordinates</b> the response.</li>
+        </ol>
+      </div>
+      <div class="answer">
+        <span class="tag">Three types of neurone</span>
+        <ol>
+          <li><b>Sensory neurone</b>: carries impulses from receptors to the CNS.</li>
+          <li><b>Relay neurone</b>: inside the CNS, links sensory and motor neurones.</li>
+          <li><b>Motor neurone</b>: carries impulses from the CNS to effectors.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== QUIZ ===================== -->
+  <section class="panel" aria-labelledby="quizTitle">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <h2 id="quizTitle">Check yourself</h2>
+      <span class="chip" id="score">0 / 10</span>
+    </div>
+    <div id="quiz" style="display:grid;gap:14px"></div>
+    <div><button class="btn" id="resetQuiz" type="button">Try the questions again</button></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SPEED = reduce ? 0.35 : 1;
+  function $(id){ return document.getElementById(id); }
+
+  /* ---------- tabs + hash ---------- */
+  var tabs = {'reflex-arc': $('tab-reflex'), 'synapse': $('tab-syn'), 'stimulus-response': $('tab-sr')};
+  function show(id){
+    if(!tabs[id]) id = 'reflex-arc';
+    Object.keys(tabs).forEach(function(k){
+      var on = k === id;
+      tabs[k].setAttribute('aria-selected', on ? 'true' : 'false');
+      $(k).hidden = !on;
+    });
+  }
+  Object.keys(tabs).forEach(function(k){
+    tabs[k].addEventListener('click', function(){ show(k); try{ history.replaceState(null,'','#'+k); }catch(e){ location.hash = k; } });
+  });
+  window.addEventListener('hashchange', function(){ show(location.hash.slice(1)); });
+  show(location.hash.slice(1));
+
+  /* ---------- tiny sequencer ---------- */
+  function Runner(){ this.id = 0; }
+  Runner.prototype.run = function(steps, done){
+    var self = this, my = ++this.id, i = 0, t0 = null;
+    function frame(ts){
+      if(my !== self.id) return;
+      var s = steps[i];
+      if(t0 === null){ t0 = ts; if(s.start) s.start(); }
+      var p = s.d ? Math.min(1, (ts - t0)/(s.d*SPEED)) : 1;
+      if(s.f) s.f(p);
+      if(p >= 1){
+        if(s.end) s.end();
+        if(s.stop){ if(done) done(true); return; }
+        i++; t0 = null;
+        if(i >= steps.length){ if(done) done(false); return; }
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  };
+  Runner.prototype.cancel = function(){ this.id++; };
+  function ease(p){ return p<.5 ? 2*p*p : 1 - Math.pow(-2*p+2,2)/2; }
+  function along(path, dot, p){
+    var L = path.getTotalLength(), pt = path.getPointAtLength(L*p);
+    dot.setAttribute('cx', pt.x.toFixed(1)); dot.setAttribute('cy', pt.y.toFixed(1));
+  }
+  function hide(dot){ dot.setAttribute('cx', -50); dot.setAttribute('cy', -50); }
+  function setChip(el, text, cls){ el.textContent = text; el.className = 'chip ' + (cls||''); }
+  function highlight(listId, idx, cls){
+    var steps = document.querySelectorAll('#'+listId+' .step');
+    steps.forEach(function(s, i){ s.classList.toggle('active', i === idx && cls !== 'stopped'); s.classList.toggle('stopped', i === idx && cls === 'stopped'); });
+  }
+
+  /* =========================================================
+     REFLEX ARC
+     ========================================================= */
+  var rx = new Runner();
+  var P = {sensA:$('sensA'), sensB:$('sensB'), relay:$('relay'), motor:$('motor'), brain:$('brainUp')};
+  var dotA = $('dotA'), dotB = $('dotB'), dotBrain = $('dotBrain');
+  var times = {reflex:null, voluntary:null};
+  function mode(){ return document.querySelector('input[name=rxMode]:checked').value; }
+  function dmg(){ return document.querySelector('input[name=rxDmg]:checked').value; }
+  var CUT = {sensory:{path:'sensB', at:.35}, motor:{path:'motor', at:.55}};
+
+  function drawCuts(){
+    var g = $('cuts'), d = dmg(); g.innerHTML = '';
+    if(d === 'none') return;
+    var path = P[CUT[d].path], L = path.getTotalLength(), pt = path.getPointAtLength(L*CUT[d].at);
+    g.innerHTML = '<line class="s-cut" x1="'+(pt.x-9)+'" y1="'+(pt.y-9)+'" x2="'+(pt.x+9)+'" y2="'+(pt.y+9)+'"/>' +
+                  '<line class="s-cut" x1="'+(pt.x-9)+'" y1="'+(pt.y+9)+'" x2="'+(pt.x+9)+'" y2="'+(pt.y-9)+'"/>';
+  }
+  function setArm(a){ $('forearm').setAttribute('transform', 'rotate('+(-a).toFixed(2)+' 300 280)'); }
+  function setBiceps(p){ $('biceps').setAttribute('ry', (14 + 10*p).toFixed(1)); $('biceps').setAttribute('rx', (58 - 10*p).toFixed(1)); }
+  function painOn(on){ $('painPop').setAttribute('opacity', on ? 1 : 0); }
+
+  function rxReset(){
+    rx.cancel(); brainRun.cancel();
+    setArm(0); setBiceps(0); hide(dotA); hide(dotB); hide(dotBrain); painOn(false);
+    $('heat').setAttribute('opacity', .25);
+    highlight('rxPath', -1);
+    setChip($('stMove'), 'Not yet'); setChip($('stPain'), 'Not yet');
+    $('rxMsg').textContent = 'Press "Touch the hot plate" to start.';
+    $('rxGo').disabled = false;
+    drawCuts();
+  }
+
+  var brainRun = new Runner();
+  var t0, moved = false;
+  function sendToBrain(dur, then){
+    brainRun.run([{d:dur, f:function(p){ along(P.brain, dotBrain, p); }, end:function(){ hide(dotBrain); painOn(true); setChip($('stPain'), 'Yes', 'good'); if(then) then(); }}]);
+  }
+  function msg(t){ $('rxMsg').textContent = t; }
+
+  function rxGo(){
+    rxReset();
+    $('rxGo').disabled = true;
+    var m = mode(), d = dmg();
+    moved = false; t0 = performance.now();
+    var steps = [
+      {d:500, start:function(){ highlight('rxPath',0); msg('The hand touches the hot plate. Heat is the stimulus.'); }, f:function(p){ $('heat').setAttribute('opacity', (.25 + .75*p).toFixed(2)); }},
+      {d:350, start:function(){ highlight('rxPath',1); msg('Receptors in the skin detect the heat and produce an electrical impulse.'); }},
+      {d:600, start:function(){ highlight('rxPath',2); msg('The impulse travels along the sensory neurone.'); }, f:function(p){ along(P.sensA, dotA, p); }, end:function(){ hide(dotA); }}
+    ];
+    if(d === 'sensory'){
+      steps.push({d:700*CUT.sensory.at, f:function(p){ along(P.sensB, dotB, p*CUT.sensory.at); }, stop:true, end:function(){
+        highlight('rxPath',2,'stopped');
+        msg('The impulse cannot pass the cut. It never reaches the spinal cord, so there is no response and no pain is felt.');
+        setChip($('stMove'), 'No', 'bad'); setChip($('stPain'), 'No', 'bad');
+      }});
+      rx.run(steps, function(){ $('rxGo').disabled = false; });
+      return;
+    }
+    steps.push({d:700, f:function(p){ along(P.sensB, dotB, p); }});
+    steps.push({d:400, start:function(){ highlight('rxPath',3);
+        if(m === 'reflex'){ msg('In the spinal cord the impulse crosses a synapse to a relay neurone. The brain does not need to decide.'); sendToBrain(1900); }
+        else msg('The impulse reaches the spinal cord and is sent up to the brain.');
+      }, f:function(p){ along(P.relay, dotB, p*(m==='reflex'?1:0)); }});
+    if(m === 'voluntary'){
+      steps.push({d:900, f:function(p){ along(P.brain, dotB, p); }, end:function(){ painOn(true); setChip($('stPain'), 'Yes', 'good'); }});
+      steps.push({d:1100, start:function(){ msg('The brain notices the pain and decides to move the hand. This decision takes extra time.'); }});
+      steps.push({d:900, f:function(p){ along(P.brain, dotB, 1-p); }});
+      steps.push({d:300, f:function(p){ along(P.relay, dotB, p); }});
+    }
+    if(d === 'motor'){
+      steps.push({d:700*CUT.motor.at, start:function(){ highlight('rxPath',4); msg('The impulse travels along the motor neurone...'); }, f:function(p){ along(P.motor, dotB, p*CUT.motor.at); }, stop:true, end:function(){
+        highlight('rxPath',4,'stopped');
+        setChip($('stMove'), 'No', 'bad');
+        msg('The impulse cannot pass the cut, so the muscle gets no impulse. The hand stays on the plate.' + (m==='reflex' ? ' The brain still receives impulses, so the person feels the pain.' : ' The person still feels the pain.'));
+        if(m === 'reflex') { /* brain dot already travelling */ }
+      }});
+      rx.run(steps, function(){ $('rxGo').disabled = false; });
+      return;
+    }
+    steps.push({d:700, start:function(){ highlight('rxPath',4); msg('A motor neurone carries the impulse to the effector.'); }, f:function(p){ along(P.motor, dotB, p); }, end:function(){ hide(dotB); }});
+    steps.push({d:550, start:function(){ highlight('rxPath',5); msg('The biceps muscle (effector) contracts...'); }, f:function(p){ var e = ease(p); setBiceps(e); setArm(26*e); }, end:function(){
+      var t = performance.now() - t0; times[m] = t; drawBars();
+      setChip($('stMove'), 'Yes', 'good'); moved = true;
+    }});
+    steps.push({d:500, start:function(){ highlight('rxPath',6);
+      msg(m === 'reflex' ? '...and the hand is pulled away. Notice: the pain is felt after the hand has moved.' : '...and the hand is pulled away. A voluntary response is slower than a reflex.');
+      $('heat').setAttribute('opacity', .6);
+    }});
+    rx.run(steps, function(){ $('rxGo').disabled = false; });
+  }
+  function drawBars(){
+    var max = Math.max(times.reflex || 0, times.voluntary || 0, 1);
+    $('barR').style.width = times.reflex ? (times.reflex/max*100)+'%' : '0';
+    $('barV').style.width = times.voluntary ? (times.voluntary/max*100)+'%' : '0';
+  }
+  $('rxGo').addEventListener('click', rxGo);
+  $('rxReset').addEventListener('click', rxReset);
+  document.querySelectorAll('input[name=rxDmg], input[name=rxMode]').forEach(function(r){ r.addEventListener('change', rxReset); });
+  rxReset();
+
+  /* =========================================================
+     SYNAPSE
+     ========================================================= */
+  var syn = new Runner();
+  var REC_Y = [118, 144, 170, 196, 222];
+  var VES = [[336,132],[360,160],[330,182],[362,206],[342,212]];
+  var NT = [];
+  function synReset(){
+    syn.cancel();
+    var r = '';
+    REC_Y.forEach(function(y){ r += '<rect class="s-rec" x="'+(426 + (Math.abs(y-170)/80)*8).toFixed(1)+'" y="'+(y-7)+'" width="8" height="14" rx="2"/>'; });
+    $('recs').innerHTML = r;
+    var v = '';
+    VES.forEach(function(p, i){
+      v += '<g class="ves" data-i="'+i+'" transform="translate('+p[0]+' '+p[1]+')"><circle class="s-ves" r="13"/>' +
+           '<circle class="s-nt" r="3" cx="-4" cy="-4"/><circle class="s-nt" r="3" cx="5" cy="-2"/><circle class="s-nt" r="3" cx="-2" cy="5"/></g>';
+    });
+    $('vesicles').innerHTML = v;
+    $('nts').innerHTML = '';
+    NT = [];
+    hide($('synDot1')); hide($('synDot2'));
+    $('n2').style.fill = '';
+    highlight('synPath', -1);
+    $('synMsg').textContent = 'Press "Send an impulse" to start.';
+    $('synGo').disabled = false;
+  }
+  function makeNT(){
+    var g = $('nts'), html = '';
+    NT = [];
+    var k = 0;
+    VES.forEach(function(p, i){
+      for(var j=0;j<3;j++){
+        var start = [392, 140 + i*14 + j*4];
+        var bind = k < REC_Y.length;
+        var target = bind ? [422 + (Math.abs(REC_Y[k]-170)/80)*8, REC_Y[k]] : [400 + Math.random()*16, 110 + Math.random()*120];
+        NT.push({s:start, t:target, w:Math.random()*Math.PI*2, bind:bind});
+        html += '<circle class="s-nt" r="4" cx="'+start[0]+'" cy="'+start[1]+'"/>';
+        k++;
+      }
+    });
+    g.innerHTML = html;
+  }
+  function synGo(){
+    synReset(); $('synGo').disabled = true;
+    var ves = document.querySelectorAll('#vesicles .ves');
+    var n1L = 300;
+    syn.run([
+      {d:1100, start:function(){ highlight('synPath',0); $('synMsg').textContent = 'An electrical impulse travels along neurone 1 and arrives at the end.'; },
+        f:function(p){ var x = 10 + (n1L-10)*p; $('synDot1').setAttribute('cx', x); $('synDot1').setAttribute('cy', 170); }, end:function(){ hide($('synDot1')); }},
+      {d:900, start:function(){ highlight('synPath',1); $('synMsg').textContent = 'Vesicles move to the membrane and release neurotransmitter into the gap.'; },
+        f:function(p){ var e = ease(p); ves.forEach(function(v, i){ var x = VES[i][0] + (384 - VES[i][0])*e; v.setAttribute('transform','translate('+x.toFixed(1)+' '+VES[i][1]+')'); v.style.opacity = (1 - e*.85).toFixed(2); }); },
+        end:function(){ makeNT(); }},
+      {d:1600, start:function(){ highlight('synPath',2); $('synMsg').textContent = 'Neurotransmitter diffuses across the synapse.'; },
+        f:function(p){ var e = ease(p); var cs = document.querySelectorAll('#nts circle');
+          NT.forEach(function(n, i){ var x = n.s[0] + (n.t[0]-n.s[0])*e, y = n.s[1] + (n.t[1]-n.s[1])*e + Math.sin(n.w + p*10)*4*(1-e);
+            cs[i].setAttribute('cx', x.toFixed(1)); cs[i].setAttribute('cy', y.toFixed(1)); }); }},
+      {d:700, start:function(){ highlight('synPath',3); $('synMsg').textContent = 'Neurotransmitter binds to receptor molecules on neurone 2.'; },
+        f:function(p){ var rs = document.querySelectorAll('#recs rect'); rs.forEach(function(r){ r.style.fill = p > .3 ? 'var(--impulse)' : ''; }); }},
+      {d:1200, start:function(){ highlight('synPath',4); $('synMsg').textContent = 'A new electrical impulse starts in neurone 2 and travels on.'; $('n2').style.fill = 'var(--accent-soft)'; },
+        f:function(p){ $('synDot2').setAttribute('cx', (440 + 340*p).toFixed(1)); $('synDot2').setAttribute('cy', 170); }, end:function(){ hide($('synDot2')); }}
+    ], function(){ $('synGo').disabled = false; $('synGo').textContent = 'Send another impulse'; });
+  }
+  $('synGo').addEventListener('click', synGo);
+  $('synReset').addEventListener('click', function(){ synReset(); $('synGo').textContent = 'Send an impulse'; });
+  synReset();
+
+  /* =========================================================
+     STIMULUS → RESPONSE
+     ========================================================= */
+  var SC = [
+    {n:'Hot plate', s:'Heat', r:'Receptors in the skin', c:'Spinal cord (relay neurone)', e:'Biceps muscle', o:'Hand pulled away', t:'Reflex: automatic and rapid.'},
+    {n:'Bright light', s:'Bright light', r:'Rods and cones in the retina', c:'Brain (unconscious part)', e:'Circular muscles of the iris', o:'Pupil constricts', t:'Reflex: automatic and rapid.'},
+    {n:'Dust in the eye', s:'Dust touches the eye', r:'Touch receptors on the surface of the eye', c:'Brain (unconscious part)', e:'Eyelid muscles', o:'Blinking', t:'Reflex: automatic and rapid.'},
+    {n:'Smell of food', s:'Chemicals in the air', r:'Receptors in the nose', c:'Brain', e:'Salivary glands', o:'Saliva is released', t:'Automatic response. Here the effector is a gland, not a muscle.'},
+    {n:'Someone calls your name', s:'Sound', r:'Receptors in the ear', c:'Brain (conscious decision)', e:'Neck muscles', o:'You turn your head', t:'Voluntary response: you decide to do it, so it is slower than a reflex.'}
+  ];
+  var scenBtns = $('scenBtns');
+  SC.forEach(function(sc, i){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'scen'+i; b.textContent = sc.n;
+    b.addEventListener('click', function(){ pickScen(i); });
+    scenBtns.appendChild(b);
+  });
+  function pickScen(i){
+    var sc = SC[i];
+    scenBtns.querySelectorAll('button').forEach(function(b, j){ b.setAttribute('aria-pressed', j===i ? 'true' : 'false'); });
+    var rows = [['Stimulus', sc.s],['Receptor', sc.r],['Coordinator', sc.c],['Effector', sc.e],['Response', sc.o]];
+    $('scen').innerHTML = rows.map(function(r){ return '<div><span class="role">'+r[0]+'</span><b>'+r[1]+'</b></div>'; }).join('');
+    $('scenType').textContent = sc.t;
+  }
+  pickScen(0);
+
+  var ORDER = ['Stimulus','Receptor','Sensory neurone','CNS (brain or spinal cord)','Motor neurone','Effector','Response'];
+  var nextIdx = 0;
+  function buildOrder(){
+    nextIdx = 0;
+    var pool = $('orderPool'), done = $('orderDone');
+    pool.innerHTML = ''; done.innerHTML = '';
+    var shuffled = ORDER.map(function(x, i){ return {x:x, i:i, r:Math.random()}; }).sort(function(a,b){ return a.r - b.r; });
+    shuffled.forEach(function(it){
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'tile'; b.id = 'tile'+it.i; b.textContent = it.x;
+      b.addEventListener('click', function(){
+        if(it.i === nextIdx){
+          b.classList.add('placed'); b.disabled = true;
+          done.appendChild(b); nextIdx++;
+          if(nextIdx === ORDER.length){
+            var ok = document.createElement('span'); ok.className = 'chip good'; ok.textContent = 'Correct order!'; done.appendChild(ok);
+          } else {
+            var arrow = document.createElement('span'); arrow.textContent = '→'; arrow.setAttribute('aria-hidden','true'); arrow.style.alignSelf = 'center'; done.appendChild(arrow);
+          }
+        } else {
+          b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+          setTimeout(function(){ b.classList.remove('shake'); }, 400);
+        }
+      });
+      pool.appendChild(b);
+    });
+  }
+  $('orderReset').addEventListener('click', buildOrder);
+  buildOrder();
+
+  /* =========================================================
+     QUIZ
+     ========================================================= */
+  var Q = [
+    {q:'What makes up the central nervous system (CNS)?', o:['The brain and spinal cord','The brain and nerves','The spinal cord and muscles','All the neurones in the body'], a:0, w:'The CNS is the brain and the spinal cord. Nerves link it to the sense organs.'},
+    {q:'Which neurone carries impulses from a receptor to the CNS?', o:['Motor neurone','Relay neurone','Sensory neurone','Effector neurone'], a:2, w:'Sensory neurones carry impulses from receptors to the CNS.'},
+    {q:'In the hot plate reflex, where is the relay neurone?', o:['In the skin','In the spinal cord','In the biceps muscle','In the hand'], a:1, w:'The relay neurone is inside the spinal cord. It links the sensory neurone to the motor neurone.'},
+    {q:'What is the effector in the hot plate reflex?', o:['The receptor in the skin','The spinal cord','The biceps muscle','The heat'], a:2, w:'The effector carries out the response. The biceps muscle contracts and pulls the hand away.'},
+    {q:'Why are reflexes faster than voluntary responses?', o:['Impulses travel faster in reflexes','The conscious part of the brain is not involved','Reflexes use hormones','Reflexes have no neurones'], a:1, w:'In a reflex the brain does not need to make a decision, so the response is very fast.'},
+    {q:'A person’s motor neurone is damaged. They touch a hot plate. What happens?', o:['They feel pain but the hand does not move','The hand moves but they feel no pain','They feel nothing and the hand does not move','Nothing changes'], a:0, w:'Sensory impulses still reach the CNS and brain, so pain is felt. But no impulse reaches the muscle, so there is no response. Try it in tab 1.'},
+    {q:'What is a synapse?', o:['A type of neurone','A tiny gap between two neurones','A receptor in the skin','A chemical messenger'], a:1, w:'A synapse is the tiny gap between two neurones.'},
+    {q:'How does neurotransmitter cross the synapse?', o:['By diffusion','As an electrical impulse','In the blood','By osmosis'], a:0, w:'The neurotransmitter diffuses across the gap from a high to a low concentration.'},
+    {q:'What happens when neurotransmitter binds to the next neurone?', o:['The neurone dies','A new electrical impulse starts','The synapse closes','A hormone is released into the blood'], a:1, w:'Binding to the receptors starts a new electrical impulse in the next neurone.'},
+    {q:'Which of these is an effector?', o:['The retina','A gland','The spinal cord','A sensory neurone'], a:1, w:'Effectors are muscles or glands.'}
+  ];
+  var scoreEl = $('score'), quiz = $('quiz'), got = 0, done = 0;
+  function buildQuiz(){
+    quiz.innerHTML = ''; got = 0; done = 0; scoreEl.textContent = '0 / ' + Q.length; scoreEl.className = 'chip';
+    Q.forEach(function(item, qi){
+      var box = document.createElement('div'); box.className = 'card';
+      var p = document.createElement('p'); p.style.margin = '0'; p.style.fontWeight = '700'; p.textContent = (qi+1) + '. ' + item.q; box.appendChild(p);
+      var opts = document.createElement('div'); opts.style.display = 'grid'; opts.style.gap = '6px';
+      var why = document.createElement('p'); why.className = 'note'; why.hidden = true; why.textContent = item.w;
+      item.o.forEach(function(txt, oi){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'q'+qi+'o'+oi; b.textContent = txt;
+        b.style.textAlign = 'left'; b.style.fontWeight = '400'; b.style.fontSize = '1rem';
+        b.addEventListener('click', function(){
+          var all = opts.querySelectorAll('button');
+          all.forEach(function(x){ x.disabled = true; x.style.opacity = '1'; });
+          var right = all[item.a];
+          right.style.background = 'var(--good-soft)'; right.style.borderColor = 'var(--good)'; right.style.color = 'var(--good)'; right.style.fontWeight = '700';
+          if(oi !== item.a){ b.style.background = 'var(--bad-soft)'; b.style.borderColor = 'var(--bad)'; b.style.color = 'var(--bad)'; } else got++;
+          done++; why.hidden = false;
+          scoreEl.textContent = got + ' / ' + Q.length + (done === Q.length ? ' · finished' : '');
+          if(done === Q.length) scoreEl.className = 'chip good';
+        });
+        opts.appendChild(b);
+      });
+      box.appendChild(opts); box.appendChild(why); quiz.appendChild(box);
+    });
+  }
+  $('resetQuiz').addEventListener('click', buildQuiz);
+  buildQuiz();
+})();
+</script>
+
+</body></html>

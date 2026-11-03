@@ -1,0 +1,347 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<title>Enzyme Temperature Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a lab bench — tabbed stations, each with the apparatus + controls on the left and the results book on the right */
+:root{
+  --bg:#eef2ef; --panel:#ffffff; --ink:#18241f; --muted:#56655e; --line:#cfd8d3;
+  --leaf:#2f7d4f; --leaf-soft:#dcefe3; --lamp:#f2b632; --water:#cfe6f2; --water-edge:#7fb0c8;
+  --warn:#b4501e; --warn-soft:#fbe9df; --ok:#2f7d4f; --ok-soft:#e1f2e7; --navy:#1d2140; --iodine:#c9772a;
+  --scene:#f7faf8; --glass:#ffffff;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,38px);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:2px 0 0}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--leaf)}
+nav.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+nav.tabs button{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:10px 16px;border-radius:999px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+nav.tabs button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:3px solid var(--lamp);outline-offset:2px}
+.station{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.station{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 4px}
+.card h3{font-size:15px;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.aim{margin:0 0 10px;color:var(--muted)}
+svg.scene{width:100%;height:auto;display:block;background:var(--scene);border-radius:10px;border:1px solid var(--line)}
+.controls{display:grid;gap:12px;margin-top:12px}
+.ctrl{display:grid;gap:4px}
+.ctrl label,.ctrl .lbl{font-weight:700}
+.ctrl .val{font-family:var(--mono);color:var(--leaf)}
+input[type=range]{width:100%;accent-color:var(--leaf)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--leaf);background:var(--leaf-soft);font-weight:700}
+.iv{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.iv .chip{border:2px dashed var(--leaf);border-radius:8px;padding:4px 10px;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-weight:700;border:0;background:var(--leaf);color:var(--panel);padding:10px 16px;border-radius:10px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.readout{font-family:var(--mono);font-size:15px;background:var(--scene);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.msg{border-radius:10px;padding:10px 12px;margin-top:10px}
+.msg.ok{background:var(--ok-soft)}
+.msg.warn{background:var(--warn-soft)}
+.msg>b:first-child{display:block}
+.check{display:flex;gap:8px;align-items:center;font-weight:700}
+.check input{width:20px;height:20px;accent-color:var(--leaf)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--scene);font-size:14px}
+td.mean{font-weight:700;color:var(--leaf)}
+td .x{font:inherit;border:0;background:none;color:var(--muted);cursor:pointer;text-decoration:underline}
+.empty{color:var(--muted);font-style:italic;padding:10px 0}
+.fair{margin-top:8px}
+svg.graph{width:100%;height:auto;display:block}
+.graph text{fill:var(--ink);font-family:var(--body);font-size:12px}
+.graph .axis{stroke:var(--ink)}
+.graph .grid{stroke:var(--line)}
+.graph .pt{fill:var(--leaf)}
+.graph .ln{stroke:var(--leaf);fill:none;stroke-width:2.5}
+.graph .bar{fill:var(--leaf)}
+.limit{font-weight:700}
+.steps{display:grid;gap:8px}
+.step{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.step .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--scene);border:2px solid var(--line);font-weight:700}
+.step.done .n{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+.step.now{border-color:var(--leaf)}
+.step p{margin:2px 0 6px;color:var(--muted)}
+.pred{display:grid;gap:6px;margin-top:6px}
+.pred .prow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pred .prow span{min-width:180px;font-weight:700}
+.key{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.key span{display:flex;gap:6px;align-items:center}
+.sw{width:18px;height:18px;border-radius:4px;border:1px solid var(--line);display:inline-block}
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.reffig{margin:0;background:#fff;border-radius:10px;padding:8px;border:1px solid var(--line)}
+.reffig img{width:100%;height:auto;display:block}
+.reffig figcaption{font-size:12px;color:#56655e;text-align:right}
+footer{color:var(--muted);font-size:13px;margin-top:20px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.wide{grid-column:1/-1}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatches div{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--scene)}
+.swatches i{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);display:inline-block}
+select{font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.small{font-size:13px;color:var(--muted)}
+</style>
+<div class="wrap">
+<header class="top"><div>
+  <div class="tag">Core Practical · Biology</div>
+  <h1>Enzyme Temperature Lab</h1>
+  <p class="sub">How does temperature affect how fast amylase digests starch? Test at different temperatures, repeat, and find the optimum.</p>
+</div></header>
+
+
+<section id="st-x" class="station">
+  <div class="card">
+    <h2>Amylase, starch and temperature</h2>
+    <p class="aim">Amylase digests starch into maltose. Every 30 seconds, put one drop of the mixture into iodine on a spotting tile. When the iodine <b>stays orange-brown</b>, all the starch has gone.</p>
+    <div class="swatches"><div><i style="background:#1d2140"></i>blue-black = starch still there</div><div><i style="background:#c9772a"></i>orange-brown = no starch left</div></div>
+    <svg class="scene" id="scene" viewBox="0 0 600 270" role="img" aria-label="A water bath with a test tube of amylase and starch, and a spotting tile with iodine" style="margin-top:10px"></svg>
+    <div class="controls">
+      <div class="ctrl"><span class="lbl">Water bath temperature</span>
+        <div class="seg" id="temp">
+          <button data-v="10" aria-pressed="false">10 °C</button><button data-v="20" aria-pressed="false">20 °C</button><button data-v="30" aria-pressed="false">30 °C</button><button data-v="40" aria-pressed="true">40 °C</button><button data-v="50" aria-pressed="false">50 °C</button><button data-v="60" aria-pressed="false">60 °C</button><button data-v="70" aria-pressed="false">70 °C</button>
+        </div></div>
+      <label class="check"><input type="checkbox" id="pre" checked> Leave the amylase and starch tubes in the water bath for 5 minutes before mixing</label>
+      <div class="row">
+        <button class="btn" id="go">Mix and start the stopwatch</button>
+        <span class="readout" id="clock">00:00</span>
+      </div>
+      <p class="small">The stopwatch runs 15× faster than real time. The test stops after 10 minutes.</p>
+      <p class="aim"><b>Control variables:</b> same volume and concentration of amylase and starch, same pH (add a pH buffer), test every 30 seconds.</p>
+      <div id="msg" class="msg" hidden></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Results</h2>
+    <p class="aim">The time is recorded when the first drop stays orange-brown. Do 3 repeats at each temperature. The rows already here are example results.</p>
+    <div class="tablewrap"><table id="tbl"></table></div>
+    <div id="fair" class="msg warn fair" hidden></div>
+    <h3>Graph</h3>
+    <div class="row"><span class="lbl">y-axis:</span>
+      <div class="seg" id="ymode"><button data-v="t" aria-pressed="true">time (s)</button><button data-v="r" aria-pressed="false">rate (1000 ÷ time)</button></div></div>
+    <svg class="graph" id="graph" viewBox="0 0 460 280" role="img" aria-label="Graph of results against temperature"></svg>
+    <p class="small" id="note">Rate = 1000 ÷ time. A shorter time means a faster rate.</p>
+    <div class="row"><button class="btn alt" id="clear">Clear results</button></div>
+  </div>
+</section>
+
+<footer>Simulated results based on the Edexcel International GCSE enzymes practical. Real enzymes vary more than this model.</footer>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const VP=['fill','stroke','font-family','stop-color'];
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a){const v=String(a[k]);if(VP.includes(k)&&v.includes('var('))e.style.setProperty(k,v);else e.setAttribute(k,v)}if(p)p.appendChild(e);return e};
+document.querySelectorAll('svg *').forEach(n=>{[...n.attributes].forEach(at=>{if(VP.includes(at.name)&&at.value.includes('var(')){n.style.setProperty(at.name,at.value);n.removeAttribute(at.name)}})});
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const tabsEls=[...document.querySelectorAll('nav.tabs button')];
+tabsEls.forEach(b=>b.addEventListener('click',()=>{
+  tabsEls.forEach(x=>x.setAttribute('aria-selected',x===b));
+  tabsEls.forEach(x=>{const st=document.getElementById('st-'+x.dataset.st);if(st)st.hidden=(x!==b)});
+}));
+const isOn=id=>!document.getElementById(id).hidden;
+function seg(id,onChange){
+  const box=$(id);
+  box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));onChange(b.dataset.v)});
+  return ()=>box.querySelector('[aria-pressed="true"]').dataset.v;
+}
+function setSeg(id,v){$(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===String(v)))}
+function showMsg(id,kind,title,body){const m=$(id);m.hidden=false;m.className='msg '+kind;m.innerHTML='<b>'+title+'</b>'+body}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function mkHead(t,cols){ // cols: [[text,rowspan,colspan]...] rows
+  const th0=t.createTHead();cols.forEach(rw=>{const r=th0.insertRow();rw.forEach(([x,rs,cs])=>{const th=document.createElement('th');th.textContent=x;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;r.appendChild(th)})});
+}
+function barChart(g,labels,vals,yLabel,xLabel,colours){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const yMaxRaw=Math.max(1,...vals.filter(v=>v!=null));const st=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/st)*st;
+  const sy=v=>H-B-(v/yMax)*(H-B-T);
+  for(let v=0;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  const bw=(W-L-R)/Math.max(labels.length,1);
+  labels.forEach((lb,i)=>{const v=vals[i];const x=L+i*bw+bw*.18;
+    if(v!=null)el('rect',{x,y:sy(v),width:bw*.64,height:H-B-sy(v),class:'bar',fill:colours?colours[i]:'var(--leaf)'},g);
+    const t=el('text',{x:x+bw*.32,y:H-B+16,'text-anchor':'middle','font-size':11},g);t.textContent=lb});
+}
+function lineChart(g,pts,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const ys=pts.map(p=>p.y);const yMinRaw=Math.min(0,...ys);const yMaxRaw=Math.max(1,...ys);
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xs=pts.map(p=>p.x);const xMaxRaw=Math.max(1e-9,...xs, opts.xMax||0);const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;const xMin=opts.xMin||0;
+  const sx=v=>L+((v-xMin)/(xMax-xMin))*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(3)}
+  for(let v=xMin;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:sy(Math.max(0,yMin)),y2:sy(Math.max(0,yMin)),class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+  const sorted=[...pts].sort((a,b)=>a.x-b.x);
+  if(!opts.noLine)el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+  sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+}
+function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+function Book(opts){
+  // opts: table, graph, fair, ivLabel(), unitLabel, fmt, controls(), isBar(), xMode()
+  const st={rows:new Map(),snap:null,changed:new Set()};
+  function add(iv,val,controlSnap){
+    if(!st.snap) st.snap=controlSnap;
+    for(const k in controlSnap) if(st.snap[k]!==controlSnap[k]) st.changed.add(k);
+    const arr=st.rows.get(iv)||[];
+    if(arr.length>=3) return false;
+    arr.push(val);st.rows.set(iv,arr);render();return true;
+  }
+  function count(iv){return (st.rows.get(iv)||[]).length}
+  function clear(){st.rows.clear();st.snap=null;st.changed.clear();render()}
+  function del(iv){st.rows.delete(iv);if(!st.rows.size){st.snap=null;st.changed.clear()}render()}
+  function mean(a){const n=a.filter(v=>v!=null);return n.length?n.reduce((s,v)=>s+v,0)/n.length:null}
+  function render(){
+    const t=opts.table;t.innerHTML='';
+    const keys=[...st.rows.keys()].sort(opts.sort);
+    const th0=t.createTHead();const h1=th0.insertRow(),h=th0.insertRow();
+    const mk=(row,txt,rs,cs)=>{const th=document.createElement('th');th.textContent=txt;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;row.appendChild(th)};
+    mk(h1,opts.ivLabel(),2);mk(h1,typeof opts.dvHead==='function'?opts.dvHead():opts.dvHead,0,4);mk(h1,'',2);
+    ['Trial 1','Trial 2','Trial 3','Mean'].forEach(x=>mk(h,x));
+    const tb=t.createTBody();
+    if(!keys.length){const r=tb.insertRow();const c=r.insertCell();c.colSpan=6;c.className='empty';c.textContent='No results yet. Set up, then press the button to measure.'}
+    keys.forEach(k=>{const r=tb.insertRow();const a=st.rows.get(k);
+      r.insertCell().textContent=opts.fmtIV(k);
+      for(let i=0;i<3;i++)r.insertCell().textContent=a[i]===undefined?'':(a[i]===null?(opts.nullLabel||'none'):opts.fmt(a[i]));
+      const m=r.insertCell();m.className='mean';const mv=mean(a);m.textContent=mv==null?(a.length?'–':''):opts.fmt(mv,true);
+      const x=r.insertCell();const b=document.createElement('button');b.className='x';b.textContent='delete';b.onclick=()=>del(k);x.appendChild(b)});
+    if(st.changed.size){opts.fair.hidden=false;opts.fair.innerHTML='<b>Not a fair test</b>You changed: '+[...st.changed].join(', ')+'. Only the independent variable should change. Clear the results and start again.'}
+    else opts.fair.hidden=true;
+    if(opts.graphFn) opts.graphFn(keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null)); else graph(keys);
+  }
+  function graph(keys){
+    const g=opts.graph;g.innerHTML='';
+    const W=460,H=280,L=58,R=14,T=14,B=52;
+    const pts=keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null);
+    const yMaxRaw=Math.max(1,...pts.map(p=>p.y));
+    const step=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/step)*step||step*5;
+    const sy=v=>H-B-(v/yMax)*(H-B-T);
+    for(let v=0;v<=yMax+1e-9;v+=step){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+    el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+    const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=opts.yLabel;
+    const xl=el('text',{x:(L+W-R)/2,y:H-10,'text-anchor':'middle'},g);xl.textContent=opts.xLabel();
+    if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+    if(opts.isBar()){
+      const bw=(W-L-R)/Math.max(pts.length,1);
+      pts.forEach((p,i)=>{const x=L+i*bw+bw*.2;el('rect',{x,y:sy(p.y),width:bw*.6,height:H-B-sy(p.y),class:'bar',fill:opts.barColour?opts.barColour(p.k):'var(--leaf)'},g);
+        const t=el('text',{x:x+bw*.3,y:H-B+16,'text-anchor':'middle'},g);t.textContent=opts.fmtIV(p.k)});
+      return;
+    }
+    const xs=pts.map(p=>opts.xVal(p.k));const xMaxRaw=Math.max(...xs,1e-9);
+    const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+    const sx=v=>L+(v/xMax)*(W-L-R);
+    for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+    const sorted=pts.map(p=>({x:opts.xVal(p.k),y:p.y})).sort((a,b)=>a.x-b.x);
+    el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+    sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+  }
+  function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+  render();
+  return {add,count,clear,render,rows:st.rows};
+}
+
+function multiLine(g,series,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const all=series.flatMap(s=>s.pts);
+  const yMinRaw=opts.yMin!=null?opts.yMin:Math.min(0,...all.map(p=>p.y));const yMaxRaw=Math.max(opts.yMaxMin||1,...all.map(p=>p.y));
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xMaxRaw=Math.max(opts.xMax||1,...all.map(p=>p.x));const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+  const sx=v=>L+(v/xMax)*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  series.forEach((s,i)=>{const p=[...s.pts].sort((a,b)=>a.x-b.x);
+    if(p.length>1)el('polyline',{points:p.map(q=>sx(q.x)+','+sy(q.y)).join(' '),fill:'none',stroke:s.colour,'stroke-width':2.5,'stroke-dasharray':s.dash||''},g);
+    p.forEach(q=>el('circle',{cx:sx(q.x),cy:sy(q.y),r:4.5,fill:s.colour},g));
+    const lx=L+10+i*150;el('rect',{x:lx,y:T+2,width:14,height:4,fill:s.colour},g);const t=el('text',{x:lx+20,y:T+8,'font-size':12},g);t.textContent=s.name});
+}
+
+
+const S={T:40,pre:true,run:false,t:0,wells:[],k:0,done:false,ymode:'t'};
+function fT(T){if(T<=40)return 2**((T-40)/10);return {50:.35,60:.05,70:0}[T]??0}
+function kFor(){const Te=S.pre?S.T:(S.T+20)/2;const f=Te<=40?2**((Te-40)/10):Math.max(0,1-(Te-40)/22)**2.4;return 1.9/75*(S.pre?fT(S.T):f)*Math.exp(gauss()*.06)}
+function draw(){
+  const svg=$('#scene');svg.innerHTML='';
+  el('rect',{x:20,y:110,width:200,height:130,rx:8,fill:'var(--water)',stroke:'var(--water-edge)','stroke-width':2},svg);
+  const t1=el('text',{x:120,y:232,'text-anchor':'middle','font-size':13,fill:'var(--ink)'},svg);t1.textContent='water bath '+S.T+' °C';
+  el('path',{d:'M100 40 L100 200 A20 20 0 0 0 140 200 L140 40',fill:'var(--glass)',stroke:'var(--muted)','stroke-width':2},svg);
+  const S0=S.run||S.done?Math.exp(-S.k*S.t):1;
+  const mix=S.run||S.done?mixCol(S0):'#f1f1ea';
+  el('path',{d:'M102 120 L102 200 A18 18 0 0 0 138 200 L138 120 Z',fill:mix},svg);
+  const t2=el('text',{x:120,y:30,'text-anchor':'middle','font-size':12,fill:'var(--ink)'},svg);t2.textContent='amylase + starch';
+  // spotting tile 4x5
+  el('rect',{x:270,y:40,width:310,height:200,rx:10,fill:'#fbfbfb',stroke:'var(--line)'},svg);
+  for(let i=0;i<20;i++){const r=Math.floor(i/5),c=i%5;const x=300+c*62,y=70+r*48;
+    const w=S.wells[i];el('circle',{cx:x,cy:y,r:18,fill:w?w:'#ececec',stroke:'#cfd8d3','stroke-width':2},svg);
+    const t=el('text',{x:x,y:y+32,'text-anchor':'middle','font-size':10,fill:'#56655e'},svg);t.textContent=((i+1)*30)+' s'}
+}
+function mixCol(s){return s>0.5?'#f1f1ea':'#f5f3ec'}
+function wellCol(s){return s>0.35?'#1d2140':s>0.15?'#4a3a33':'#c9772a'}
+const book=Book({table:$('#tbl'),graph:$('#graph'),fair:$('#fair'),ivLabel:()=>'Temperature (°C)',dvHead:'Time for starch to disappear (s)',
+  fmt:(v,m)=>m?v.toFixed(0):String(v),nullLabel:'> 600',yLabel:'',fmtIV:k=>String(k),sort:(a,b)=>a-b,isBar:()=>false,xVal:k=>+k,xLabel:()=>'Temperature (°C)',
+  graphFn:pts=>{const P=pts.map(p=>({x:+p.k,y:S.ymode==='t'?p.y:1000/p.y}));lineChart($('#graph'),P,S.ymode==='t'?'Mean time (s)':'Rate (1000 ÷ time)','Temperature (°C)',{xMax:70})}});
+let last=performance.now();
+function loop(now){const dt=Math.min(.1,(now-last)/1000);last=now;
+  if(S.run){S.t+=dt*15;const n=Math.min(20,Math.floor(S.t/30));
+    for(let i=S.wells.filter(Boolean).length;i<n;i++){const s=Math.exp(-S.k*(i+1)*30);S.wells[i]=wellCol(s);
+      if(s<=0.15&&!S.done){S.done=true;S.run=false;const time=(i+1)*30;book.add(S.T,time,{pre:S.pre?'yes':'no'});
+        showMsg('#msg','ok','The starch has gone','The drop at <b>'+time+' s</b> stayed orange-brown. Time recorded: '+time+' s.');$('#go').disabled=false;break}}
+    if(S.run&&S.t>=600){S.run=false;S.done=true;book.add(S.T,null,{pre:S.pre?'yes':'no'});$('#go').disabled=false;
+      showMsg('#msg','warn','Starch still there after 10 minutes',S.T>=60?'At '+S.T+' °C the amylase is <b>denatured</b>: its active site has changed shape, so starch no longer fits. Recorded as "> 600".':'The reaction is very slow. Recorded as "> 600".')}
+    $('#clock').textContent=String(Math.floor(S.t/60)).padStart(2,'0')+':'+String(Math.floor(S.t%60)).padStart(2,'0');draw()}
+  requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+$('#go').onclick=()=>{if(book.count(S.T)>=3){showMsg('#msg','warn','Three repeats done','Choose another temperature or delete that row.');return}
+  S.k=kFor();S.t=0;S.wells=[];S.done=false;S.run=true;$('#go').disabled=true;$('#msg').hidden=true;
+  if(!S.pre)showMsg('#msg','warn','Not at the right temperature yet','The tubes were not left in the water bath first, so the mixture started at room temperature. This result is less accurate.')};
+seg('#temp',v=>{if(S.run)return;S.T=+v;S.wells=[];S.done=false;S.t=0;$('#clock').textContent='00:00';draw()});
+seg('#ymode',v=>{S.ymode=v;book.render()});
+$('#pre').onchange=e=>{S.pre=e.target.checked};
+$('#clear').onclick=()=>book.clear();
+[[20,[300,330,300]],[30,[150,150,180]],[60,[null,null,null]]].forEach(([T,a])=>a.forEach(v=>book.add(T,v,{pre:'yes'})));
+draw();
+
+})();
+</script>
+
+</body></html>

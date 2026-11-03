@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>Photosynthesis Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a lab bench — tabbed stations, each with the apparatus + controls on the left and the results book on the right */
+:root{
+  --bg:#eef2ef; --panel:#ffffff; --ink:#18241f; --muted:#56655e; --line:#cfd8d3;
+  --leaf:#2f7d4f; --leaf-soft:#dcefe3; --lamp:#f2b632; --water:#cfe6f2; --water-edge:#7fb0c8;
+  --warn:#b4501e; --warn-soft:#fbe9df; --ok:#2f7d4f; --ok-soft:#e1f2e7; --navy:#1d2140; --iodine:#c9772a;
+  --scene:#f7faf8; --glass:#ffffff;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,38px);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:2px 0 0}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--leaf)}
+nav.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+nav.tabs button{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:10px 16px;border-radius:999px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+nav.tabs button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:3px solid var(--lamp);outline-offset:2px}
+.station{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.station{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 4px}
+.card h3{font-size:15px;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.aim{margin:0 0 10px;color:var(--muted)}
+svg.scene{width:100%;height:auto;display:block;background:var(--scene);border-radius:10px;border:1px solid var(--line)}
+.controls{display:grid;gap:12px;margin-top:12px}
+.ctrl{display:grid;gap:4px}
+.ctrl label,.ctrl .lbl{font-weight:700}
+.ctrl .val{font-family:var(--mono);color:var(--leaf)}
+input[type=range]{width:100%;accent-color:var(--leaf)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--leaf);background:var(--leaf-soft);font-weight:700}
+.iv{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.iv .chip{border:2px dashed var(--leaf);border-radius:8px;padding:4px 10px;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-weight:700;border:0;background:var(--leaf);color:var(--panel);padding:10px 16px;border-radius:10px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.readout{font-family:var(--mono);font-size:15px;background:var(--scene);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.msg{border-radius:10px;padding:10px 12px;margin-top:10px}
+.msg.ok{background:var(--ok-soft)}
+.msg.warn{background:var(--warn-soft)}
+.msg>b:first-child{display:block}
+.check{display:flex;gap:8px;align-items:center;font-weight:700}
+.check input{width:20px;height:20px;accent-color:var(--leaf)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--scene);font-size:14px}
+td.mean{font-weight:700;color:var(--leaf)}
+td .x{font:inherit;border:0;background:none;color:var(--muted);cursor:pointer;text-decoration:underline}
+.empty{color:var(--muted);font-style:italic;padding:10px 0}
+.fair{margin-top:8px}
+svg.graph{width:100%;height:auto;display:block}
+.graph text{fill:var(--ink);font-family:var(--body);font-size:12px}
+.graph .axis{stroke:var(--ink)}
+.graph .grid{stroke:var(--line)}
+.graph .pt{fill:var(--leaf)}
+.graph .ln{stroke:var(--leaf);fill:none;stroke-width:2.5}
+.graph .bar{fill:var(--leaf)}
+.limit{font-weight:700}
+.steps{display:grid;gap:8px}
+.step{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.step .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--scene);border:2px solid var(--line);font-weight:700}
+.step.done .n{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+.step.now{border-color:var(--leaf)}
+.step p{margin:2px 0 6px;color:var(--muted)}
+.pred{display:grid;gap:6px;margin-top:6px}
+.pred .prow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pred .prow span{min-width:180px;font-weight:700}
+.key{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.key span{display:flex;gap:6px;align-items:center}
+.sw{width:18px;height:18px;border-radius:4px;border:1px solid var(--line);display:inline-block}
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.reffig{margin:0;background:#fff;border-radius:10px;padding:8px;border:1px solid var(--line)}
+.reffig img{width:100%;height:auto;display:block}
+.reffig figcaption{font-size:12px;color:#56655e;text-align:right}
+footer{color:var(--muted);font-size:13px;margin-top:20px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<div class="wrap">
+<header class="top">
+  <div>
+    <div class="tag">Core Practical 4 · Biology</div>
+    <h1>Photosynthesis Lab</h1>
+    <p class="sub">Change one variable. Keep the others the same. Record, repeat, and look for the pattern.</p>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tab-a" aria-selected="true" data-st="a">1 · Pondweed bubbles</button>
+  <button role="tab" id="tab-b" aria-selected="false" data-st="b">2 · Floating leaf discs</button>
+  <button role="tab" id="tab-c" aria-selected="false" data-st="c">3 · Starch test: what does a leaf need?</button>
+  <button role="tab" id="tab-d" aria-selected="false" data-st="d">4 · Missing mineral solutions</button>
+</nav>
+
+<!-- ================= STATION A ================= -->
+<section id="st-a" class="station">
+  <div class="card">
+    <h2>Pondweed and a lamp</h2>
+    <p class="aim">Oxygen bubbles come off the pondweed. More bubbles per minute = faster photosynthesis.</p>
+    <svg class="scene" id="sceneA" viewBox="0 0 600 300" role="img" aria-label="A lamp shines on pondweed in a beaker of water. Bubbles of oxygen rise into an upside-down tube.">
+      <defs>
+        <linearGradient id="beamA" x1="0" x2="1"><stop offset="0" stop-opacity=".75"/><stop offset="1" stop-opacity=".15"/></linearGradient>
+      </defs>
+      <polygon id="aBeam" points="" fill="url(#beamA)"/>
+      <g id="aLamp"></g>
+      <!-- beaker -->
+      <rect x="430" y="118" width="110" height="142" rx="6" fill="var(--glass)" stroke="var(--water-edge)" stroke-width="2"/>
+      <rect x="432" y="140" width="106" height="118" fill="var(--water)"/>
+      <!-- funnel -->
+      <path d="M445 250 L470 205 L470 150 L490 150 L490 205 L515 250" fill="none" stroke="var(--water-edge)" stroke-width="2"/>
+      <!-- collecting tube -->
+      <rect x="466" y="60" width="28" height="110" rx="12" fill="var(--glass)" fill-opacity=".6" stroke="var(--water-edge)" stroke-width="2"/>
+      <rect id="aGas" x="468" y="62" width="24" height="0" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <!-- pondweed -->
+      <g id="aWeed" stroke="var(--leaf)" stroke-width="3" fill="none" stroke-linecap="round"></g>
+      <g id="aBubbles"></g>
+      <!-- thermometer -->
+      <rect x="520" y="70" width="8" height="180" rx="4" fill="var(--panel)" stroke="var(--muted)"/>
+      <circle cx="524" cy="250" r="8" fill="var(--warn)"/>
+      <rect id="aMerc" x="522" y="150" width="4" height="100" fill="var(--warn)"/>
+      <text id="aTempTxt" x="545" y="80" font-family="var(--mono)" font-size="14" fill="var(--ink)">25 °C</text>
+      <!-- bench and ruler -->
+      <line x1="0" y1="260" x2="600" y2="260" stroke="var(--muted)" stroke-width="2"/>
+      <g id="aRuler"></g>
+      <g id="aSplint" opacity="0"></g>
+    </svg>
+
+    <div class="controls">
+      <div class="ctrl">
+        <span class="lbl">What will you change? (independent variable)</span>
+        <div class="seg" id="aIV">
+          <button data-v="dist" aria-pressed="true">Lamp distance</button>
+          <button data-v="colour" aria-pressed="false">Light colour</button>
+          <button data-v="co2" aria-pressed="false">Carbon dioxide</button>
+          <button data-v="temp" aria-pressed="false">Temperature</button>
+        </div>
+      </div>
+      <div class="ctrl">
+        <label for="aDist">Lamp distance <span class="val" id="aDistV">10 cm</span></label>
+        <input type="range" id="aDist" min="2" max="50" step="1" value="10">
+      </div>
+      <div class="ctrl">
+        <span class="lbl">Light colour</span>
+        <div class="seg" id="aColour">
+          <button data-v="white" aria-pressed="true">White</button>
+          <button data-v="red" aria-pressed="false">Red</button>
+          <button data-v="blue" aria-pressed="false">Blue</button>
+          <button data-v="green" aria-pressed="false">Green</button>
+        </div>
+      </div>
+      <div class="ctrl">
+        <span class="lbl">Sodium hydrogencarbonate (gives CO₂)</span>
+        <div class="seg" id="aCO2">
+          <button data-v="0" aria-pressed="false">0%</button>
+          <button data-v="0.5" aria-pressed="false">0.5%</button>
+          <button data-v="1" aria-pressed="false">1%</button>
+          <button data-v="2" aria-pressed="true">2%</button>
+        </div>
+      </div>
+      <div class="ctrl">
+        <label for="aTemp">Water bath temperature <span class="val" id="aTempV">25 °C</span></label>
+        <input type="range" id="aTemp" min="10" max="45" step="5" value="25">
+      </div>
+      <label class="check"><input type="checkbox" id="aShield" checked> Heat shield between lamp and beaker</label>
+      <div class="row">
+        <button class="btn" id="aCount">Count bubbles for 1 minute</button>
+        <span class="readout" id="aCountR">Count: –</span>
+        <button class="btn alt" id="aTest">Test the gas</button>
+      </div>
+      <label class="check"><input type="checkbox" id="aShowLim"> Show the limiting factor</label>
+      <div id="aLim" class="msg ok" hidden></div>
+      <div id="aMsg" class="msg" hidden></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Results</h2>
+    <p class="aim" id="aAim">Count 3 times at each distance. The mean is worked out for you. The rows already here are example results: add your own at 10 cm, or press Clear results to start fresh.</p>
+    <div class="tablewrap"><table id="aTable"></table></div>
+    <div id="aFair" class="msg warn fair" hidden></div>
+    <h3>Graph</h3>
+    <div class="row" id="aXRow">
+      <span class="lbl">x-axis:</span>
+      <div class="seg" id="aX">
+        <button data-v="d" aria-pressed="true">distance (cm)</button>
+        <button data-v="i" aria-pressed="false">light intensity (1/d²)</button>
+      </div>
+    </div>
+    <svg class="graph" id="aGraph" viewBox="0 0 460 280" role="img" aria-label="Graph of mean bubbles per minute"></svg>
+    <div class="row"><button class="btn alt" id="aClear">Clear results</button></div>
+  </div>
+</section>
+
+<!-- ================= STATION B ================= -->
+<section id="st-b" class="station" hidden>
+  <div class="card">
+    <h2>Floating leaf discs</h2>
+    <p class="aim">The air has been taken out of 10 leaf discs, so they sink. When they photosynthesise, oxygen collects in them and they float. Shorter time = faster photosynthesis.</p>
+    <svg class="scene" id="sceneB" viewBox="0 0 600 300" role="img" aria-label="A lamp shines on a beaker of sodium hydrogencarbonate solution with leaf discs at the bottom.">
+      <polygon id="bBeam" points="" fill="url(#beamA)"/>
+      <g id="bLamp"></g>
+      <rect x="420" y="100" width="140" height="160" rx="6" fill="var(--glass)" stroke="var(--water-edge)" stroke-width="2"/>
+      <rect x="422" y="120" width="136" height="138" fill="var(--water)"/>
+      <g id="bDiscs"></g>
+      <line x1="0" y1="260" x2="600" y2="260" stroke="var(--muted)" stroke-width="2"/>
+      <g id="bRuler"></g>
+      <text x="430" y="92" font-size="13" fill="var(--muted)" font-family="var(--body)">sodium hydrogencarbonate solution</text>
+    </svg>
+    <div class="controls">
+      <div class="ctrl">
+        <span class="lbl">What will you change? (independent variable)</span>
+        <div class="seg" id="bIV">
+          <button data-v="dist" aria-pressed="true">Lamp distance</button>
+          <button data-v="co2" aria-pressed="false">Carbon dioxide</button>
+        </div>
+      </div>
+      <div class="ctrl">
+        <label for="bDist">Lamp distance <span class="val" id="bDistV">10 cm</span></label>
+        <input type="range" id="bDist" min="5" max="50" step="5" value="10">
+      </div>
+      <div class="ctrl">
+        <span class="lbl">Sodium hydrogencarbonate (gives CO₂)</span>
+        <div class="seg" id="bCO2">
+          <button data-v="0" aria-pressed="false">0%</button>
+          <button data-v="0.5" aria-pressed="false">0.5%</button>
+          <button data-v="1" aria-pressed="false">1%</button>
+          <button data-v="2" aria-pressed="true">2%</button>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn" id="bStart">Switch on the lamp and start the stopwatch</button>
+        <span class="readout" id="bClock">00:00</span>
+        <span class="readout" id="bFloat">Floating: 0 / 10</span>
+      </div>
+      <p class="aim">The time is recorded when <b>5 discs</b> are floating. The stopwatch runs 30× faster than real time.</p>
+      <div id="bMsg" class="msg" hidden></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Results</h2>
+    <p class="aim" id="bAim">Time for 5 discs to float, in seconds. Do 3 repeats at each distance. The rows already here are example results.</p>
+    <div class="tablewrap"><table id="bTable"></table></div>
+    <div id="bFair" class="msg warn fair" hidden></div>
+    <h3>Graph</h3>
+    <svg class="graph" id="bGraph" viewBox="0 0 460 280" role="img" aria-label="Graph of mean time for 5 discs to float"></svg>
+    <div class="row"><button class="btn alt" id="bClear">Clear results</button></div>
+  </div>
+</section>
+
+<!-- ================= STATION C ================= -->
+<section id="st-c" class="station" hidden>
+  <div class="card">
+    <h2>What does a leaf need to make starch?</h2>
+    <p class="aim">Choose an experiment. Leave the plant in the light, then test the leaf for starch.</p>
+    <div class="ctrl">
+      <span class="lbl">Experiment</span>
+      <div class="seg" id="cExp">
+        <button data-v="light" aria-pressed="true">Light: foil on part of a leaf</button>
+        <button data-v="chl" aria-pressed="false">Chlorophyll: variegated leaf</button>
+        <button data-v="co2" aria-pressed="false">Carbon dioxide: potassium hydroxide</button>
+      </div>
+    </div>
+    <label class="check" style="margin-top:10px"><input type="checkbox" id="cDestarch" checked> Destarch the plant first (48 hours in the dark)</label>
+    <svg class="scene" id="sceneC" viewBox="0 0 600 260" role="img" aria-label="The leaf or leaves being tested" style="margin-top:10px"></svg>
+    <div class="key">
+      <span><i class="sw" style="background:var(--navy)"></i> blue-black = starch</span>
+      <span><i class="sw" style="background:var(--iodine)"></i> orange-brown = no starch</span>
+    </div>
+    <div id="cMsg" class="msg" hidden></div>
+  </div>
+  <div class="card">
+    <h2>The starch test</h2>
+    <div class="steps" id="cSteps"></div>
+    <div id="cPred" class="pred" hidden></div>
+    <div class="row" style="margin-top:12px"><button class="btn alt" id="cReset">Start again with a new leaf</button></div>
+  </div>
+</section>
+
+<!-- ================= STATION D ================= -->
+<section id="st-d" class="station" hidden>
+  <div class="card" style="grid-column:1/-1">
+    <h2>What to look for</h2>
+    <p class="aim">Learn these signs first. Then use them to work out which mineral is missing in each jar.</p>
+    <div class="ref">
+      <div class="tablewrap"><table class="reftab">
+        <thead><tr><th>Solution</th><th>Why the plant needs it</th><th>What the plant looks like</th></tr></thead>
+        <tbody>
+          <tr><td><b>Complete</b> (all minerals)</td><td>Has everything it needs</td><td>Tall, strong stem, many large <b>dark green</b> leaves. Healthy growth.</td></tr>
+          <tr><td><b>No magnesium</b> (Mg²⁺)</td><td>Magnesium is needed to make <b>chlorophyll</b>. Less chlorophyll means less light is absorbed, so less photosynthesis.</td><td><b>Yellow leaves between the veins</b> (chlorosis). The veins stay green. Some growth, but less than the complete solution.</td></tr>
+          <tr><td><b>No nitrate</b> (NO₃⁻)</td><td>Nitrate is needed to make <b>amino acids</b>, which make <b>proteins</b> for growth.</td><td><b>Stunted growth</b> (short, thin stem). Small leaves. <b>Older, lower leaves turn yellow.</b></td></tr>
+          <tr><td><b>Distilled water</b> (no minerals)</td><td>No minerals at all</td><td>Very little growth. Very small, <b>pale yellow</b> leaves.</td></tr>
+        </tbody></table></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Missing mineral solutions</h2>
+    <p class="aim">Seedlings grow in four culture solutions for 4 weeks. Each jar has 3 seedlings (3 repeats). Which mineral ion is missing?</p>
+    <label class="check"><input type="checkbox" id="dMystery"> Mystery mode: hide the labels and work out each solution</label>
+    <svg class="scene" id="sceneD" viewBox="0 0 600 300" role="img" aria-label="Four jars of culture solution, each with three seedlings"></svg>
+    <div class="controls">
+      <div class="row">
+        <button class="btn" id="dGrow">Grow for 1 week</button>
+        <span class="readout" id="dDay">Day 0</span>
+        <button class="btn alt" id="dMeasure">Measure the heights</button>
+      </div>
+      <div class="ctrl">
+        <span class="lbl">Look closely at a leaf</span>
+        <div class="seg" id="dLook">
+          <button data-v="0" aria-pressed="true">Jar A</button>
+          <button data-v="1" aria-pressed="false">Jar B</button>
+          <button data-v="2" aria-pressed="false">Jar C</button>
+          <button data-v="3" aria-pressed="false">Jar D</button>
+        </div>
+      </div>
+      <svg class="scene" id="dLeaf" viewBox="0 0 600 170" role="img" aria-label="Close-up of a leaf from the chosen jar"></svg>
+      <p class="aim" id="dLeafTxt"></p>
+      <p class="aim"><b>Control variables:</b> same type of seedling, same volume of solution, same light and temperature, air bubbled through, jars covered with foil to stop algae growing.</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Results</h2>
+    <p class="aim">Measure each seedling. The mean is worked out for you.</p>
+    <div class="tablewrap"><table id="dTable"></table></div>
+    <h3>Graph</h3>
+    <svg class="graph" id="dGraph" viewBox="0 0 460 280" role="img" aria-label="Bar chart of mean height for each jar"></svg>
+    <div id="dMatch" hidden>
+      <h3>Which solution is in each jar?</h3>
+      <div class="pred" id="dSel"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="dCheck">Check my answers</button></div>
+    </div>
+    <div id="dMsg" class="msg" hidden></div>
+    <div class="row" style="margin-top:12px"><button class="btn alt" id="dReset">Start again</button></div>
+  </div>
+</section>
+
+<footer>Simulated results, based on the Edexcel International GCSE Core Practical 4 set-ups and the mineral ions practical. Real plants vary more than this model.</footer>
+</div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const VP=['fill','stroke','font-family','stop-color'];
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a){const v=String(a[k]);if(VP.includes(k)&&v.includes('var('))e.style.setProperty(k,v);else e.setAttribute(k,v)}if(p)p.appendChild(e);return e};
+document.querySelectorAll('svg *').forEach(n=>{[...n.attributes].forEach(at=>{if(VP.includes(at.name)&&at.value.includes('var(')){n.style.setProperty(at.name,at.value);n.removeAttribute(at.name)}})});
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  ['a','b','c','d'].forEach(s=>$('#st-'+s).hidden=(s!==b.dataset.st));
+}));
+
+/* ---------- segmented controls ---------- */
+function seg(id,onChange){
+  const box=$(id);
+  box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));onChange(b.dataset.v)});
+  return ()=>box.querySelector('[aria-pressed="true"]').dataset.v;
+}
+function setSeg(id,v){$(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===String(v)))}
+
+/* ---------- shared model ---------- */
+const COLOUR={white:1,red:.7,blue:.75,green:.22};
+const COLOURHEX={white:'#f2b632',red:'#e0483a',blue:'#3d7be0',green:'#3fae5a'};
+const CO2F={'0':.06,'0.5':.45,'1':.75,'2':1};
+function fLight(d,c){const I=(10/d)**2;return Math.min(1,1.5*I*COLOUR[c])}
+function fTemp(T){if(T<=35)return 2**((T-35)/10);if(T>=50)return 0;return Math.max(0,1-((T-35)/12)**1.6)}
+function limiting(fl,fc,ft){
+  if(ft<.25&&Math.min(fl,fc)>.5) return 'temperature (enzymes work slowly when cold, or are denatured when too hot)';
+  if(fl<fc-0.02) return 'light';
+  if(fc<fl-0.02) return 'carbon dioxide';
+  return 'temperature (light and carbon dioxide are both high enough)';
+}
+
+/* ---------- drawing helpers ---------- */
+function drawRuler(g,max,x0,x1){
+  g.innerHTML='';
+  el('rect',{x:x0-6,y:264,width:x1-x0+12,height:24,fill:'var(--panel)',stroke:'var(--muted)'},g);
+  for(let d=0;d<=max;d+=1){const x=x1-(d/max)*(x1-x0);
+    el('line',{x1:x,x2:x,y1:264,y2:d%10===0?276:(d%5===0?272:268),stroke:'var(--muted)'},g);
+    if(d%10===0){const t=el('text',{x:x,y:286,'text-anchor':'middle','font-size':10,fill:'var(--ink)','font-family':'var(--mono)'},g);t.textContent=d}}
+  const t=el('text',{x:x0-4,y:286,'text-anchor':'end','font-size':10,fill:'var(--muted)'},g);t.textContent='cm';
+}
+function drawLamp(g,x,colour){
+  g.innerHTML='';
+  el('rect',{x:x-46,y:120,width:6,height:140,fill:'var(--muted)'},g);
+  el('rect',{x:x-66,y:252,width:46,height:8,rx:2,fill:'var(--muted)'},g);
+  el('path',{d:`M${x-44} 150 L${x-20} 130 L${x} 122 L${x} 198 L${x-20} 190 L${x-44} 170 Z`,fill:'var(--panel)',stroke:'var(--ink)','stroke-width':2},g);
+  el('ellipse',{cx:x-2,cy:160,rx:6,ry:36,fill:COLOURHEX[colour],stroke:'var(--ink)'},g);
+}
+
+/* ---------- generic results book ---------- */
+function Book(opts){
+  // opts: table, graph, fair, ivLabel(), unitLabel, fmt, controls(), isBar(), xMode()
+  const st={rows:new Map(),snap:null,changed:new Set()};
+  function add(iv,val,controlSnap){
+    if(!st.snap) st.snap=controlSnap;
+    for(const k in controlSnap) if(st.snap[k]!==controlSnap[k]) st.changed.add(k);
+    const arr=st.rows.get(iv)||[];
+    if(arr.length>=3) return false;
+    arr.push(val);st.rows.set(iv,arr);render();return true;
+  }
+  function count(iv){return (st.rows.get(iv)||[]).length}
+  function clear(){st.rows.clear();st.snap=null;st.changed.clear();render()}
+  function del(iv){st.rows.delete(iv);if(!st.rows.size){st.snap=null;st.changed.clear()}render()}
+  function mean(a){const n=a.filter(v=>v!=null);return n.length?n.reduce((s,v)=>s+v,0)/n.length:null}
+  function render(){
+    const t=opts.table;t.innerHTML='';
+    const keys=[...st.rows.keys()].sort(opts.sort);
+    const th0=t.createTHead();const h1=th0.insertRow(),h=th0.insertRow();
+    const mk=(row,txt,rs,cs)=>{const th=document.createElement('th');th.textContent=txt;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;row.appendChild(th)};
+    mk(h1,opts.ivLabel(),2);mk(h1,opts.dvHead,0,4);mk(h1,'',2);
+    ['Trial 1','Trial 2','Trial 3','Mean'].forEach(x=>mk(h,x));
+    const tb=t.createTBody();
+    if(!keys.length){const r=tb.insertRow();const c=r.insertCell();c.colSpan=6;c.className='empty';c.textContent='No results yet. Set up, then press the button to measure.'}
+    keys.forEach(k=>{const r=tb.insertRow();const a=st.rows.get(k);
+      r.insertCell().textContent=opts.fmtIV(k);
+      for(let i=0;i<3;i++)r.insertCell().textContent=a[i]===undefined?'':(a[i]===null?'no float':opts.fmt(a[i]));
+      const m=r.insertCell();m.className='mean';const mv=mean(a);m.textContent=mv==null?(a.length?'–':''):opts.fmt(mv,true);
+      const x=r.insertCell();const b=document.createElement('button');b.className='x';b.textContent='delete';b.onclick=()=>del(k);x.appendChild(b)});
+    if(st.changed.size){opts.fair.hidden=false;opts.fair.innerHTML='<b>Not a fair test</b>You changed: '+[...st.changed].join(', ')+'. Only the independent variable should change. Clear the results and start again.'}
+    else opts.fair.hidden=true;
+    graph(keys);
+  }
+  function graph(keys){
+    const g=opts.graph;g.innerHTML='';
+    const W=460,H=280,L=58,R=14,T=14,B=52;
+    const pts=keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null);
+    const yMaxRaw=Math.max(1,...pts.map(p=>p.y));
+    const step=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/step)*step||step*5;
+    const sy=v=>H-B-(v/yMax)*(H-B-T);
+    for(let v=0;v<=yMax+1e-9;v+=step){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+    el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+    const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=opts.yLabel;
+    const xl=el('text',{x:(L+W-R)/2,y:H-10,'text-anchor':'middle'},g);xl.textContent=opts.xLabel();
+    if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+    if(opts.isBar()){
+      const bw=(W-L-R)/Math.max(pts.length,1);
+      pts.forEach((p,i)=>{const x=L+i*bw+bw*.2;el('rect',{x,y:sy(p.y),width:bw*.6,height:H-B-sy(p.y),class:'bar',fill:opts.barColour?opts.barColour(p.k):'var(--leaf)'},g);
+        const t=el('text',{x:x+bw*.3,y:H-B+16,'text-anchor':'middle'},g);t.textContent=opts.fmtIV(p.k)});
+      return;
+    }
+    const xs=pts.map(p=>opts.xVal(p.k));const xMaxRaw=Math.max(...xs,1e-9);
+    const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+    const sx=v=>L+(v/xMax)*(W-L-R);
+    for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+    const sorted=pts.map(p=>({x:opts.xVal(p.k),y:p.y})).sort((a,b)=>a.x-b.x);
+    el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+    sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+  }
+  function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+  render();
+  return {add,count,clear,render};
+}
+
+/* =========================================================
+   STATION A
+   ========================================================= */
+const A={iv:'dist',dist:10,colour:'white',co2:'2',temp:25,shield:true,counting:false,gas:0,xMode:'d'};
+const ivNames={dist:'Distance (cm)',colour:'Light colour',co2:'NaHCO₃ (%)',temp:'Temperature (°C)'};
+const actualTemp=()=>A.temp+(A.shield?0:Math.max(0,(14-A.dist))*0.7);
+function rateA(){
+  const fl=fLight(A.dist,A.colour),fc=CO2F[A.co2],ft=fTemp(actualTemp());
+  return {r:42*Math.min(fl,fc)*ft,fl,fc,ft};
+}
+drawRuler($('#aRuler'),50,60,430);
+// pondweed
+(()=>{const g=$('#aWeed');for(let i=0;i<5;i++){const x=470+i*5;el('path',{d:`M${x} 252 q${rnd(-8,8)} -20 ${rnd(-4,4)} -40 q${rnd(-8,8)} -14 ${rnd(-3,3)} -26`},g);
+  for(let j=0;j<6;j++){const y=246-j*10;el('path',{d:`M${x} ${y} l${j%2?7:-7} -5`},g)}}})();
+
+function renderA(){
+  const lampX=430-A.dist*7.4;
+  drawLamp($('#aLamp'),lampX,A.colour);
+  const {r,fl,fc,ft}=rateA();
+  const op=Math.min(.85,.12+.7*Math.min(1,(10/A.dist)**2));
+  const beam=$('#aBeam');beam.setAttribute('points',`${lampX},128 430,${150} 430,250 ${lampX},192`);beam.setAttribute('fill',COLOURHEX[A.colour]);beam.setAttribute('opacity',op);
+  $('#aDistV').textContent=A.dist+' cm';$('#aTempV').textContent=A.temp+' °C';
+  const T=actualTemp();$('#aTempTxt').textContent=T.toFixed(0)+' °C';
+  const h=Math.max(6,Math.min(170,(T/50)*170));const m=$('#aMerc');m.setAttribute('y',250-h);m.setAttribute('height',h);
+  const lim=$('#aLim');
+  if($('#aShowLim').checked){lim.hidden=false;lim.innerHTML='<span class="limit">Limiting factor now: '+limiting(fl,fc,ft)+'</span><br>Expected rate ≈ '+r.toFixed(0)+' bubbles per minute.'}else lim.hidden=true;
+  if(!A.shield&&A.dist<14){showMsg('#aMsg','warn','The lamp is heating the water','No heat shield and the lamp is close, so the water is now '+T.toFixed(0)+' °C. Temperature is no longer controlled.')}
+  else if($('#aMsg').dataset.kind==='heat') $('#aMsg').hidden=true;
+}
+function showMsg(id,kind,title,body){const m=$(id);m.hidden=false;m.className='msg '+kind;m.dataset.kind=title.includes('heating')?'heat':'';m.innerHTML='<b>'+title+'</b>'+body}
+
+// bubbles animation
+let lastT=performance.now(),acc=0,countLeft=0,countN=0,nextIn=0.5;const bubbles=[];
+function loopA(t){
+  const dt=Math.min(.1,(t-lastT)/1000);lastT=t;
+  const {r}=rateA();
+  const speed=A.counting?6:3; // sim seconds per real second
+  const perSec=r/60*speed;
+  if(!$('#st-a').hidden){
+    acc+=dt;
+    // Poisson emission
+    nextIn-=dt;
+    if(perSec>0.001&&nextIn<=0){spawnBubble();if(A.counting)countN++;nextIn=(1/perSec)*rnd(.8,1.2)}
+    if(nextIn>1/Math.max(perSec,0.001)*1.3)nextIn=(1/Math.max(perSec,0.001))*rnd(.2,1);
+    for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];b.y-=dt*(60+b.v);b.x+=Math.sin((b.y+b.p)/12)*.3;
+      if(b.y<150&&b.x>470&&b.x<490){b.x+= (480-b.x)*.1}
+      if(b.y<=64+A.gas*1.04){b.e.remove();bubbles.splice(i,1);A.gas=Math.min(100,A.gas+.6);continue}
+      b.e.setAttribute('cx',b.x);b.e.setAttribute('cy',b.y)}
+    $('#aGas').setAttribute('height',A.gas*1.04);
+    if(A.counting){countLeft-=dt;$('#aCountR').textContent='Count: '+countN+'  ('+Math.max(0,Math.ceil(countLeft*speed))+' s left)';
+      if(countLeft<=0)finishCount()}
+  }
+  requestAnimationFrame(loopA);
+}
+function spawnBubble(){const x=rnd(468,492);const e=el('circle',{cx:x,cy:236,r:rnd(2.5,4),fill:'var(--panel)',stroke:'var(--water-edge)'},$('#aBubbles'));bubbles.push({e,x,y:236,v:rnd(0,30),p:rnd(0,50)})}
+requestAnimationFrame(loopA);
+
+const bookA=Book({table:$('#aTable'),graph:$('#aGraph'),fair:$('#aFair'),
+  ivLabel:()=>ivNames[A.iv],dvHead:'Number of bubbles in 1 minute',fmt:(v,m)=>m?v.toFixed(1):String(v),yLabel:'Mean bubbles per minute',
+  fmtIV:k=>A.iv==='colour'?k:String(k),
+  sort:(a,b)=>A.iv==='colour'?['white','red','blue','green'].indexOf(a)-['white','red','blue','green'].indexOf(b):(+a)-(+b),
+  isBar:()=>A.iv==='colour',barColour:k=>COLOURHEX[k],
+  xVal:k=>A.iv==='dist'&&A.xMode==='i'?1/(k*k):+k,
+  xLabel:()=>A.iv==='dist'?(A.xMode==='i'?'Light intensity (1/d², arbitrary units)':'Distance of lamp (cm)'):ivNames[A.iv]});
+
+function controlsA(){const c={};
+  if(A.iv!=='dist')c['lamp distance']=A.dist;
+  if(A.iv!=='colour')c['light colour']=A.colour;
+  if(A.iv!=='co2')c['carbon dioxide']=A.co2;
+  if(A.iv!=='temp')c['temperature']=Math.round(actualTemp());
+  return c}
+function ivValA(){return A.iv==='dist'?A.dist:A.iv==='colour'?A.colour:A.iv==='co2'?A.co2:A.temp}
+
+$('#aCount').onclick=()=>{
+  if(A.counting)return;
+  const iv=ivValA();
+  if(bookA.count(iv)>=3){showMsg('#aMsg','warn','Three repeats done','You already have 3 counts for '+iv+'. Change the '+ivNames[A.iv].toLowerCase()+' or delete that row.');return}
+  A.counting=true;countN=0;countLeft=10;nextIn=Math.min(nextIn,0.3);$('#aCount').disabled=true;$('#aMsg').hidden=true;
+};
+function finishCount(){
+  A.counting=false;$('#aCount').disabled=false;
+  const n=Math.max(0,countN);
+  bookA.add(ivValA(),n,controlsA());
+  $('#aCountR').textContent='Count: '+n+' bubbles in 1 minute';
+}
+$('#aTest').onclick=()=>{
+  const g=$('#aSplint');g.innerHTML='';
+  if(A.gas<25){showMsg('#aMsg','warn','Not enough gas yet','Wait for more gas to collect in the tube, then test it.');return}
+  el('rect',{x:440,y:8,width:6,height:46,fill:'#a0703a',transform:'rotate(-25 443 30)'},g);
+  const f=el('path',{d:'M470 20 q8 -18 2 -30 q12 12 6 30 z',fill:'#f28c28'},g);
+  g.setAttribute('opacity',1);
+  showMsg('#aMsg','ok','The glowing splint relights','The gas is oxygen. Oxygen is made in photosynthesis.');
+  A.gas=0;setTimeout(()=>g.setAttribute('opacity',0),2500);
+};
+
+seg('#aIV',v=>{A.iv=v;bookA.clear();$('#aXRow').hidden=v!=='dist';
+  $('#aAim').textContent='Count 3 times for each '+({dist:'distance',colour:'colour',co2:'concentration',temp:'temperature'})[v]+'. Keep everything else the same.';});
+seg('#aColour',v=>{A.colour=v;renderA()});
+seg('#aCO2',v=>{A.co2=v;renderA()});
+seg('#aX',v=>{A.xMode=v;bookA.render()});
+$('#aDist').oninput=e=>{A.dist=+e.target.value;renderA()};
+$('#aTemp').oninput=e=>{A.temp=+e.target.value;renderA()};
+$('#aShield').onchange=e=>{A.shield=e.target.checked;renderA()};
+$('#aShowLim').onchange=renderA;
+$('#aClear').onclick=()=>bookA.clear();
+
+// example results so the page opens in a working state
+[[5,[21,19,20]],[15,[14,13,15]],[20,[8,9,7]],[30,[4,3,4]]].forEach(([d,arr])=>arr.forEach(v=>bookA.add(d,v,{'light colour':'white','carbon dioxide':'2','temperature':25})));
+renderA();
+
+/* =========================================================
+   STATION B
+   ========================================================= */
+const B={iv:'dist',dist:10,co2:'2',running:false,t:0,discs:[],floated:0,recorded:false};
+drawRuler($('#bRuler'),50,50,420);
+function makeDiscs(){
+  const g=$('#bDiscs');g.innerHTML='';B.discs=[];
+  const fl=fLight(B.dist,'white'),fc=CO2F[B.co2];const r=Math.min(fl,fc);
+  for(let i=0;i<10;i++){
+    const x=436+i*12.5,y=250-(i%2)*4;
+    const e=el('ellipse',{cx:x,cy:y,rx:6,ry:3,fill:'var(--leaf)',stroke:'var(--ink)','stroke-width':.8},g);
+    const base=170/Math.max(r,1e-6); // seconds to float at full rate ~ 3 min
+    const tf=r<.08?Infinity:base*Math.exp(gauss()*.18)*(.85+i*.03);
+    B.discs.push({e,x,y0:y,y,tf,up:false});
+  }
+}
+function renderB(){
+  const lampX=420-B.dist*7.4;drawLamp($('#bLamp'),lampX,'white');
+  const op=Math.min(.85,.12+.7*Math.min(1,(10/B.dist)**2));
+  const beam=$('#bBeam');beam.setAttribute('points',`${lampX},128 420,140 420,250 ${lampX},192`);beam.setAttribute('fill',COLOURHEX.white);beam.setAttribute('opacity',op);
+  $('#bDistV').textContent=B.dist+' cm';
+}
+const fmtClock=s=>{const m=Math.floor(s/60),x=Math.floor(s%60);return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')};
+const bookB=Book({table:$('#bTable'),graph:$('#bGraph'),fair:$('#bFair'),
+  ivLabel:()=>B.iv==='dist'?'Distance (cm)':'NaHCO₃ (%)',dvHead:'Time for 5 discs to float (s)',fmt:(v,m)=>m?v.toFixed(0):String(Math.round(v)),
+  yLabel:'Mean time for 5 discs (s)',fmtIV:k=>String(k),sort:(a,b)=>(+a)-(+b),isBar:()=>false,
+  xVal:k=>+k,xLabel:()=>B.iv==='dist'?'Distance of lamp (cm)':'Sodium hydrogencarbonate (%)'});
+let lastB=performance.now();
+function loopB(t){
+  const dt=Math.min(.1,(t-lastB)/1000);lastB=t;
+  if(B.running&&!$('#st-b').hidden){
+    B.t+=dt*30;
+    B.discs.forEach(d=>{if(!d.up&&B.t>=d.tf){d.up=true;B.floated++}
+      const target=d.up?128+((d.x*7)%10):d.y0;d.y+= (target-d.y)*Math.min(1,dt*3);d.e.setAttribute('cy',d.y)});
+    $('#bClock').textContent=fmtClock(B.t);$('#bFloat').textContent='Floating: '+B.floated+' / 10';
+    if(!B.recorded&&B.floated>=5){B.recorded=true;bookB.add(B.iv==='dist'?B.dist:B.co2,Math.round(B.t),{...(B.iv==='dist'?{'carbon dioxide':B.co2}:{'lamp distance':B.dist})});
+      showMsg('#bMsg','ok','5 discs are floating','Time recorded: '+Math.round(B.t)+' s. Press the button again for a repeat or change the '+(B.iv==='dist'?'distance':'concentration')+'.')}
+    if(B.floated===10||B.t>1200){B.running=false;$('#bStart').disabled=false;
+      if(!B.recorded){B.recorded=true;bookB.add(B.iv==='dist'?B.dist:B.co2,null,{...(B.iv==='dist'?{'carbon dioxide':B.co2}:{'lamp distance':B.dist})});
+        showMsg('#bMsg','warn','The discs did not float in 20 minutes','Very little photosynthesis. Look at the light and the carbon dioxide. Recorded as "no float".')}}
+  }
+  requestAnimationFrame(loopB);
+}
+requestAnimationFrame(loopB);
+$('#bStart').onclick=()=>{
+  const iv=B.iv==='dist'?B.dist:B.co2;
+  if(bookB.count(iv)>=3){showMsg('#bMsg','warn','Three repeats done','Change the '+(B.iv==='dist'?'distance':'concentration')+' or delete that row.');return}
+  makeDiscs();B.t=0;B.floated=0;B.recorded=false;B.running=true;$('#bStart').disabled=true;$('#bMsg').hidden=true;
+};
+seg('#bIV',v=>{B.iv=v;bookB.clear();$('#bAim').textContent='Time for 5 discs to float, in seconds. Do 3 repeats for each '+(v==='dist'?'distance':'concentration')+'.'});
+seg('#bCO2',v=>{if(B.running)return;B.co2=v;makeDiscs()});
+$('#bDist').oninput=e=>{if(B.running){e.target.value=B.dist;return}B.dist=+e.target.value;renderB();makeDiscs()};
+$('#bClear').onclick=()=>bookB.clear();
+[[15,[255,240,270]],[25,[700,735,690]]].forEach(([d,arr])=>arr.forEach(v=>bookB.add(d,v,{'carbon dioxide':'2'})));
+renderB();makeDiscs();
+
+/* =========================================================
+   STATION C
+   ========================================================= */
+const C={exp:'light',destarch:true,step:0,heat:null,pred:{}};
+const LEAFPATH='M0 0 C 40 -70 160 -78 220 0 C 160 78 40 70 0 0 Z';
+function regions(){
+  // returns list of leaves, each with regions: {id,label,clip,light,co2,chl}
+  if(C.exp==='light') return [{x:150,y:130,label:'',regions:[
+    {id:'cov',label:'part under the foil',clip:'band',light:false,co2:true,chl:true},
+    {id:'unc',label:'part not covered',clip:'notband',light:true,co2:true,chl:true}]}];
+  if(C.exp==='chl') return [{x:150,y:130,label:'',regions:[
+    {id:'white',label:'white part',clip:'edge',light:true,co2:true,chl:false},
+    {id:'green',label:'green part',clip:'centre',light:true,co2:true,chl:true}]}];
+  return [{x:40,y:130,label:'Leaf A: flask with no chemical (control)',regions:[{id:'A',label:'leaf A (no chemical)',clip:'all',light:true,co2:true,chl:true}],flask:false},
+          {x:330,y:130,label:'Leaf B: flask with potassium hydroxide',regions:[{id:'B',label:'leaf B (potassium hydroxide)',clip:'all',light:true,co2:false,chl:true}],flask:true}];
+}
+const hasStarch=r=>!C.destarch||(r.light&&r.co2&&r.chl);
+function regionColour(r){
+  const s=C.step;
+  if(s>=4) return hasStarch(r)?'var(--navy)':'var(--iodine)';
+  if(s>=2) return '#efe8c8';
+  if(s>=1) return r.chl?'#56733a':'#d9d3b0';
+  return r.chl?'#3f9a52':'#f4f1e2';
+}
+function renderC(){
+  const svg=$('#sceneC');svg.innerHTML='';
+  const defs=el('defs',{},svg);
+  // clip paths in leaf-local coordinates
+  const cp=(id,fn)=>{const c=el('clipPath',{id},defs);fn(c)};
+  cp('band',c=>el('rect',{x:80,y:-90,width:60,height:180},c));
+  cp('notband',c=>{el('rect',{x:-10,y:-90,width:90,height:180},c);el('rect',{x:140,y:-90,width:100,height:180},c)});
+  cp('centre',c=>el('path',{d:'M30 0 C 50 -30 80 -42 110 -34 C 140 -46 175 -28 192 0 C 172 30 140 44 110 34 C 80 44 48 30 30 0 Z'},c));
+  cp('edge',c=>el('path',{d:'M-10 -90 H 240 V 90 H -10 Z M30 0 C 48 30 80 44 110 34 C 140 44 172 30 192 0 C 175 -28 140 -46 110 -34 C 80 -42 50 -30 30 0 Z','clip-rule':'evenodd'},c));
+  cp('all',c=>el('rect',{x:-10,y:-90,width:250,height:180},c));
+  regions().forEach((lf,li)=>{
+    const g=el('g',{transform:C.exp==='co2'?`translate(${lf.x} ${lf.y})`:`translate(${lf.x-40} ${lf.y}) scale(1.35)`},svg);
+    if(C.exp==='co2'&&C.step===0){ // flask outline
+      el('path',{d:'M-20 -70 L250 -70 L250 70 L-20 70 Z',fill:'var(--water)','fill-opacity':.35,stroke:'var(--water-edge)','stroke-dasharray':'6 4',rx:20},g);
+      if(lf.flask){el('rect',{x:150,y:50,width:80,height:16,fill:'var(--panel)',stroke:'var(--muted)'},g);const t=el('text',{x:190,y:62,'text-anchor':'middle','font-size':10,fill:'var(--ink)'},g);t.textContent='KOH'}
+    }
+    lf.regions.forEach(r=>{el('path',{d:LEAFPATH,fill:regionColour(r),'clip-path':`url(#${r.clip})`},g)});
+    el('path',{d:LEAFPATH,fill:'none',stroke:'var(--ink)','stroke-width':2},g);
+    el('path',{d:'M-30 6 L0 0 L210 0',fill:'none',stroke:'var(--ink)','stroke-width':1.5,opacity:.6},g);
+    if(C.exp==='light'&&C.step===0){el('rect',{x:80,y:-62,width:60,height:124,fill:'#c9ccd1',stroke:'#8a8f96',opacity:.92},g);const t=el('text',{x:110,y:4,'text-anchor':'middle','font-size':12,fill:'#2b2f35'},g);t.textContent='foil'}
+    if(lf.label){const t=el('text',{x:110,y:96,'text-anchor':'middle','font-size':13,fill:'var(--ink)','font-weight':700},g);t.textContent=lf.label}
+  });
+  const cap=el('text',{x:300,y:20,'text-anchor':'middle','font-size':14,fill:'var(--muted)'},svg);
+  cap.textContent=['Leaf after 24 hours in the light','Step 1 done: leaf boiled','Step 2 done: chlorophyll removed','Step 3 done: leaf softened','Result after iodine'][C.step];
+  renderSteps();
+}
+const STEPS=[
+  {t:'Boil the leaf in water for 1 minute',p:'This kills the leaf and stops reactions. It lets the iodine get in.'},
+  {t:'Put the leaf in ethanol and heat it',p:'Ethanol removes the chlorophyll, so you can see the colour change. How will you heat the ethanol?'},
+  {t:'Dip the leaf in warm water',p:'Ethanol makes the leaf hard. Water softens it.'},
+  {t:'Spread the leaf on a white tile and add iodine',p:'Predict first, then add the iodine.'}];
+function renderSteps(){
+  const box=$('#cSteps');box.innerHTML='';
+  STEPS.forEach((s,i)=>{
+    const d=document.createElement('div');d.className='step'+(C.step>i?' done':'')+(C.step===i?' now':'');
+    d.innerHTML=`<div class="n">${C.step>i?'✓':i+1}</div><div><b>${s.t}</b><p>${s.p}</p></div>`;
+    const inner=d.lastElementChild;
+    if(C.step===i){
+      if(i===1){const r=document.createElement('div');r.className='row';
+        const a=document.createElement('button');a.className='btn';a.textContent='Use a hot water bath';a.onclick=()=>{C.step=2;$('#cMsg').hidden=true;renderC()};
+        const b=document.createElement('button');b.className='btn alt';b.textContent='Use a Bunsen flame';b.onclick=()=>showMsg('#cMsg','warn','Stop! Ethanol is flammable','Never heat ethanol with a flame. Turn off the Bunsen burner and use a hot water bath.');
+        r.append(a,b);inner.appendChild(r)}
+      else if(i===3){buildPred(inner)}
+      else{const b=document.createElement('button');b.className='btn';b.textContent=i===0?'Boil the leaf':'Dip in warm water';b.onclick=()=>{C.step++;$('#cMsg').hidden=true;renderC()};inner.appendChild(b)}
+    }
+    box.appendChild(d);
+  });
+}
+function buildPred(inner){
+  const all=regions().flatMap(l=>l.regions);
+  const p=document.createElement('div');p.className='pred';
+  all.forEach(r=>{const row=document.createElement('div');row.className='prow';
+    row.innerHTML=`<span>${r.label}</span>`;
+    const s=document.createElement('div');s.className='seg';
+    ['blue-black','orange-brown'].forEach(v=>{const b=document.createElement('button');b.textContent=v;b.setAttribute('aria-pressed',C.pred[r.id]===v);
+      b.onclick=()=>{C.pred[r.id]=v;s.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b))};s.appendChild(b)});
+    row.appendChild(s);p.appendChild(row)});
+  const go=document.createElement('button');go.className='btn';go.textContent='Add iodine';go.style.marginTop='6px';
+  go.onclick=()=>{C.step=4;renderC();explainC(all)};
+  inner.append(p,go);
+}
+function explainC(all){
+  let right=0,made=0;
+  const lines=all.map(r=>{const real=hasStarch(r)?'blue-black':'orange-brown';const g=C.pred[r.id];if(g){made++;if(g===real)right++}
+    return `<li><b>${r.label}</b>: ${real}${g?(g===real?' ✓':' ✗ (you said '+g+')'):''}</li>`}).join('');
+  let why='';
+  if(!C.destarch) why='<b>Every part has starch.</b> The plant was not destarched, so this starch was there <i>before</i> the experiment. We cannot tell what the leaf needed. That is why we destarch the plant first.';
+  else if(C.exp==='light') why='The part under the foil had <b>no light</b>, so no photosynthesis and no starch. The uncovered part is the control. <b>Light is needed.</b>';
+  else if(C.exp==='chl') why='The white part has <b>no chlorophyll</b>, so it cannot absorb light and makes no starch. <b>Chlorophyll is needed.</b>';
+  else why='Potassium hydroxide <b>absorbs carbon dioxide</b>, so leaf B had none and made no starch. Leaf A is the control. <b>Carbon dioxide is needed.</b>';
+  const m=$('#cMsg');m.hidden=false;m.className='msg ok';
+  m.innerHTML=`<b>Results</b><ul style="margin:4px 0 8px 18px;padding:0">${lines}</ul>${made?`<p style="margin:0 0 6px">Predictions correct: ${right} / ${all.length}</p>`:''}<p style="margin:0">${why}</p>`;
+}
+seg('#cExp',v=>{C.exp=v;resetC()});
+$('#cDestarch').onchange=e=>{C.destarch=e.target.checked;resetC()};
+function resetC(){C.step=0;C.pred={};$('#cMsg').hidden=true;renderC()}
+$('#cReset').onclick=resetC;
+renderC();
+
+/* =========================================================
+   STATION D: missing minerals
+   ========================================================= */
+const SOL={
+  full:{name:'complete solution (all minerals)',rate:1.0,txt:'Healthy dark green leaves. Tall plant with many leaves.'},
+  noMg:{name:'no magnesium',rate:.55,txt:'Leaves turn yellow between the veins (chlorosis). Less chlorophyll, so less photosynthesis and less growth.'},
+  noN:{name:'no nitrate',rate:.3,txt:'Stunted (short) growth with small leaves. Older, lower leaves turn yellow. Without nitrate the plant cannot make amino acids and proteins.'},
+  water:{name:'distilled water (no minerals)',rate:.15,txt:'Very little growth. Small, pale yellow leaves. No minerals at all.'}};
+const D={day:0,order:['full','noMg','noN','water'],mystery:false,look:0,heights:[],measured:false};
+function initD(){
+  D.day=0;D.measured=false;
+  D.order=D.mystery?shuffle(['full','noMg','noN','water']):['full','noMg','noN','water'];
+  D.heights=D.order.map(()=>[0,1,2].map(()=>Math.exp(gauss()*.08)));
+  $('#dMsg').hidden=true;buildSel();renderD();
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const hD=(j,k)=>+(1.5+SOL[D.order[j]].rate*D.day*D.heights[j][k]).toFixed(1);
+function leafFill(sol,lower,day){
+  const t=Math.min(1,day/14);
+  const mix=(a,b,f)=>'#'+[0,2,4].map(i=>Math.round(parseInt(a.substr(i+1,2),16)*(1-f)+parseInt(b.substr(i+1,2),16)*f).toString(16).padStart(2,'0')).join('');
+  if(sol==='full')return '#2f8a45';
+  if(sol==='noMg')return mix('#2f8a45','#d8c94a',t*.9);
+  if(sol==='noN')return mix('#2f8a45',lower?'#e0d36a':'#8fbf5a',t);
+  return mix('#4f9a4f','#e6dc8a',t);
+}
+function drawPlant(g,x,base,h,sol,day){
+  const px=h*4.6;
+  el('path',{d:`M${x} ${base} q ${3} ${-px/2} 0 ${-px}`,fill:'none',stroke:'#3d6b2a','stroke-width':sol==='full'?3:2},g);
+  const n=Math.max(1,Math.floor(h/3));
+  const size=sol==='full'?1:sol==='noMg'?.85:sol==='noN'?.6:.5;
+  for(let i=0;i<n;i++){
+    const y=base-px*(i+1)/(n+.5);const s=(9+4*size)*(i===n-1?.8:1);const side=i%2?1:-1;
+    const lower=i<n/2;
+    const lf=el('ellipse',{cx:x+side*s,cy:y,rx:s,ry:s*.45,fill:leafFill(sol,lower,day),stroke:'#2a4a1e','stroke-width':.8,transform:`rotate(${side*-20} ${x+side*s} ${y})`},g);
+  }
+}
+function renderD(){
+  const svg=$('#sceneD');svg.innerHTML='';
+  el('line',{x1:0,y1:270,x2:600,y2:270,stroke:'var(--muted)','stroke-width':2},svg);
+  D.order.forEach((sol,j)=>{
+    const x0=20+j*145;
+    el('rect',{x:x0,y:190,width:125,height:80,rx:6,fill:'var(--water)',stroke:'var(--water-edge)','stroke-width':2},svg);
+    el('rect',{x:x0,y:190,width:125,height:80,rx:6,fill:'#b9bec4',opacity:.55},svg); // foil cover
+    el('rect',{x:x0-4,y:184,width:133,height:10,rx:3,fill:'var(--panel)',stroke:'var(--muted)'},svg);
+    [0,1,2].forEach(k=>drawPlant(svg,x0+25+k*38,186,hD(j,k),sol,D.day));
+    const t=el('text',{x:x0+62,y:226,'text-anchor':'middle','font-size':18,'font-weight':700,fill:'var(--ink)'},svg);t.textContent='Jar '+'ABCD'[j];
+    const t2=el('text',{x:x0+62,y:248,'text-anchor':'middle','font-size':11,fill:'var(--ink)'},svg);
+    t2.textContent=D.mystery?'label hidden':SOL[sol].name.replace(' (all minerals)','').replace(' (no minerals)','');
+  });
+  $('#dDay').textContent='Day '+D.day;
+  $('#dGrow').disabled=D.day>=28;
+  renderLeaf();renderTableD();
+  $('#dMatch').hidden=!D.mystery;
+}
+function renderLeaf(){
+  const svg=$('#dLeaf');svg.innerHTML='';
+  const sol=D.order[D.look];
+  [[150,'Upper (young) leaf',false],[440,'Lower (old) leaf',true]].forEach(([cx,lab,lower])=>{
+    const g=el('g',{},svg);
+    const fill=leafFill(sol,lower,D.day);
+    el('path',{d:`M${cx-110} 80 C ${cx-60} 20 ${cx+60} 20 ${cx+110} 80 C ${cx+60} 140 ${cx-60} 140 ${cx-110} 80 Z`,fill,stroke:'#2a4a1e','stroke-width':2},g);
+    const vein=(sol==='noMg'&&D.day>=7)?'#2f8a45':'#2a4a1e';const vw=(sol==='noMg'&&D.day>=7)?5:1.5;
+    el('path',{d:`M${cx-110} 80 L${cx+110} 80`,stroke:vein,'stroke-width':vw,fill:'none'},g);
+    for(let i=-2;i<=2;i++){const vx=cx+i*40;el('path',{d:`M${vx-20} 80 L${vx+4} 56 M${vx-20} 80 L${vx+4} 104`,stroke:vein,'stroke-width':vw*.7,fill:'none'},g)}
+    const t=el('text',{x:cx,y:160,'text-anchor':'middle','font-size':13,fill:'var(--ink)'},svg);t.textContent=lab;
+  });
+  $('#dLeafTxt').textContent=D.day<7?'Grow the seedlings for at least a week to see any symptoms.':(D.mystery?'Jar '+'ABCD'[D.look]+': look at the colour, the veins and the size.':'Jar '+'ABCD'[D.look]+' ('+SOL[sol].name+'): '+SOL[sol].txt);
+}
+function renderTableD(){
+  const t=$('#dTable');t.innerHTML='';
+  const th0=t.createTHead();const h1=th0.insertRow(),h=th0.insertRow();
+  const mk=(row,txt,rs,cs)=>{const th=document.createElement('th');th.textContent=txt;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;row.appendChild(th)};
+  mk(h1,'Jar',2);mk(h1,'Solution',2);mk(h1,'Height after 4 weeks (cm)',0,4);
+  ['Plant 1','Plant 2','Plant 3','Mean'].forEach(x=>mk(h,x));
+  const tb=t.createTBody();
+  D.order.forEach((sol,j)=>{const r=tb.insertRow();r.insertCell().textContent='ABCD'[j];r.insertCell().textContent=D.mystery?'?':SOL[sol].name;
+    const hs=[0,1,2].map(k=>hD(j,k));
+    hs.forEach(v=>r.insertCell().textContent=D.measured?v.toFixed(1):'');
+    const m=r.insertCell();m.className='mean';m.textContent=D.measured?(hs.reduce((a,b)=>a+b,0)/3).toFixed(1):''});
+  // bar chart
+  const g=$('#dGraph');g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,Bm=52;
+  const means=D.order.map((s,j)=>[0,1,2].map(k=>hD(j,k)).reduce((a,b)=>a+b,0)/3);
+  const yMax=Math.max(10,Math.ceil(Math.max(...means)/5)*5);const sy=v=>H-Bm-(v/yMax)*(H-Bm-T);
+  for(let v=0;v<=yMax;v+=5){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const tx=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);tx.textContent=v}
+  el('line',{x1:L,x2:L,y1:T,y2:H-Bm,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-Bm,y2:H-Bm,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-Bm+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-Bm+T)/2})`},g);yl.textContent='Mean height (cm)';
+  const xl=el('text',{x:(L+W-R)/2,y:H-10,'text-anchor':'middle'},g);xl.textContent='Jar';
+  if(!D.measured){const tx=el('text',{x:(L+W-R)/2,y:(H-Bm+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);tx.textContent='Measure the heights to draw the graph';return}
+  const bw=(W-L-R)/4;means.forEach((m,j)=>{const x=L+j*bw+bw*.2;el('rect',{x,y:sy(m),width:bw*.6,height:H-Bm-sy(m),class:'bar'},g);
+    const tx=el('text',{x:x+bw*.3,y:H-Bm+16,'text-anchor':'middle'},g);tx.textContent='ABCD'[j]});
+}
+function buildSel(){
+  const box=$('#dSel');box.innerHTML='';
+  D.order.forEach((s,j)=>{const row=document.createElement('div');row.className='prow';
+    row.innerHTML=`<span>Jar ${'ABCD'[j]}</span>`;const sel=document.createElement('select');sel.id='dSel'+j;
+    sel.innerHTML='<option value="">choose…</option>'+Object.keys(SOL).map(k=>`<option value="${k}">${SOL[k].name}</option>`).join('');
+    sel.style.font='inherit';sel.style.padding='6px';row.appendChild(sel);box.appendChild(row)});
+}
+$('#dGrow').onclick=()=>{D.day=Math.min(28,D.day+7);D.measured=false;renderD();
+  if(D.day===28)showMsg('#dMsg','ok','4 weeks done','Measure the heights, then look closely at the leaves in each jar.');};
+$('#dMeasure').onclick=()=>{if(D.day<28){showMsg('#dMsg','warn','Not yet','Grow the seedlings for the full 4 weeks before you measure.');return}D.measured=true;$('#dMsg').hidden=true;renderTableD()};
+seg('#dLook',v=>{D.look=+v;renderLeaf()});
+$('#dMystery').onchange=e=>{D.mystery=e.target.checked;initD()};
+$('#dReset').onclick=initD;
+$('#dCheck').onclick=()=>{
+  if(D.day<28){showMsg('#dMsg','warn','Grow them first','Grow the seedlings for 4 weeks and look closely at the leaves before you decide.');return}
+  let right=0;const li=D.order.map((s,j)=>{const g=$('#dSel'+j).value;if(g===s)right++;
+    return `<li><b>Jar ${'ABCD'[j]}</b>: ${SOL[s].name} ${g===s?'✓':'✗'}</li>`}).join('');
+  showMsg('#dMsg',right===4?'ok':'warn',`${right} / 4 correct`,`<ul style="margin:4px 0 8px 18px;padding:0">${li}</ul><p style="margin:0"><b style="display:inline">Clues:</b> magnesium is needed to make <b style="display:inline">chlorophyll</b>, so no magnesium = yellow between the veins. Nitrate is needed to make <b style="display:inline">amino acids → proteins</b>, so no nitrate = stunted growth and yellow lower leaves.</p>`);
+};
+initD();
+})();
+</script>
+
+</body>
+</html>

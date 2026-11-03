@@ -1,0 +1,634 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<title>Eye Focus Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: lab-bench pages — one large diagram per tab with a live status card beside it, quiz underneath */
+:root{
+  --bg:#eef3f6; --surface:#ffffff; --ink:#13222c; --muted:#556874; --line:#d2dce3;
+  --accent:#1d6a86; --accent-soft:#d9ebf2;
+  --ray:#d8941a; --contract:#cf4f39; --contract-soft:#f8ddd6; --relax:#7f9caf; --relax-soft:#e3ebf0;
+  --tissue:#ffffff; --vitreous:#f4f9fb; --lens:#bfe0ec; --lens-edge:#5d9fb7; --retina:#c0647a; --ligament:#46606f; --iris:#3f7e93; --iris-dark:#24566a; --pupil:#0d151b; --stage:#dfe8ee;
+  --good:#2f7d4f; --good-soft:#dcefe3; --bad:#b3412f; --bad-soft:#f6dfda;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e161c; --surface:#15212a; --ink:#e4edf2; --muted:#93a7b4; --line:#293a46;
+  --accent:#62b4d2; --accent-soft:#183544;
+  --ray:#f0bd4f; --contract:#ef7b63; --contract-soft:#3d2420; --relax:#7593a6; --relax-soft:#1e2d37;
+  --tissue:#1c2b35; --vitreous:#17242d; --lens:#2c5b6e; --lens-edge:#7cc0d8; --retina:#c36d84; --ligament:#a6bcc9; --iris:#4f93aa; --iris-dark:#2d6478; --pupil:#05090c; --stage:#111c23;
+  --good:#6cc191; --good-soft:#173326; --bad:#f08a76; --bad-soft:#3a201b; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0e161c; --surface:#15212a; --ink:#e4edf2; --muted:#93a7b4; --line:#293a46;
+  --accent:#62b4d2; --accent-soft:#183544;
+  --ray:#f0bd4f; --contract:#ef7b63; --contract-soft:#3d2420; --relax:#7593a6; --relax-soft:#1e2d37;
+  --tissue:#1c2b35; --vitreous:#17242d; --lens:#2c5b6e; --lens-edge:#7cc0d8; --retina:#c36d84; --ligament:#a6bcc9; --iris:#4f93aa; --iris-dark:#2d6478; --pupil:#05090c; --stage:#111c23;
+  --good:#6cc191; --good-soft:#173326; --bad:#f08a76; --bad-soft:#3a201b; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:grid;gap:22px}
+header{display:grid;gap:6px}
+.eyebrow{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font:800 clamp(1.7rem,4.2vw,2.6rem)/1.08 var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font:700 1.25rem/1.2 var(--f-display);margin:0;text-wrap:balance}
+h3{font:700 1rem/1.25 var(--f-display);margin:0}
+.lede{color:var(--muted);margin:0;max-width:65ch}
+
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tab{font:700 1rem var(--f-display);background:none;border:0;color:var(--muted);padding:10px 14px 12px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+@media (max-width:880px){.lab{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:12px;min-width:0}
+.stage svg{width:100%;height:auto;display:block}
+.side{display:grid;gap:14px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px}
+
+.control{display:grid;gap:6px}
+.control label{font-weight:700}
+.range-ends{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.readout{font:700 1.05rem var(--f-display);color:var(--accent);font-variant-numeric:tabular-nums}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:.92rem}
+.check input{margin-top:4px;accent-color:var(--accent)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:700 .92rem var(--f-body);border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+
+dl.status{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;align-items:center}
+dl.status dt{font-size:.88rem;color:var(--muted)}
+dl.status dd{margin:0;justify-self:start}
+.chip{display:inline-block;font-weight:700;font-size:.88rem;padding:3px 10px;border-radius:999px;background:var(--relax-soft);color:var(--ink);transition:background .25s,color .25s}
+.chip.hot{background:var(--contract-soft);color:var(--contract)}
+.chip.cool{background:var(--relax-soft);color:var(--ink)}
+.chip.good{background:var(--good-soft);color:var(--good)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+
+.focusline{font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seen{display:grid;gap:6px}
+.seen-box{background:var(--tissue);border:1px solid var(--line);border-radius:8px;padding:14px 10px;text-align:center;overflow:hidden}
+.chart-row{font:800 1.5rem/1.1 var(--f-display);letter-spacing:.32em;color:var(--ink);transition:filter .15s}
+.chart-row.small{font-size:1rem;margin-top:6px}
+.note{font-size:.85rem;color:var(--muted);margin:0}
+
+.answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:640px){.answers{grid-template-columns:minmax(0,1fr)}}
+.answer{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:8px;min-width:0}
+.answer ol{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.answer .tag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+
+/* reflex arc */
+.arc{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;counter-reset:s}
+@media (max-width:760px){.arc{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.arc-step{border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.84rem;line-height:1.3;background:var(--bg);transition:background .15s,border-color .15s,transform .15s;min-width:0}
+.arc-step b{display:block;font-family:var(--f-display);font-size:.9rem}
+.arc-step .role{color:var(--muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em}
+.arc-step.active{background:var(--accent-soft);border-color:var(--accent);transform:translateY(-2px)}
+
+/* svg classes */
+.s-tissue{fill:var(--tissue);stroke:var(--ink);stroke-width:2}
+.s-vitreous{fill:var(--vitreous)}
+.s-cornea{fill:var(--accent-soft);stroke:var(--ink);stroke-width:2}
+.s-retina{fill:none;stroke:var(--retina);stroke-width:6}
+.s-nerve{fill:none;stroke:var(--retina);stroke-width:14;stroke-linecap:round;opacity:.75}
+.s-iris{fill:var(--iris)}
+.s-lens{fill:var(--lens);stroke:var(--lens-edge);stroke-width:2}
+.s-musc-r{fill:var(--relax)}
+.s-musc-c{fill:var(--contract)}
+.s-lig{fill:none;stroke:var(--ligament);stroke-width:1.6}
+.s-ray{fill:none;stroke:var(--ray);stroke-width:2;stroke-linecap:round}
+.s-ray-ghost{fill:none;stroke:var(--ray);stroke-width:1.5;stroke-dasharray:4 4;opacity:.7}
+.s-obj{fill:var(--ray);stroke:var(--ink);stroke-width:1.5}
+.s-label{fill:var(--ink);font:700 13px var(--f-body)}
+.s-small{fill:var(--muted);font:12px var(--f-body)}
+.s-lead{stroke:var(--muted);stroke-width:1}
+.s-focus{fill:none;stroke:var(--contract);stroke-width:2}
+.s-stage{fill:var(--stage)}
+.s-sclera{fill:var(--tissue);stroke:var(--ink);stroke-width:2}
+.s-iris-base{fill:var(--iris)}
+.s-pupil{fill:var(--pupil)}
+.s-circ{fill:none}
+.s-rad{fill:none;stroke-linecap:round}
+.s-lamp{fill:var(--ray)}
+.s-lampglow{fill:var(--ray)}
+.labels-off .lbl{display:none}
+
+section[hidden]{display:none!important}
+.quiz{display:grid;gap:14px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.q p{margin:0;font-weight:700}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font:1rem var(--f-body);border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:9px 12px;border-radius:8px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{background:var(--good-soft);border-color:var(--good);color:var(--good);font-weight:700}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.opt:disabled{cursor:default}
+.why{font-size:.92rem;color:var(--muted);margin:0}
+.score{font:700 1rem var(--f-display);color:var(--accent)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">IGCSE Biology · Coordination and response</div>
+    <h1>The eye: focusing and the pupil reflex</h1>
+    <p class="lede">Move the sliders and watch the muscles inside the eye respond. The status card tells you what each part is doing, using the words the examiner wants to see.</p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Simulations">
+    <button class="tab" role="tab" id="tab-acc" aria-controls="accommodation" aria-selected="true">1. Accommodation (focusing)</button>
+    <button class="tab" role="tab" id="tab-pup" aria-controls="pupil-reflex" aria-selected="false">2. Pupil reflex (iris)</button>
+  </div>
+
+  <!-- ===================== ACCOMMODATION ===================== -->
+  <section id="accommodation" role="tabpanel" aria-labelledby="tab-acc" style="display:grid;gap:20px">
+    <div class="lab">
+      <div class="stage" id="accStage">
+        <svg id="accSvg" viewBox="0 0 800 380" role="img" aria-label="Side view of the eye showing light rays, lens, ciliary muscles and suspensory ligaments">
+          <defs>
+            <clipPath id="eyeClip"><circle cx="500" cy="190" r="137"/></clipPath>
+          </defs>
+          <path class="s-nerve" d="M636 215 C 680 222, 720 232, 770 240"/>
+          <circle class="s-tissue" cx="500" cy="190" r="140"/>
+          <circle class="s-vitreous" cx="500" cy="190" r="136"/>
+          <path class="s-cornea" d="M385 110 Q 318 190 385 270 Q 372 190 385 110 Z"/>
+          <path class="s-retina" d="M 560 64 A 137 137 0 0 1 560 316"/>
+          <rect class="s-iris" x="389" y="83" width="7" height="80" rx="2"/>
+          <rect class="s-iris" x="389" y="217" width="7" height="80" rx="2"/>
+          <g id="accLig"></g>
+          <g id="accMusc"></g>
+          <ellipse id="accLens" class="s-lens" cx="430" cy="190" rx="10" ry="62"/>
+          <g id="accRays"></g>
+          <g id="accObj"></g>
+          <g class="lbl">
+            <line class="s-lead" x1="320" y1="36" x2="362" y2="140"/><text class="s-label" x="292" y="30">Cornea</text>
+            <line class="s-lead" x1="470" y1="30" x2="436" y2="74"/><text class="s-label" x="440" y="24">Ciliary muscle</text>
+            <line class="s-lead" x1="590" y1="40" x2="440" y2="104"/><text class="s-label" x="560" y="34">Suspensory ligaments</text>
+            <line class="s-lead" x1="372" y1="350" x2="392" y2="282"/><text class="s-label" x="352" y="366">Iris</text>
+            <line class="s-lead" x1="452" y1="350" x2="436" y2="236"/><text class="s-label" x="436" y="366">Lens</text>
+            <line class="s-lead" x1="640" y1="350" x2="624" y2="282"/><text class="s-label" x="620" y="366">Retina</text>
+            <line class="s-lead" x1="736" y1="290" x2="722" y2="236"/><text class="s-label" x="700" y="306">Optic nerve</text>
+          </g>
+        </svg>
+        <div class="focusline" aria-live="polite"><span id="focusChip" class="chip good">Image focused on the retina</span><span id="focusWhy" class="note"></span></div>
+        <p class="note">Diagram not to scale. In a real eye the cornea does most of the bending of light; the lens makes the fine adjustment so the image is sharp.</p>
+      </div>
+
+      <div class="side">
+        <div class="card">
+          <div class="control">
+            <label for="distance">Distance to the object</label>
+            <input type="range" id="distance" min="0" max="100" value="100">
+            <div class="range-ends"><span>Near (25 cm)</span><span>Far (6 m +)</span></div>
+            <div class="readout" id="distRead">6 m or more</div>
+          </div>
+          <div class="btns">
+            <button class="btn" id="btnNear" type="button">Read a book</button>
+            <button class="btn" id="btnFar" type="button">Look out of the window</button>
+          </div>
+          <label class="check"><input type="checkbox" id="lockLens"> <span>Lock the lens shape. Move the object and see what happens when the eye cannot accommodate.</span></label>
+          <label class="check"><input type="checkbox" id="accLabels" checked> <span>Show labels</span></label>
+        </div>
+        <div class="card">
+          <h3>What the eye is doing</h3>
+          <dl class="status">
+            <dt>Ciliary muscles</dt><dd><span class="chip" id="stCil"></span></dd>
+            <dt>Suspensory ligaments</dt><dd><span class="chip" id="stLig"></span></dd>
+            <dt>Lens shape</dt><dd><span class="chip" id="stLens"></span></dd>
+            <dt>Refraction of light</dt><dd><span class="chip" id="stRef"></span></dd>
+          </dl>
+        </div>
+        <div class="card seen">
+          <h3>What the person sees</h3>
+          <div class="seen-box" aria-hidden="true">
+            <div class="chart-row" id="seen1">E F P</div>
+            <div class="chart-row small" id="seen2">T O Z L P E D</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="answers">
+      <div class="answer">
+        <span class="tag">Exam answer · near object</span>
+        <ol>
+          <li>The <b>ciliary muscles contract</b>.</li>
+          <li>The <b>suspensory ligaments become slack</b> (loose).</li>
+          <li>The <b>lens becomes thicker</b> (more convex).</li>
+          <li>Light is <b>refracted more</b>, so it is focused on the retina.</li>
+        </ol>
+      </div>
+      <div class="answer">
+        <span class="tag">Exam answer · distant object</span>
+        <ol>
+          <li>The <b>ciliary muscles relax</b>.</li>
+          <li>The <b>suspensory ligaments become taut</b> (pulled tight).</li>
+          <li>The <b>lens is pulled thinner</b> (less convex).</li>
+          <li>Light is <b>refracted less</b>, so it is focused on the retina.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PUPIL REFLEX ===================== -->
+  <section id="pupil-reflex" role="tabpanel" aria-labelledby="tab-pup" hidden style="display:grid;gap:20px">
+    <div class="lab">
+      <div class="stage">
+        <svg id="pupSvg" viewBox="0 0 420 320" role="img" aria-label="Front view of the eye showing the iris muscles and pupil">
+          <defs>
+            <clipPath id="almond"><path d="M30 160 Q 210 -30 390 160 Q 210 350 30 160 Z"/></clipPath>
+            <radialGradient id="glow"><stop offset="0" stop-opacity=".9" class="gstop"/><stop offset="1" stop-opacity="0" class="gstop"/></radialGradient>
+          </defs>
+          <rect class="s-stage" x="0" y="0" width="420" height="320" rx="8"/>
+          <circle id="lampGlow" class="s-lampglow" cx="372" cy="40" r="60" opacity=".3"/>
+          <circle id="lamp" class="s-lamp" cx="372" cy="40" r="14"/>
+          <path class="s-sclera" d="M30 160 Q 210 -30 390 160 Q 210 350 30 160 Z"/>
+          <g clip-path="url(#almond)">
+            <circle class="s-iris-base" cx="210" cy="160" r="88"/>
+            <g id="pupRad"></g>
+            <g id="pupCirc"></g>
+            <circle id="pupil" class="s-pupil" cx="210" cy="160" r="30"/>
+            <circle cx="196" cy="146" r="5" fill="#ffffff" opacity=".75"/>
+          </g>
+          <rect id="dimmer" x="0" y="0" width="420" height="320" rx="8" fill="#000" opacity="0" pointer-events="none"/>
+          <g class="lbl" id="pupLabels">
+            <text class="s-label" x="14" y="24" id="lblCirc">Circular muscles</text>
+            <text class="s-label" x="14" y="44" id="lblRad">Radial muscles</text>
+            <text class="s-label" x="14" y="304">Pupil = the hole in the iris</text>
+          </g>
+        </svg>
+        <p class="note" id="pupNote">Circular muscles form rings around the pupil. Radial muscles run outwards like the spokes of a wheel.</p>
+      </div>
+
+      <div class="side">
+        <div class="card">
+          <div class="control">
+            <label for="light">Light intensity</label>
+            <input type="range" id="light" min="0" max="100" value="50">
+            <div class="range-ends"><span>Dim</span><span>Bright</span></div>
+          </div>
+          <div class="btns">
+            <button class="btn" id="btnTorch" type="button">Shine a torch</button>
+            <button class="btn" id="btnDark" type="button">Turn the lights off</button>
+            <button class="btn" id="btnNorm" type="button">Normal room</button>
+          </div>
+          <label class="check"><input type="checkbox" id="pupLabelsChk" checked> <span>Show labels</span></label>
+        </div>
+        <div class="card">
+          <h3>What the iris is doing</h3>
+          <dl class="status">
+            <dt>Light</dt><dd><span class="chip" id="stLight"></span></dd>
+            <dt>Circular muscles</dt><dd><span class="chip" id="stCirc"></span></dd>
+            <dt>Radial muscles</dt><dd><span class="chip" id="stRad"></span></dd>
+            <dt>Pupil</dt><dd><span class="chip" id="stPup"></span></dd>
+          </dl>
+          <p class="note" id="stWhy"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>The reflex pathway</h2>
+      <p class="note">This is a reflex: it is automatic and fast, and you do not think about it. Change the light to send an impulse along the pathway.</p>
+      <div class="arc" id="arc">
+        <div class="arc-step"><span class="role">Stimulus</span><b>Change in light</b></div>
+        <div class="arc-step"><span class="role">Receptor</span><b>Retina</b>rods and cones</div>
+        <div class="arc-step"><span class="role">Sensory neurone</span><b>Optic nerve</b>impulse to brain</div>
+        <div class="arc-step"><span class="role">Coordinator</span><b>Brain</b>relay neurone</div>
+        <div class="arc-step"><span class="role">Motor neurone</span><b>Impulse to iris</b></div>
+        <div class="arc-step"><span class="role">Effector</span><b>Iris muscles</b>pupil changes size</div>
+      </div>
+    </div>
+
+    <div class="answers">
+      <div class="answer">
+        <span class="tag">Exam answer · bright light</span>
+        <ol>
+          <li>The <b>circular muscles contract</b>.</li>
+          <li>The <b>radial muscles relax</b>.</li>
+          <li>The <b>pupil constricts</b> (gets smaller).</li>
+          <li><b>Less light enters</b> the eye, so the retina is not damaged.</li>
+        </ol>
+      </div>
+      <div class="answer">
+        <span class="tag">Exam answer · dim light</span>
+        <ol>
+          <li>The <b>radial muscles contract</b>.</li>
+          <li>The <b>circular muscles relax</b>.</li>
+          <li>The <b>pupil dilates</b> (gets wider).</li>
+          <li><b>More light enters</b> the eye, so we can see better.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== QUIZ ===================== -->
+  <section class="quiz" aria-labelledby="quizTitle">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <h2 id="quizTitle">Check yourself</h2>
+      <span class="score" id="score">0 / 8</span>
+    </div>
+    <div id="quiz" class="quiz"></div>
+    <div><button class="btn" id="resetQuiz" type="button">Try the questions again</button></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var NS = 'http://www.w3.org/2000/svg';
+
+  /* ---------- tabs + hash ---------- */
+  var tabs = {accommodation: document.getElementById('tab-acc'), 'pupil-reflex': document.getElementById('tab-pup')};
+  function show(id){
+    if(!tabs[id]) id = 'accommodation';
+    Object.keys(tabs).forEach(function(k){
+      var on = k === id;
+      tabs[k].setAttribute('aria-selected', on ? 'true' : 'false');
+      document.getElementById(k).hidden = !on;
+    });
+  }
+  Object.keys(tabs).forEach(function(k){
+    tabs[k].addEventListener('click', function(){ show(k); try{ history.replaceState(null,'','#'+k); }catch(e){ location.hash = k; } });
+  });
+  window.addEventListener('hashchange', function(){ show(location.hash.slice(1)); });
+  show(location.hash.slice(1));
+
+  /* =========================================================
+     ACCOMMODATION
+     Thin-lens model: lens power P = 1/f. Image distance (lens -> retina) is fixed.
+     t = 0 lens relaxed for distant object; t = 1 fully accommodated for nearest object.
+     ========================================================= */
+  var cx=500, cy=190, R=136, lensX=430, DI=207, DNEAR=240;
+  var PFAR = 1/DI, PSPAN = 1/DNEAR;
+  var dist = document.getElementById('distance');
+  var lock = document.getElementById('lockLens');
+  var tCur = 0, tTarget = 0, lockedT = 0;
+
+  function objDist(s){ return s >= 100 ? Infinity : DNEAR * Math.pow(25, s/100); }
+  function realLabel(s){
+    if(s >= 100) return '6 m or more';
+    var cm = 25 * Math.pow(24, s/100);
+    return cm < 100 ? Math.round(cm) + ' cm' : (cm/100).toFixed(1) + ' m';
+  }
+  function targetT(){
+    if(lock.checked) return lockedT;
+    var d = objDist(+dist.value);
+    return isFinite(d) ? DNEAR/d : 0;
+  }
+  function setChip(el, text, cls){ el.textContent = text; el.className = 'chip ' + (cls||''); }
+
+  function wavy(x1,y1,x2,y2,amp){
+    if(amp < 0.3) return 'M'+x1+' '+y1+' L'+x2+' '+y2;
+    var n=4, d='M'+x1.toFixed(1)+' '+y1.toFixed(1);
+    for(var i=0;i<n;i++){
+      var a=i/n, b=(i+1)/n, m=(a+b)/2;
+      var mx=x1+(x2-x1)*m + (i%2?amp:-amp), my=y1+(y2-y1)*m;
+      d+=' Q'+mx.toFixed(1)+' '+my.toFixed(1)+' '+(x1+(x2-x1)*b).toFixed(1)+' '+(y1+(y2-y1)*b).toFixed(1);
+    }
+    return d;
+  }
+
+  function drawAcc(){
+    var t = tCur;
+    var P = PFAR + t*PSPAN;
+    var rx = 10 + 14*t, ry = 62 - 10*t;
+    var lens = document.getElementById('accLens');
+    lens.setAttribute('rx', rx.toFixed(2)); lens.setAttribute('ry', ry.toFixed(2));
+
+    // ciliary muscles: relaxed = further out, thin; contracted = pulled in, bulkier
+    var mY = 112 - 10*t, mRx = 13 + 5*t, mRy = 8 + 4*t;
+    var musc = '', lig = '';
+    [-1,1].forEach(function(sg){
+      var y = cy + sg*mY;
+      musc += '<ellipse class="s-musc-r" cx="'+lensX+'" cy="'+y.toFixed(1)+'" rx="'+mRx.toFixed(1)+'" ry="'+mRy.toFixed(1)+'"/>';
+      musc += '<ellipse class="s-musc-c" cx="'+lensX+'" cy="'+y.toFixed(1)+'" rx="'+mRx.toFixed(1)+'" ry="'+mRy.toFixed(1)+'" opacity="'+t.toFixed(2)+'"/>';
+      var y1 = cy + sg*(ry-1), y2 = cy + sg*(mY - mRy + 1);
+      [-1,0,1].forEach(function(k){
+        lig += '<path class="s-lig" d="'+wavy(lensX + k*rx*0.55, y1, lensX + k*9, y2, 3.5*t)+'"/>';
+      });
+    });
+    document.getElementById('accMusc').innerHTML = musc;
+    document.getElementById('accLig').innerHTML = lig;
+
+    // rays
+    var d = objDist(+dist.value);
+    var x0 = isFinite(d) ? lensX - d : -Infinity;
+    var hs = [-22,-11,11,22], rays='', spread=0, focusX=null;
+    hs.forEach(function(h){
+      var u = isFinite(d) ? h/d : 0;
+      var up = u - h*P;
+      var xs = (isFinite(d) && x0 >= 14) ? x0 : 14;
+      var ys = cy + h + u*(xs - lensX);
+      rays += '<path class="s-ray" d="M'+xs.toFixed(1)+' '+ys.toFixed(1)+' L'+lensX+' '+(cy+h)+'"/>';
+      var xe = lensX, ye = cy+h;
+      for(var x=lensX; x<=cx+R+2; x+=1){
+        var y = cy + h + up*(x-lensX);
+        if((x-cx)*(x-cx)+(y-cy)*(y-cy) >= R*R && x > cx){ xe=x; ye=y; break; }
+        xe=x; ye=y;
+      }
+      rays += '<path class="s-ray" d="M'+lensX+' '+(cy+h)+' L'+xe.toFixed(1)+' '+ye.toFixed(1)+'"/>';
+      if(h===22){
+        spread = Math.abs(ye - cy);
+        if(up < 0){ focusX = lensX - h/up; }
+        if(focusX !== null && focusX > xe + 2){
+          var xg = Math.min(focusX, 795);
+          rays += '<path class="s-ray-ghost" d="M'+xe.toFixed(1)+' '+ye.toFixed(1)+' L'+xg.toFixed(1)+' '+(cy + h + up*(xg-lensX)).toFixed(1)+'"/>';
+        }
+      }
+      if(h===-22 && focusX !== null && focusX > xe + 2){
+        var xg2 = Math.min(focusX, 795);
+        rays += '<path class="s-ray-ghost" d="M'+xe.toFixed(1)+' '+ye.toFixed(1)+' L'+xg2.toFixed(1)+' '+(cy + h + up*(xg2-lensX)).toFixed(1)+'"/>';
+      }
+    });
+    var sharp = spread < 1.5;
+    if(!sharp && focusX !== null && focusX > lensX && focusX < 795){
+      rays += '<circle class="s-focus" cx="'+focusX.toFixed(1)+'" cy="'+cy+'" r="6"/>';
+    }
+    document.getElementById('accRays').innerHTML = rays;
+
+    var obj='';
+    if(isFinite(d) && x0 >= 14){
+      obj = '<circle class="s-obj" cx="'+x0.toFixed(1)+'" cy="'+cy+'" r="6"/><text class="s-small" x="'+Math.max(4, x0-22).toFixed(1)+'" y="'+(cy-14)+'">Object</text>';
+    } else if(isFinite(d)){
+      obj = '<text class="s-small" x="14" y="'+(cy-34)+'">← object further away</text>';
+    } else {
+      obj = '<text class="s-small" x="14" y="'+(cy-34)+'">Light from a distant object:</text><text class="s-small" x="14" y="'+(cy-19)+'">rays almost parallel</text>';
+    }
+    document.getElementById('accObj').innerHTML = obj;
+
+    // status
+    var near = t > 0.6, far = t < 0.2;
+    setChip(document.getElementById('stCil'), near ? 'Contracted' : far ? 'Relaxed' : 'Partly contracted', near ? 'hot' : 'cool');
+    setChip(document.getElementById('stLig'), near ? 'Slack (loose)' : far ? 'Taut (pulled tight)' : 'Less tight', near ? 'hot' : 'cool');
+    setChip(document.getElementById('stLens'), near ? 'Thick, more convex' : far ? 'Thin, less convex' : 'In between', near ? 'hot' : 'cool');
+    setChip(document.getElementById('stRef'), near ? 'More' : far ? 'Less' : 'Medium', near ? 'hot' : 'cool');
+
+    var chip = document.getElementById('focusChip'), why = document.getElementById('focusWhy');
+    if(sharp){ setChip(chip, 'Image focused on the retina', 'good'); why.textContent = ''; }
+    else {
+      setChip(chip, 'Blurred image', 'bad');
+      if(focusX === null || focusX > cx + R) why.textContent = 'Light would focus behind the retina.';
+      else why.textContent = 'Light focuses in front of the retina.';
+    }
+    var blur = Math.min(9, spread*0.45);
+    document.getElementById('seen1').style.filter = 'blur('+blur.toFixed(1)+'px)';
+    document.getElementById('seen2').style.filter = 'blur('+blur.toFixed(1)+'px)';
+    document.getElementById('distRead').textContent = realLabel(+dist.value);
+  }
+
+  var accRunning = false;
+  function accLoop(){
+    tTarget = targetT();
+    var diff = tTarget - tCur;
+    if(reduce || Math.abs(diff) < 0.002){ tCur = tTarget; drawAcc(); accRunning = false; return; }
+    tCur += diff * 0.1;
+    drawAcc();
+    requestAnimationFrame(accLoop);
+  }
+  function kickAcc(){ if(!accRunning){ accRunning = true; requestAnimationFrame(accLoop); } }
+  dist.addEventListener('input', function(){ drawAcc(); kickAcc(); });
+  lock.addEventListener('change', function(){ lockedT = tCur; kickAcc(); drawAcc(); });
+  document.getElementById('btnNear').addEventListener('click', function(){ dist.value = 0; kickAcc(); drawAcc(); });
+  document.getElementById('btnFar').addEventListener('click', function(){ dist.value = 100; kickAcc(); drawAcc(); });
+  document.getElementById('accLabels').addEventListener('change', function(e){ document.getElementById('accSvg').classList.toggle('labels-off', !e.target.checked); });
+  tCur = targetT(); drawAcc();
+
+  /* =========================================================
+     PUPIL REFLEX
+     ========================================================= */
+  var light = document.getElementById('light');
+  var pCx=210, pCy=160, IRIS=88;
+  var prCur = 33, prTarget = 33, lastCat = null;
+
+  function cat(L){ return L > 0.62 ? 'bright' : L < 0.38 ? 'dim' : 'normal'; }
+
+  function drawPupil(){
+    var L = light.value/100, c = cat(L);
+    var pr = prCur;
+    document.getElementById('pupil').setAttribute('r', pr.toFixed(2));
+    var circOuter = pr + (IRIS - pr)*0.32;
+    var circHot = c === 'bright', radHot = c === 'dim';
+    var cs = circHot ? 'var(--contract)' : 'var(--relax)';
+    var rs = radHot ? 'var(--contract)' : 'var(--relax)';
+    var g = '';
+    for(var i=1;i<=4;i++){
+      var r = pr + (circOuter - pr)*i/4.4;
+      g += '<circle class="s-circ" cx="'+pCx+'" cy="'+pCy+'" r="'+r.toFixed(1)+'" stroke="'+cs+'" stroke-width="'+(circHot?3:1.6)+'"/>';
+    }
+    document.getElementById('pupCirc').innerHTML = g;
+    var rg = '', r1 = circOuter + 3, r2 = IRIS - 3;
+    for(var k=0;k<40;k++){
+      var a = k/40*Math.PI*2;
+      rg += '<line class="s-rad" x1="'+(pCx+r1*Math.cos(a)).toFixed(1)+'" y1="'+(pCy+r1*Math.sin(a)).toFixed(1)+'" x2="'+(pCx+r2*Math.cos(a)).toFixed(1)+'" y2="'+(pCy+r2*Math.sin(a)).toFixed(1)+'" stroke="'+rs+'" stroke-width="'+(radHot?3:1.6)+'"/>';
+    }
+    document.getElementById('pupRad').innerHTML = rg;
+    document.getElementById('lblCirc').setAttribute('fill', circHot ? 'var(--contract)' : 'var(--ink)');
+    document.getElementById('lblRad').setAttribute('fill', radHot ? 'var(--contract)' : 'var(--ink)');
+    document.getElementById('lblCirc').style.fill = circHot ? 'var(--contract)' : '';
+    document.getElementById('lblRad').style.fill = radHot ? 'var(--contract)' : '';
+
+    document.getElementById('dimmer').setAttribute('opacity', ((1-L)*0.5).toFixed(2));
+    document.getElementById('lampGlow').setAttribute('opacity', (0.05 + L*0.45).toFixed(2));
+    document.getElementById('lampGlow').setAttribute('r', (30 + L*50).toFixed(1));
+    document.getElementById('lamp').setAttribute('opacity', (0.25 + L*0.75).toFixed(2));
+
+    setChip(document.getElementById('stLight'), c === 'bright' ? 'Bright' : c === 'dim' ? 'Dim' : 'Normal', '');
+    setChip(document.getElementById('stCirc'), circHot ? 'Contract' : c === 'dim' ? 'Relax' : 'Partly contracted', circHot ? 'hot' : 'cool');
+    setChip(document.getElementById('stRad'), radHot ? 'Contract' : c === 'bright' ? 'Relax' : 'Partly contracted', radHot ? 'hot' : 'cool');
+    setChip(document.getElementById('stPup'), c === 'bright' ? 'Constricts (smaller)' : c === 'dim' ? 'Dilates (wider)' : 'Medium size', c === 'normal' ? 'cool' : 'hot');
+    document.getElementById('stWhy').textContent =
+      c === 'bright' ? 'Less light enters the eye. This protects the retina from damage.' :
+      c === 'dim' ? 'More light enters the eye, so more light reaches the retina and we can see better.' :
+      'Both sets of muscles are partly contracted. Move the slider to dim or bright.';
+  }
+
+  var arcTimers = [];
+  function runPulse(){
+    var steps = document.querySelectorAll('.arc-step');
+    arcTimers.forEach(clearTimeout); arcTimers = [];
+    steps.forEach(function(s){ s.classList.remove('active'); });
+    if(reduce){ steps[steps.length-1].classList.add('active'); return; }
+    steps.forEach(function(s, i){
+      arcTimers.push(setTimeout(function(){
+        steps.forEach(function(o){ o.classList.remove('active'); });
+        s.classList.add('active');
+      }, i*230));
+    });
+  }
+
+  var pupRunning = false;
+  function pupLoop(){
+    var diff = prTarget - prCur;
+    if(reduce || Math.abs(diff) < 0.05){ prCur = prTarget; drawPupil(); pupRunning = false; return; }
+    prCur += diff * 0.06;
+    drawPupil();
+    requestAnimationFrame(pupLoop);
+  }
+  function updateLight(fromUser){
+    var L = light.value/100, c = cat(L);
+    var delay = (fromUser && c !== lastCat && lastCat !== null && !reduce) ? 1150 : 0;
+    if(c !== lastCat && lastCat !== null) runPulse();
+    lastCat = c;
+    drawPupil();
+    setTimeout(function(){
+      prTarget = 52 - 38*(light.value/100);
+      if(!pupRunning){ pupRunning = true; requestAnimationFrame(pupLoop); }
+    }, delay);
+  }
+  light.addEventListener('input', function(){ updateLight(true); });
+  document.getElementById('btnTorch').addEventListener('click', function(){ light.value = 100; updateLight(true); });
+  document.getElementById('btnDark').addEventListener('click', function(){ light.value = 0; updateLight(true); });
+  document.getElementById('btnNorm').addEventListener('click', function(){ light.value = 50; updateLight(true); });
+  document.getElementById('pupLabelsChk').addEventListener('change', function(e){ document.getElementById('pupSvg').classList.toggle('labels-off', !e.target.checked); });
+  prTarget = prCur = 52 - 38*0.5; lastCat = cat(0.5); drawPupil();
+
+  /* =========================================================
+     QUIZ
+     ========================================================= */
+  var Q = [
+    {q:'You look at a book close to your face. What do the ciliary muscles do?', o:['They contract','They relax','They pull the lens thinner','They stop working'], a:0, w:'For a near object the ciliary muscles contract. This makes the suspensory ligaments slack.'},
+    {q:'You look at a distant tree. What are the suspensory ligaments like?', o:['Slack (loose)','Taut (pulled tight)','Broken','Contracted'], a:1, w:'The ciliary muscles relax, so the suspensory ligaments are pulled taut. They pull the lens thin.'},
+    {q:'Why does the lens become thicker for a near object?', o:['To let more light into the eye','To refract light more so it focuses on the retina','To protect the retina from bright light','To make the pupil smaller'], a:1, w:'Light from a near object spreads out more. A thicker, more convex lens refracts the light more so it focuses on the retina.'},
+    {q:'What happens if the lens cannot change shape and you look at a near object?', o:['The image is still sharp','The light focuses behind the retina, so the image is blurred','The pupil dilates','The retina becomes thicker'], a:1, w:'Try "Lock the lens shape" in the simulation. A thin lens does not refract enough for near objects, so the image is blurred.'},
+    {q:'A bright torch shines in the eye. Which muscles contract?', o:['Radial muscles','Circular muscles','Ciliary muscles','Both circular and radial muscles'], a:1, w:'In bright light the circular muscles contract and the radial muscles relax, so the pupil constricts.'},
+    {q:'In dim light, what happens to the pupil?', o:['It constricts','It dilates','It disappears','It stays the same size'], a:1, w:'The radial muscles contract and the circular muscles relax. The pupil dilates so more light can enter.'},
+    {q:'In the pupil reflex, what is the effector?', o:['The retina','The brain','The muscles of the iris','The optic nerve'], a:2, w:'The effector carries out the response. Here the iris muscles change the size of the pupil.'},
+    {q:'Why is it useful for the pupil to constrict in bright light?', o:['It stops too much light damaging the retina','It helps us see near objects','It makes the lens thicker','It sends impulses to the brain'], a:0, w:'Less light enters the eye, so the retina is protected from damage.'}
+  ];
+  var scoreEl = document.getElementById('score'), quiz = document.getElementById('quiz'), got = 0, done = 0;
+  function buildQuiz(){
+    quiz.innerHTML = ''; got = 0; done = 0; scoreEl.textContent = '0 / ' + Q.length;
+    Q.forEach(function(item, qi){
+      var box = document.createElement('div'); box.className = 'q';
+      var p = document.createElement('p'); p.textContent = (qi+1) + '. ' + item.q; box.appendChild(p);
+      var opts = document.createElement('div'); opts.className = 'opts';
+      var why = document.createElement('p'); why.className = 'why'; why.hidden = true; why.textContent = item.w;
+      item.o.forEach(function(txt, oi){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.id = 'q'+qi+'o'+oi; b.textContent = txt;
+        b.addEventListener('click', function(){
+          var all = opts.querySelectorAll('button');
+          all.forEach(function(x){ x.disabled = true; });
+          all[item.a].classList.add('right');
+          if(oi !== item.a) b.classList.add('wrong'); else got++;
+          done++; why.hidden = false;
+          scoreEl.textContent = got + ' / ' + Q.length + (done === Q.length ? ' · finished' : '');
+        });
+        opts.appendChild(b);
+      });
+      box.appendChild(opts); box.appendChild(why); quiz.appendChild(box);
+    });
+  }
+  document.getElementById('resetQuiz').addEventListener('click', buildQuiz);
+  buildQuiz();
+})();
+</script>
+
+</body></html>

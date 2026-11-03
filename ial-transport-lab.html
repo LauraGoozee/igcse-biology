@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transport Across Membranes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column of stations in teaching order — diffusion → SA:V → facilitated vs active → bulk transport */
+:root{
+  --bg:#eef3f0; --surface:#ffffff; --surface-2:#f6f9f7; --ink:#142520; --muted:#56706a; --line:#d2dfd9;
+  --accent:#1d7a52; --sol:#cf4f35; --sol-soft:#f7ddd6; --mem:#8f9c97; --carrier:#2f6fb7; --atp:#c58a0d;
+  --pink:#d63a8c; --agar:#f3eeda; --good:#2c7a4d; --good-soft:#dcf0e3; --bad:#b3261e; --bad-soft:#f9dedb;
+  --aq:#e3eef6; --cyto:#f2f0e6; --head:#7d8c86; --tail:#b3bdb8; --ion:#6b4fd0; --glu:#5f9318;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1714; --surface:#16211d; --surface-2:#1b2924; --ink:#e3eeea; --muted:#94aaa2; --line:#2a3b35;
+  --accent:#5ccf98; --sol:#ff8266; --sol-soft:#4a241c; --mem:#6f7e78; --carrier:#6aa8f0; --atp:#eab544;
+  --pink:#f06bb0; --agar:#3a3726; --good:#63cc8f; --good-soft:#163a26; --bad:#ff8f85; --bad-soft:#47201d;
+  --aq:#172633; --cyto:#24241b; --head:#7f908a; --tail:#4d5c56; --ion:#a991ff; --glu:#9ed04e;
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0f1714; --surface:#16211d; --surface-2:#1b2924; --ink:#e3eeea; --muted:#94aaa2; --line:#2a3b35;
+  --accent:#5ccf98; --sol:#ff8266; --sol-soft:#4a241c; --mem:#6f7e78; --carrier:#6aa8f0; --atp:#eab544;
+  --pink:#f06bb0; --agar:#3a3726; --good:#63cc8f; --good-soft:#163a26; --bad:#ff8f85; --bad-soft:#47201d;
+  --aq:#172633; --cyto:#24241b; --head:#7f908a; --tail:#4d5c56; --ion:#a991ff; --glu:#9ed04e;
+  color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15.5px; line-height:1.55}
+.wrap{max-width:1100px; margin:0 auto; padding-block:28px 64px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex; flex-direction:column; gap:28px}
+h1,h2,h3{font-family:var(--f-display); text-wrap:balance; margin:0; line-height:1.15}
+h1{font-size:clamp(30px,5vw,46px); font-weight:700; letter-spacing:-0.01em}
+h2{font-size:clamp(22px,3vw,28px); font-weight:700}
+h3{font-size:18px; font-weight:700}
+p{margin:0; max-width:68ch}
+.eyebrow{font-family:var(--f-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+header{display:flex; flex-direction:column; gap:10px}
+.lede{color:var(--muted); font-size:17px}
+.spec{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px}
+.chip{font-family:var(--f-mono); font-size:12px; padding:3px 9px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:var(--surface)}
+nav.jump{display:flex; flex-wrap:wrap; gap:6px}
+nav.jump a{font-size:13.5px; color:var(--ink); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:5px 10px; background:var(--surface)}
+nav.jump a:hover{border-color:var(--accent)}
+.station{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:18px; min-width:0}
+.station-head{display:flex; gap:14px; align-items:baseline}
+.num{font-family:var(--f-mono); font-size:13px; color:var(--accent); border:1.5px solid var(--accent); border-radius:999px; width:28px; height:28px; display:grid; place-items:center; flex:none; transform:translateY(-3px)}
+.station-head > div{display:flex; flex-direction:column; gap:6px; min-width:0}
+.station-head p{color:var(--muted)}
+.two{display:grid; grid-template-columns:minmax(0,1fr) 290px; gap:20px}
+@media (max-width:880px){ .two{grid-template-columns:minmax(0,1fr)} }
+.half{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px}
+@media (max-width:820px){ .half{grid-template-columns:minmax(0,1fr)} }
+.box{border:1px solid var(--line); border-radius:10px; background:var(--surface-2); overflow-x:auto; min-width:0}
+canvas{display:block; width:100%}
+svg{display:block; width:100%; height:auto}
+.controls{display:flex; flex-direction:column; gap:14px}
+.ctl{display:flex; flex-direction:column; gap:5px}
+.ctl label{font-weight:500; font-size:14px; display:flex; justify-content:space-between; gap:8px}
+.ctl output{font-family:var(--f-mono); font-size:13px; color:var(--accent); font-variant-numeric:tabular-nums}
+input[type=range]{width:100%; accent-color:var(--accent)}
+.row{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+button{font-family:var(--f-body); font-size:14px; font-weight:500; border-radius:8px; padding:7px 13px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent); color:var(--surface); border-color:var(--accent)}
+button[aria-pressed="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+button:focus-visible, input:focus-visible, summary:focus-visible, a:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.readout{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px}
+.ro{border:1px solid var(--line); border-radius:9px; padding:8px 10px; background:var(--surface-2); display:flex; flex-direction:column; gap:1px; min-width:0}
+.ro .k{font-size:12px; color:var(--muted)}
+.ro .v{font-family:var(--f-mono); font-size:15px; font-variant-numeric:tabular-nums}
+.ro.wide{grid-column:1/-1}
+.formula{font-family:var(--f-mono); font-size:13.5px; border:1px dashed var(--line); border-radius:8px; padding:10px 12px; background:var(--surface-2); line-height:1.6}
+.callout{border-left:3px solid var(--accent); background:var(--surface-2); padding:12px 14px; border-radius:0 8px 8px 0; font-size:14.5px}
+.hint{font-size:13px; color:var(--muted)}
+.opt{display:flex; gap:8px; align-items:center; font-size:14px}
+
+.table-box{overflow-x:auto; border:1px solid var(--line); border-radius:10px}
+table{border-collapse:collapse; width:100%; min-width:600px; font-size:14px}
+th,td{padding:7px 10px; border-bottom:1px solid var(--line); text-align:right; font-variant-numeric:tabular-nums}
+th{font-weight:600; font-size:12.5px; color:var(--muted); background:var(--surface-2); vertical-align:bottom; line-height:1.3}
+th:first-child, td:first-child{text-align:left}
+td.mono{font-family:var(--f-mono)}
+td input{width:76px; font-family:var(--f-mono); font-size:13.5px; text-align:right; padding:4px 6px; border-radius:6px; border:1px solid var(--line); background:var(--surface); color:var(--ink)}
+td input.ok{border-color:var(--good); background:var(--good-soft)}
+td input.bad{border-color:var(--bad); background:var(--bad-soft)}
+
+.steps{display:flex; flex-direction:column; gap:10px}
+.step-cap{font-size:14.5px; min-height:3.2em}
+.step-cap b{font-weight:600}
+.dots{display:flex; gap:6px}
+.dots i{width:9px; height:9px; border-radius:50%; background:var(--line)}
+.dots i.on{background:var(--accent)}
+
+.quiz{display:flex; flex-direction:column; gap:12px}
+.q{border:1px solid var(--line); border-radius:10px; padding:14px 16px; background:var(--surface-2); display:flex; flex-direction:column; gap:10px}
+.q-top{display:flex; justify-content:space-between; gap:12px; align-items:baseline}
+.q-top p{font-weight:500}
+.marks{font-family:var(--f-mono); font-size:12.5px; color:var(--muted); flex:none}
+.src{font-family:var(--f-mono); font-size:12px; color:var(--muted)}
+.stem{font-size:14.5px; color:var(--muted); display:flex; flex-direction:column; gap:6px}
+.choices{display:flex; flex-direction:column; gap:6px}
+.choice{text-align:left; font-weight:400; background:var(--surface)}
+.choice.right{border-color:var(--good); background:var(--good-soft)}
+.choice.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.fb{font-size:14px; color:var(--muted)}
+details summary{cursor:pointer; font-size:14px; color:var(--accent); font-weight:500}
+details ul{margin:8px 0 0; padding-left:20px; display:flex; flex-direction:column; gap:4px; font-size:14.5px}
+.subhead{font-family:var(--f-display); font-size:19px; font-weight:700; margin-top:6px}
+.venn{max-width:460px}
+.counts{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:6px}
+.cnt{font-size:13px; border:1px solid var(--line); border-radius:8px; padding:6px 10px; background:var(--surface-2); display:flex; justify-content:space-between; align-items:center; gap:8px; font-variant-numeric:tabular-nums}
+.cnt b{font-weight:600; display:flex; align-items:center; gap:7px}
+.cnt span{font-family:var(--f-mono); color:var(--muted)}
+.sw{width:10px; height:10px; border-radius:3px; flex:none; display:inline-block}
+.pump{display:flex; flex-direction:column; gap:8px; border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:var(--surface-2)}
+.pump .lab{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+footer{font-size:13px; color:var(--muted); display:flex; flex-direction:column; gap:6px}
+</style>
+</head>
+<body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">IAL Biology · Unit 1 · Topic 2</span>
+    <h1>Transport Across Membranes</h1>
+    <p class="lede">Simple diffusion, surface area to volume ratio, facilitated diffusion, active transport and bulk transport, each with a model you can change.</p>
+    <div class="spec"><span class="chip">Spec 2.1 Fick’s law and SA:V</span><span class="chip">Spec 2.5 transport mechanisms, carrier and channel proteins</span></div>
+    <nav class="jump" aria-label="Sections">
+      <a href="#fick">1 Diffusion</a><a href="#sav">2 SA:V cubes</a><a href="#fa">3 Facilitated and active</a><a href="#bulk">4 Endocytosis and exocytosis</a>
+    </nav>
+  </header>
+
+  <!-- 1 FICK -->
+  <section class="station" id="fick" aria-labelledby="h1s">
+    <div class="station-head"><span class="num">1</span><div>
+      <h2 id="h1s">Diffusion and Fick’s law</h2>
+      <p>Molecules move randomly across an exchange surface. Change the surface area, the thickness of the surface and the concentration on the left, then compare the measured rate with Fick’s law.</p>
+    </div></div>
+    <div class="two">
+      <div class="box"><canvas id="fickCv" aria-label="Animation of molecules diffusing through an exchange surface"></canvas></div>
+      <div class="controls">
+        <div class="ctl"><label for="fSA">Surface area <output id="fSAo">3 units</output></label><input id="fSA" type="range" min="1" max="5" step="1" value="3"></div>
+        <div class="ctl"><label for="fD">Thickness (diffusion distance) <output id="fDo">1 unit</output></label><input id="fD" type="range" min="1" max="4" step="1" value="1"></div>
+        <div class="ctl"><label for="fC">Molecules on the left at start <output id="fCo">160</output></label><input id="fC" type="range" min="40" max="240" step="20" value="160"></div>
+        <div class="row"><button id="fReset" type="button">Restart</button><button id="fPlay" type="button">Pause</button></div>
+      </div>
+    </div>
+    <div class="readout" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+      <div class="ro"><span class="k">Left side</span><span class="v" id="fL">–</span></div>
+      <div class="ro"><span class="k">Right side</span><span class="v" id="fR">–</span></div>
+      <div class="ro"><span class="k">Measured net rate</span><span class="v" id="fRate">–</span></div>
+      <div class="ro"><span class="k">Fick’s law (relative)</span><span class="v" id="fPred">–</span></div>
+    </div>
+    <p class="formula">rate of diffusion ∝ <u>surface area × concentration difference</u> ÷ thickness of surface<br><span id="fCalc"></span></p>
+    <p class="hint">The rate slows over time because molecules crossing to the right reduce the concentration difference. Restart after changing a slider for a fair comparison. Both rates are relative, not real units.</p>
+  </section>
+
+  <!-- 2 SA:V -->
+  <section class="station" id="sav" aria-labelledby="h2s">
+    <div class="station-head"><span class="num">2</span><div>
+      <h2 id="h2s">Surface area to volume ratio: agar cubes</h2>
+      <p>Cubes of agar containing phenolphthalein and sodium hydroxide are pink. They are placed in hydrochloric acid. As acid diffuses in and neutralises the alkali, the agar turns colourless from the outside in.</p>
+    </div></div>
+    <div class="box"><svg id="cubes" viewBox="0 0 760 250" role="img" aria-label="Cross-sections of agar cubes of side 1, 2, 3 and 4 cm, with the pink region shrinking over time"></svg></div>
+    <div class="row" style="gap:16px">
+      <div class="ctl" style="flex:1 1 260px"><label for="sT">Time in acid <output id="sTo">4.0 min</output></label><input id="sT" type="range" min="0" max="40" step="0.5" value="4"></div>
+      <button id="sPlay" type="button">Play</button>
+    </div>
+    <div class="table-box"><table>
+      <thead><tr><th>Length of side / cm</th><th>Surface area / cm²</th><th>Volume / cm³</th><th>Surface area : volume</th><th>Volume turned colourless / %</th><th>Time to turn fully colourless / min</th></tr></thead>
+      <tbody id="sBody"></tbody>
+    </table></div>
+    <div class="row"><button id="sCheck" type="button">Check my calculations</button><button id="sShow" type="button">Show answers</button><span class="hint" id="sScore"></span></div>
+    <p class="callout">As a cube gets bigger, its volume increases faster than its surface area, so SA:V falls. The centre of a large cube is further from the surface, so it takes much longer for substances to diffuse there. This is why large organisms need specialised exchange surfaces such as alveoli.</p>
+    <p class="hint">In this model the depth reached by the acid increases with the square root of time. Real times depend on acid concentration and temperature.</p>
+  </section>
+
+  <!-- 3 FACILITATED vs ACTIVE -->
+  <section class="station" id="fa" aria-labelledby="h3s">
+    <div class="station-head"><span class="num">3</span><div>
+      <h2 id="h3s">Facilitated diffusion and active transport</h2>
+      <p>Both use membrane proteins. Only active transport can move a substance against its concentration gradient, and it needs ATP from respiration.</p>
+    </div></div>
+    <h3>Watch it happen in the membrane</h3>
+    <div class="box"><canvas id="memCv" aria-label="Animated membrane with a channel protein, a carrier protein and a carrier protein carrying out active transport"></canvas></div>
+    <div class="row">
+      <button id="mPlay" type="button">Pause</button>
+      <button id="mReset" type="button">Restart</button>
+      <label class="opt" for="mInhib"><input id="mInhib" type="checkbox"> Add a respiratory inhibitor (no ATP)</label>
+      <label class="opt" for="mSlow"><input id="mSlow" type="checkbox"> Slow motion</label>
+    </div>
+    <div class="counts" id="mCounts"></div>
+    <div class="pump">
+      <span class="lab">Active transport carrier, current step</span>
+      <div class="dots" id="pDots"></div>
+      <p class="step-cap" id="pCap"></p>
+    </div>
+    <p class="hint">Watch the counts. Ions through the channel and glucose through the carrier even out, because facilitated diffusion only gives net movement down the concentration gradient. The active transport carrier keeps moving its ions into the cell, where they are already more concentrated, using one ATP each time.</p>
+
+    <div class="half" style="margin-top:6px">
+      <div class="controls">
+        <h3>Rate of uptake and concentration</h3>
+        <div class="box"><svg id="satChart" viewBox="0 0 460 300" role="img" aria-label="Graph of rate of uptake against external concentration for simple and facilitated diffusion"></svg></div>
+        <div class="ctl"><label for="nCar">Number of carrier proteins <output id="nCarO">3</output></label><input id="nCar" type="range" min="1" max="5" step="1" value="3"></div>
+        <p class="hint">Facilitated diffusion levels off because every carrier or channel protein is in use. You can see this in the membrane above: the carrier can only move one glucose molecule at a time. Adding more carriers raises the plateau. Simple diffusion through the bilayer keeps increasing with concentration.</p>
+      </div>
+      <div class="controls">
+        <h3>Concentration inside a cell over time</h3>
+        <div class="box"><svg id="timeChart" viewBox="0 0 460 300" role="img" aria-label="Graph of concentration inside a cell against time for facilitated diffusion and active transport"></svg></div>
+        <label class="opt" for="inhib"><input id="inhib" type="checkbox"> Add a respiratory inhibitor at 10 minutes</label>
+        <p class="hint">Facilitated diffusion stops when the concentration inside equals the outside. Active transport keeps going above it. A respiratory inhibitor stops ATP production, so active uptake stops.</p>
+      </div>
+    </div>
+
+    <h3>Compare the mechanisms</h3>
+    <div class="table-box"><table style="min-width:420px">
+      <thead><tr><th>Feature</th><th style="text-align:center">Simple diffusion</th><th style="text-align:center">Facilitated diffusion</th><th style="text-align:center">Active transport</th></tr></thead>
+      <tbody>
+        <tr><td>Direction</td><td style="text-align:center">down gradient</td><td style="text-align:center">down gradient</td><td style="text-align:center">can be against gradient</td></tr>
+        <tr><td>Membrane proteins</td><td style="text-align:center">none</td><td style="text-align:center">channel or carrier</td><td style="text-align:center">carrier</td></tr>
+        <tr><td>ATP needed</td><td style="text-align:center">no</td><td style="text-align:center">no</td><td style="text-align:center">yes</td></tr>
+        <tr><td>Passive or active</td><td style="text-align:center">passive</td><td style="text-align:center">passive</td><td style="text-align:center">active</td></tr>
+        <tr><td>Examples</td><td style="text-align:center">O₂, CO₂, steroids</td><td style="text-align:center">glucose, ions</td><td style="text-align:center">ions, e.g. Na⁺ and K⁺</td></tr>
+      </tbody>
+    </table></div>
+    <p class="callout">Exam tip: carrier proteins are used in both facilitated diffusion and active transport. ATP is the difference, not the type of protein.</p>
+  </section>
+
+  <!-- 4 BULK -->
+  <section class="station" id="bulk" aria-labelledby="h4s">
+    <div class="station-head"><span class="num">4</span><div>
+      <h2 id="h4s">Endocytosis and exocytosis</h2>
+      <p>Large molecules and particles cannot pass through the membrane or its proteins. They are moved in vesicles instead, which needs ATP.</p>
+    </div></div>
+    <div class="two">
+      <div class="box"><svg id="bulkSvg" viewBox="0 0 440 260" role="img" aria-label="Animation of a vesicle forming or fusing with the cell surface membrane"></svg></div>
+      <div class="controls">
+        <div class="row"><button id="bEndo" type="button" aria-pressed="true">Endocytosis</button><button id="bExo" type="button" aria-pressed="false">Exocytosis</button></div>
+        <div class="ctl"><label for="bP">Progress <output id="bPo"></output></label><input id="bP" type="range" min="0" max="100" step="1" value="0"></div>
+        <div class="row"><button id="bPlay" class="primary" type="button">Play</button></div>
+        <p class="step-cap" id="bCap"></p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>The models on this page are simplified and the values are illustrative, not real measurements.</p>
+    
+  </footer>
+</div>
+
+<script>
+(function(){
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rnd = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const $ = id => document.getElementById(id);
+const fixSvg = s => s.replace(/<(\w+)([^>]*?)(\/?)>/g, (m, tag, attrs, close) => {
+  let st = '';
+  attrs = attrs.replace(/\s(stroke|fill)="(var\([^)]*\))"/g, (x, p, v) => { st += p + ':' + v + ';'; return ''; });
+  return '<' + tag + attrs + (st ? ' style="' + st + '"' : '') + close + '>';
+});
+
+/* ================= 1. FICK ================= */
+const fcv = $('fickCv'), fctx = fcv.getContext('2d');
+const FW = 900, FH = 300, MX = 430, SLOT = FH / 5;
+let fScale = 1, fRun = !reduce, parts = [], events = [];
+const fSA = $('fSA'), fD = $('fD'), fC = $('fC');
+function fSize(){
+  const w = fcv.parentElement.clientWidth, dpr = window.devicePixelRatio || 1;
+  fScale = w / FW; fcv.style.height = FH * fScale + 'px';
+  fcv.width = Math.round(w * dpr); fcv.height = Math.round(FH * fScale * dpr);
+  fctx.setTransform(dpr * fScale, 0, 0, dpr * fScale, 0, 0);
+}
+const thick = () => 14 * +fD.value;
+const openSlot = y => { const i = Math.floor(y / SLOT); const n = +fSA.value; const order = [2, 1, 3, 0, 4]; return order.slice(0, n).includes(i); };
+function fReset(){
+  parts = []; events = [];
+  for (let i = 0; i < +fC.value; i++) parts.push({ x: rnd(8, MX - 8), y: rnd(6, FH - 6), side: 'L' });
+}
+function fStep(){
+  const t = thick(), x1 = MX, x2 = MX + t, now = performance.now();
+  for (const p of parts){
+    let nx = p.x + rnd(-3, 3), ny = p.y + rnd(-3, 3);
+    ny = clamp(ny, 4, FH - 4); nx = clamp(nx, 4, FW - 4);
+    const inBand = x => x > x1 && x < x2;
+    if (inBand(nx) || (p.x <= x1 && nx >= x2) || (p.x >= x2 && nx <= x1)){
+      // entering or inside the membrane: only through open slots, and stay within that slot
+      if (!openSlot(ny) || (inBand(p.x) && Math.floor(ny / SLOT) !== Math.floor(p.y / SLOT))) { nx = p.x; ny = p.y; }
+    }
+    p.x = nx; p.y = ny;
+    const side = p.x < x1 ? 'L' : p.x > x2 ? 'R' : p.side;
+    if (side !== p.side){ events.push({ t: now, d: side === 'R' ? 1 : -1 }); p.side = side; }
+  }
+  events = events.filter(e => now - e.t < 5000);
+}
+function fDraw(){
+  const t = thick();
+  fctx.clearRect(0, 0, FW, FH);
+  fctx.fillStyle = css('--surface-2'); fctx.fillRect(0, 0, FW, FH);
+  for (let i = 0; i < 5; i++){
+    const y = i * SLOT;
+    fctx.fillStyle = openSlot(y + 1) ? css('--aq') : css('--mem');
+    fctx.fillRect(MX, y + 1, t, SLOT - 2);
+    if (openSlot(y + 1)){ fctx.strokeStyle = css('--mem'); fctx.lineWidth = 1; fctx.strokeRect(MX + 0.5, y + 1.5, t - 1, SLOT - 3); }
+  }
+  fctx.fillStyle = css('--sol');
+  for (const p of parts){ fctx.beginPath(); fctx.arc(p.x, p.y, 3, 0, 6.283); fctx.fill(); }
+  fctx.font = '500 13px "IBM Plex Sans", system-ui, sans-serif'; fctx.fillStyle = css('--muted');
+  fctx.fillText('Higher concentration', 12, 20); fctx.textAlign = 'right'; fctx.fillText('Lower concentration', FW - 12, 20); fctx.textAlign = 'left';
+}
+function fReadout(){
+  const t = thick(), L = parts.filter(p => p.x < MX).length, R = parts.filter(p => p.x > MX + t).length;
+  const areaL = MX, areaR = FW - MX - t;
+  const dc = Math.max(0, L / areaL - R / areaR) * 100;
+  $('fL').textContent = L + ' molecules'; $('fR').textContent = R + ' molecules';
+  const net = events.reduce((a, e) => a + e.d, 0);
+  $('fRate').textContent = fRun ? (net / 5).toFixed(1) + ' per s' : 'paused';
+  const pred = +fSA.value * dc / +fD.value;
+  $('fPred').textContent = pred.toFixed(1);
+  $('fCalc').textContent = 'now: ' + fSA.value + ' × ' + dc.toFixed(2) + ' ÷ ' + fD.value + ' = ' + pred.toFixed(2);
+}
+function fOut(){ $('fSAo').textContent = fSA.value + ' unit' + (fSA.value > 1 ? 's' : ''); $('fDo').textContent = fD.value + ' unit' + (fD.value > 1 ? 's' : ''); $('fCo').textContent = fC.value; }
+[fSA, fD, fC].forEach(el => el.addEventListener('input', () => { fOut(); fReset(); }));
+$('fReset').addEventListener('click', fReset);
+const fPlay = $('fPlay'); fPlay.textContent = fRun ? 'Pause' : 'Play';
+fPlay.addEventListener('click', () => { fRun = !fRun; events = []; fPlay.textContent = fRun ? 'Pause' : 'Play'; });
+fSize(); window.addEventListener('resize', fSize); fOut(); fReset();
+setInterval(fReadout, 500);
+
+/* ================= 2. SA:V ================= */
+const SIDES = [1, 2, 3, 4], K = 0.25; // depth (cm) = K * sqrt(t min)
+const sT = $('sT');
+function cubes(){
+  const t = +sT.value, x = K * Math.sqrt(t);
+  $('sTo').textContent = t.toFixed(1) + ' min';
+  const sc = 38; let s = '', cx = 30;
+  SIDES.forEach(side => {
+    const w = side * sc, y0 = 210 - w, core = Math.max(0, side - 2 * x) * sc;
+    s += '<rect x="' + cx + '" y="' + y0 + '" width="' + w + '" height="' + w + '" rx="3" fill="var(--agar)" stroke="var(--mem)" stroke-width="1.5"/>';
+    if (core > 0) s += '<rect x="' + (cx + (w - core) / 2) + '" y="' + (y0 + (w - core) / 2) + '" width="' + core + '" height="' + core + '" rx="2" fill="var(--pink)"/>';
+    s += '<text x="' + (cx + w / 2) + '" y="234" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--muted)">' + side + ' cm</text>';
+    cx += w + 40;
+  });
+  s += '<text x="' + (cx - 20) + '" y="40" text-anchor="end" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="var(--muted)">cross-sections, drawn to scale</text>';
+  $('cubes').innerHTML = fixSvg(s);
+  SIDES.forEach((side, i) => {
+    const inner = Math.max(0, side - 2 * x);
+    $('pct' + i).textContent = (100 * (1 - Math.pow(inner / side, 3))).toFixed(0);
+  });
+}
+const sBody = $('sBody');
+sBody.innerHTML = SIDES.map((side, i) => '<tr><td class="mono">' + side + '</td>' +
+  '<td><input id="sa' + i + '" inputmode="decimal" aria-label="Surface area, ' + side + ' cm cube"></td>' +
+  '<td><input id="v' + i + '" inputmode="decimal" aria-label="Volume, ' + side + ' cm cube"></td>' +
+  '<td><input id="r' + i + '" inputmode="decimal" aria-label="Surface area to volume ratio, ' + side + ' cm cube" placeholder="? : 1"></td>' +
+  '<td class="mono" id="pct' + i + '"></td><td class="mono">' + Math.round(Math.pow(side / 2 / K, 2)) + '</td></tr>').join('');
+const ans = side => ({ sa: 6 * side * side, v: side ** 3, r: 6 / side });
+const num = v => { const n = parseFloat(String(v).replace(':1', '').replace(': 1', '').replace(',', '.')); return isNaN(n) ? null : n; };
+$('sCheck').addEventListener('click', () => {
+  let ok = 0;
+  SIDES.forEach((side, i) => {
+    const a = ans(side);
+    [['sa', a.sa], ['v', a.v], ['r', a.r]].forEach(([k, val]) => {
+      const el = $(k + i); el.classList.remove('ok', 'bad');
+      const n = num(el.value); if (n === null) return;
+      if (Math.abs(n - val) <= Math.max(0.02, val * 0.01)){ el.classList.add('ok'); ok++; } else el.classList.add('bad');
+    });
+  });
+  $('sScore').textContent = ok + ' of 12 correct. Give SA:V as a number to 1, e.g. 6 : 1 → 6.';
+});
+$('sShow').addEventListener('click', () => {
+  SIDES.forEach((side, i) => { const a = ans(side); $('sa' + i).value = a.sa; $('v' + i).value = a.v; $('r' + i).value = +a.r.toFixed(2); ['sa', 'v', 'r'].forEach(k => { $(k + i).classList.remove('bad'); $(k + i).classList.add('ok'); }); });
+  $('sScore').textContent = 'Answers shown';
+});
+sT.addEventListener('input', cubes);
+let sTimer = null; const sPlay = $('sPlay');
+sPlay.addEventListener('click', () => {
+  if (sTimer){ clearInterval(sTimer); sTimer = null; sPlay.textContent = 'Play'; return; }
+  if (+sT.value >= 40) sT.value = 0;
+  sPlay.textContent = 'Pause';
+  sTimer = setInterval(() => { sT.value = Math.min(40, +sT.value + 0.5); cubes(); if (+sT.value >= 40){ clearInterval(sTimer); sTimer = null; sPlay.textContent = 'Play'; } }, 120);
+});
+cubes();
+
+/* ================= 3. CHARTS ================= */
+function axes(w, h, L, B, T, R, xLab, yLab, xTicks, yTicks, xMax, yMax){
+  const X = v => L + v / xMax * (w - L - R), Y = v => T + (1 - v / yMax) * (h - T - B);
+  let s = '';
+  yTicks.forEach(v => { s += '<line x1="' + L + '" x2="' + (w - R) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--line)" stroke-width="0.8"/><text x="' + (L - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end" font-size="11" font-family="IBM Plex Mono, monospace" fill="var(--muted)">' + v + '</text>'; });
+  xTicks.forEach(v => { s += '<text x="' + X(v) + '" y="' + (h - B + 16) + '" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" fill="var(--muted)">' + v + '</text>'; });
+  s += '<line x1="' + L + '" x2="' + L + '" y1="' + T + '" y2="' + (h - B) + '" stroke="var(--muted)"/><line x1="' + L + '" x2="' + (w - R) + '" y1="' + (h - B) + '" y2="' + (h - B) + '" stroke="var(--muted)"/>';
+  s += '<text x="' + ((L + w - R) / 2) + '" y="' + (h - 8) + '" text-anchor="middle" font-size="12.5" font-family="IBM Plex Sans, sans-serif" fill="var(--ink)">' + xLab + '</text>';
+  s += '<text transform="translate(14 ' + ((T + h - B) / 2) + ') rotate(-90)" text-anchor="middle" font-size="12.5" font-family="IBM Plex Sans, sans-serif" fill="var(--ink)">' + yLab + '</text>';
+  return { s, X, Y };
+}
+const path = (pts, X, Y) => pts.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1)).join(' ');
+function satChart(){
+  const n = +$('nCar').value; $('nCarO').textContent = n;
+  const a = axes(460, 300, 48, 46, 16, 16, 'External concentration / arbitrary units', 'Rate of uptake', [0, 20, 40, 60, 80, 100], [0, 20, 40, 60, 80, 100], 100, 100);
+  const simple = [], fac = [];
+  for (let c = 0; c <= 100; c += 2){ simple.push([c, 0.55 * c]); fac.push([c, 18 * n * c / (15 + c)]); }
+  let s = a.s;
+  s += '<path d="' + path(fac.map(p => [p[0], Math.min(p[1], 100)]), a.X, a.Y) + '" fill="none" stroke="var(--carrier)" stroke-width="2.5"/>';
+  s += '<path d="' + path(simple, a.X, a.Y) + '" fill="none" stroke="var(--sol)" stroke-width="2.5" stroke-dasharray="6 4"/>';
+  s += '<text x="' + a.X(97) + '" y="' + (a.Y(Math.min(100, 18 * n * 97 / 112)) - 8) + '" text-anchor="end" font-size="12" font-family="IBM Plex Sans, sans-serif" fill="var(--carrier)">facilitated diffusion</text>';
+  s += '<text x="' + a.X(70) + '" y="' + (a.Y(0.55 * 70) + 18) + '" text-anchor="start" font-size="12" font-family="IBM Plex Sans, sans-serif" fill="var(--sol)">simple diffusion</text>';
+  $('satChart').innerHTML = fixSvg(s);
+}
+function timeChart(){
+  const inhib = $('inhib').checked, Cout = 5;
+  const a = axes(460, 300, 48, 46, 16, 16, 'Time / min', 'Concentration inside cell', [0, 5, 10, 15, 20, 25, 30], [0, 5, 10, 15, 20, 25], 30, 25);
+  let f = 0, ac = 0; const fp = [[0, 0]], ap = [[0, 0]];
+  for (let t = 0.1; t <= 30.001; t += 0.1){
+    f += 0.25 * (Cout - f) * 0.1;
+    const pump = (inhib && t > 10) ? 0 : 1.2;
+    ac += (pump - 0.06 * (ac - Cout)) * 0.1;
+    fp.push([t, f]); ap.push([t, Math.min(ac, 25)]);
+  }
+  let s = a.s;
+  s += '<line x1="' + a.X(0) + '" x2="' + a.X(30) + '" y1="' + a.Y(Cout) + '" y2="' + a.Y(Cout) + '" stroke="var(--muted)" stroke-dasharray="4 4"/>';
+  s += '<text x="' + a.X(29.5) + '" y="' + (a.Y(Cout) + 15) + '" text-anchor="end" font-size="11.5" font-family="IBM Plex Sans, sans-serif" fill="var(--muted)">concentration outside the cell</text>';
+  s += '<path d="' + path(fp, a.X, a.Y) + '" fill="none" stroke="var(--carrier)" stroke-width="2.5"/>';
+  s += '<path d="' + path(ap, a.X, a.Y) + '" fill="none" stroke="var(--atp)" stroke-width="2.5"/>';
+  if (inhib) s += '<line x1="' + a.X(10) + '" x2="' + a.X(10) + '" y1="' + a.Y(25) + '" y2="' + a.Y(0) + '" stroke="var(--bad)" stroke-dasharray="3 3"/><text x="' + (a.X(10) + 4) + '" y="' + (a.Y(24)) + '" font-size="11.5" font-family="IBM Plex Sans, sans-serif" fill="var(--bad)">inhibitor added</text>';
+  const end = ap[ap.length - 1][1];
+  s += '<text x="' + a.X(29.5) + '" y="' + (a.Y(end) - 8) + '" text-anchor="end" font-size="12" font-family="IBM Plex Sans, sans-serif" fill="var(--atp)">active transport</text>';
+  s += '<text x="' + a.X(29.5) + '" y="' + (a.Y(Cout) - 8) + '" text-anchor="end" font-size="12" font-family="IBM Plex Sans, sans-serif" fill="var(--carrier)">facilitated diffusion</text>';
+  $('timeChart').innerHTML = fixSvg(s);
+}
+$('nCar').addEventListener('input', satChart); $('inhib').addEventListener('change', timeChart);
+satChart(); timeChart();
+
+/* ================= 3. MEMBRANE MODEL ================= */
+const mcv = $('memCv'), mctx = mcv.getContext('2d');
+const MW = 900, MH = 380, YO = 150, YI = 250, TOP = YO - 18, BOT = YI + 18;
+const CH = 200, CA = 470, PU = 730;            // channel, carrier, active transport carrier
+const ZONE = [[CH - 38, CH + 38], [CA - 46, CA + 46], [PU - 50, PU + 50]];
+let mScale = 1, mRun = !reduce, mT = 0;
+const slotsX = []; for (let x = 10; x <= 890; x += 18){ if (!ZONE.some(([a, b]) => x > a - 6 && x < b + 6)) slotsX.push(x); }
+const lip = []; ['o', 'i'].forEach(leaf => slotsX.forEach(x => lip.push({ leaf, x, ph: rnd(0, 6.28), sp: rnd(.7, 1.3) })));
+let mols = [], atpUsed = 0, extras = [];
+const fc = { open: 'out', busy: null, timer: 0, idle: 0 };            // facilitated carrier
+const pu = { step: 0, mol: null, timer: 0, wait: 0 };                 // active transport carrier
+function mSize(){
+  const w = Math.max(mcv.parentElement.clientWidth, 640), dpr = window.devicePixelRatio || 1;
+  mScale = w / MW; mcv.style.width = w + 'px'; mcv.style.height = MH * mScale + 'px';
+  mcv.width = Math.round(w * dpr); mcv.height = Math.round(MH * mScale * dpr);
+  mctx.setTransform(dpr * mScale, 0, 0, dpr * mScale, 0, 0);
+}
+function addM(k, n, side){
+  for (let i = 0; i < n; i++) mols.push({ k, x: rnd(15, MW - 15), y: side === 'out' ? rnd(48, TOP - 2) : rnd(BOT + 2, MH - 12), st: side });
+}
+function mReset(){
+  mols = []; atpUsed = 0; extras = [];
+  fc.open = 'out'; fc.busy = null; fc.timer = 0; pu.step = 0; pu.mol = null; pu.timer = 0;
+  addM('ion', 18, 'out'); addM('ion', 2, 'in');
+  addM('glu', 16, 'out'); addM('glu', 2, 'in');
+  addM('pump', 10, 'out'); addM('pump', 14, 'in');
+  pumpCap();
+}
+const PSTEPS = [
+  'Waiting: the carrier is open to the outside, ready to bind an ion.',
+  '<b>1. Binding.</b> An ion binds to the specific binding site of the carrier protein, on the side where its concentration is lower.',
+  '<b>2. ATP hydrolysis.</b> ATP from respiration binds and is hydrolysed to ADP and phosphate (Pᵢ), releasing energy. The phosphate attaches to the carrier.',
+  '<b>3. Shape change.</b> The carrier protein changes shape and opens to the inside of the cell.',
+  '<b>4. Release.</b> The ion is released into the cytoplasm, against its concentration gradient. The phosphate is released and the carrier returns to its original shape.'
+];
+function pumpCap(){
+  let cap = PSTEPS[pu.step];
+  if (pu.step === 1 && $('mInhib').checked && pu.timer > 20) cap = '<b>Stuck at step 1.</b> No ATP is being made, so the carrier cannot change shape. Active transport stops.';
+  $('pCap').innerHTML = cap;
+  $('pDots').innerHTML = [1, 2, 3, 4].map(i => '<i class="' + (i <= pu.step ? 'on' : '') + '"></i>').join('');
+}
+function mStep(){
+  const slow = $('mSlow').checked ? 0.4 : 1, inhib = $('mInhib').checked;
+  mT += 16 * slow;
+  // facilitated carrier
+  if (fc.busy){
+    const m = fc.busy, ty = fc.open === 'out' ? YO + 6 : YI - 6;
+    m.x += (CA - m.x) * 0.12 * slow; m.y += (ty - m.y) * 0.12 * slow;
+    if (Math.hypot(CA - m.x, ty - m.y) < 1.5){
+      fc.timer += slow;
+      if (fc.timer >= 22 && fc.timer - slow < 22) fc.open = fc.open === 'out' ? 'in' : 'out';
+      if (fc.timer > 44){ m.st = fc.open; m.y = fc.open === 'in' ? BOT + 3 : TOP - 3; fc.busy = null; fc.timer = 0; fc.idle = 0; }
+    }
+  } else { fc.idle += slow; if (fc.idle > 110 && Math.random() < 0.02 * slow){ fc.open = fc.open === 'out' ? 'in' : 'out'; fc.idle = 0; } }
+  // active transport carrier
+  pu.timer += slow;
+  if (pu.step === 1 && pu.mol){
+    const m = pu.mol; m.x += (PU - m.x) * 0.12 * slow; m.y += (YO + 6 - m.y) * 0.12 * slow;
+    if (!inhib && pu.timer > 40){ pu.step = 2; pu.timer = 0; atpUsed++; extras.push({ k: 'adp', x: PU + 30, y: YI + 22, life: 120 }); pumpCap(); }
+    else if (pu.timer > 20 && pu.timer - slow <= 20) pumpCap();
+  } else if (pu.step === 2 && pu.timer > 40){ pu.step = 3; pu.timer = 0; pumpCap(); }
+  else if (pu.step === 3){
+    const m = pu.mol; m.y += (YI - 6 - m.y) * 0.1 * slow;
+    if (pu.timer > 40){ pu.step = 4; pu.timer = 0; m.st = 'in'; m.y = BOT + 4; pu.mol = null; extras.push({ k: 'pi', x: PU + 26, y: YI + 6, life: 90 }); pumpCap(); }
+  } else if (pu.step === 4 && pu.timer > 35){ pu.step = 0; pu.timer = 0; pumpCap(); }
+  extras.forEach(e => { e.y += 0.5 * slow; e.x += 0.3 * slow; e.life -= slow; }); extras = extras.filter(e => e.life > 0);
+  // molecules
+  for (const m of mols){
+    if (m.st === 'bound' || m.st === 'pumped') continue;
+    if (m.st === 'chan'){
+      m.x += (CH - m.x) * 0.2; m.y += m.dir * 1.6 * slow;
+      if (m.dir > 0 && m.y > BOT + 2) m.st = 'in'; if (m.dir < 0 && m.y < TOP - 2) m.st = 'out';
+      continue;
+    }
+    m.x = clamp(m.x + rnd(-1.6, 1.6) * slow, 10, MW - 10); m.y += rnd(-1.6, 1.6) * slow;
+    const out = m.st === 'out';
+    m.y = out ? clamp(m.y, 46, TOP) : clamp(m.y, BOT, MH - 10);
+    const atMem = out ? m.y >= TOP - 0.5 : m.y <= BOT + 0.5;
+    if (!atMem) continue;
+    if (m.k === 'ion' && Math.abs(m.x - CH) < 26 && Math.random() < 0.6){ m.st = 'chan'; m.dir = out ? 1 : -1; }
+    else if (m.k === 'glu' && !fc.busy && Math.abs(m.x - CA) < 32 && fc.open === (out ? 'out' : 'in')){ m.st = 'bound'; fc.busy = m; fc.timer = 0; }
+    else if (m.k === 'pump' && out && pu.step === 0 && Math.abs(m.x - PU) < 34){ m.st = 'pumped'; pu.mol = m; pu.step = 1; pu.timer = 0; pumpCap(); }
+  }
+}
+function mBlob(cx, cy, w, h){
+  mctx.beginPath();
+  for (let i = 0; i <= 32; i++){
+    const a = i / 32 * Math.PI * 2, c = Math.cos(a), s2 = Math.sin(a);
+    const x = cx + Math.sign(c) * Math.pow(Math.abs(c), .42) * w / 2, y = cy + Math.sign(s2) * Math.pow(Math.abs(s2), .42) * h / 2;
+    i ? mctx.lineTo(x, y) : mctx.moveTo(x, y);
+  }
+  mctx.closePath();
+}
+function hex(x, y, r){ mctx.beginPath(); for (let i = 0; i < 6; i++){ const a = Math.PI / 6 + i * Math.PI / 3; i ? mctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a)) : mctx.moveTo(x + r * Math.cos(a), y + r * Math.sin(a)); } mctx.closePath(); }
+function mDraw(){
+  const C = { aq: css('--aq'), cyto: css('--cyto'), s2: css('--surface-2'), head: css('--head'), tail: css('--tail'), car: css('--carrier'), ion: css('--ion'), glu: css('--glu'), sol: css('--sol'), atp: css('--atp'), ink: css('--ink'), muted: css('--muted'), surf: css('--surface') };
+  mctx.clearRect(0, 0, MW, MH);
+  mctx.fillStyle = C.s2; mctx.fillRect(0, 0, MW, MH);
+  mctx.fillStyle = C.aq; mctx.fillRect(0, 0, MW, YO - 10);
+  mctx.fillStyle = C.cyto; mctx.fillRect(0, YI + 10, MW, MH - YI - 10);
+  // lipids
+  lip.forEach(l => {
+    const dir = l.leaf === 'o' ? 1 : -1, yh = l.leaf === 'o' ? YO : YI;
+    const x = l.x + Math.sin(mT * 0.004 * l.sp + l.ph) * 1.8, sw = Math.sin(mT * 0.006 * l.sp + l.ph * 2) * 1.2;
+    mctx.strokeStyle = C.tail; mctx.lineWidth = 2; mctx.beginPath();
+    mctx.moveTo(x - 3, yh + dir * 6); mctx.quadraticCurveTo(x - 3 + sw, yh + dir * 24, x - 3, yh + dir * 40);
+    mctx.moveTo(x + 3, yh + dir * 6); mctx.quadraticCurveTo(x + 3 - sw, yh + dir * 24, x + 3, yh + dir * 36);
+    mctx.stroke();
+    mctx.fillStyle = C.head; mctx.beginPath(); mctx.arc(x, yh, 7, 0, 6.283); mctx.fill();
+  });
+  // channel
+  mctx.fillStyle = C.car;
+  mBlob(CH - 22, 200, 30, 124); mctx.fill(); mBlob(CH + 22, 200, 30, 124); mctx.fill();
+  // facilitated carrier
+  mBlob(CA, 200, 84, 130); mctx.fill();
+  mctx.fillStyle = fc.open === 'out' ? C.aq : C.cyto;
+  mctx.beginPath(); mctx.arc(CA, fc.open === 'out' ? YO - 4 : YI + 4, 13, 0, 6.283); mctx.fill();
+  // active transport carrier
+  mctx.fillStyle = C.car; mBlob(PU, 200, 92, 132); mctx.fill();
+  const pOpenOut = pu.step <= 2;
+  mctx.fillStyle = pOpenOut ? C.aq : C.cyto;
+  mctx.beginPath(); mctx.arc(PU, pOpenOut ? YO - 4 : YI + 4, 13, 0, 6.283); mctx.fill();
+  // ATP / Pi on the pump
+  mctx.font = '600 11px "IBM Plex Sans", system-ui, sans-serif'; mctx.textAlign = 'center';
+  if (pu.step === 1 && !$('mInhib').checked){
+    const k = Math.min(1, pu.timer / 40), ax = PU + 30, ay = YI + 60 - 46 * k;
+    mctx.fillStyle = C.atp; mctx.beginPath(); mctx.roundRect ? mctx.roundRect(ax - 18, ay - 10, 36, 20, 10) : mctx.rect(ax - 18, ay - 10, 36, 20); mctx.fill();
+    mctx.fillStyle = C.surf; mctx.fillText('ATP', ax, ay + 4);
+  }
+  if (pu.step === 2 || pu.step === 3){
+    mctx.fillStyle = C.atp; mctx.beginPath(); mctx.arc(PU + 26, YI - 4, 9, 0, 6.283); mctx.fill();
+    mctx.fillStyle = C.surf; mctx.fillText('Pᵢ', PU + 26, YI);
+  }
+  extras.forEach(e => {
+    mctx.globalAlpha = Math.min(1, e.life / 60); mctx.fillStyle = C.atp;
+    if (e.k === 'adp'){ mctx.beginPath(); mctx.roundRect ? mctx.roundRect(e.x - 18, e.y - 10, 36, 20, 10) : mctx.rect(e.x - 18, e.y - 10, 36, 20); mctx.fill(); mctx.fillStyle = C.surf; mctx.fillText('ADP', e.x, e.y + 4); }
+    else { mctx.beginPath(); mctx.arc(e.x, e.y, 9, 0, 6.283); mctx.fill(); mctx.fillStyle = C.surf; mctx.fillText('Pᵢ', e.x, e.y + 4); }
+    mctx.globalAlpha = 1;
+  });
+  // molecules
+  for (const m of mols){
+    if (m.k === 'ion'){ mctx.fillStyle = C.ion; mctx.beginPath(); mctx.arc(m.x, m.y, 5, 0, 6.283); mctx.fill(); }
+    else if (m.k === 'glu'){ mctx.fillStyle = C.glu; hex(m.x, m.y, 6.5); mctx.fill(); }
+    else { mctx.fillStyle = C.sol; mctx.beginPath(); mctx.moveTo(m.x, m.y - 7); mctx.lineTo(m.x + 7, m.y); mctx.lineTo(m.x, m.y + 7); mctx.lineTo(m.x - 7, m.y); mctx.closePath(); mctx.fill(); }
+  }
+  // labels
+  mctx.font = '500 13px "IBM Plex Sans", system-ui, sans-serif'; mctx.fillStyle = C.ink;
+  mctx.fillText('Channel protein', CH, 20); mctx.fillText('Carrier protein', CA, 20); mctx.fillText('Carrier protein', PU, 20);
+  mctx.font = '400 12px "IBM Plex Sans", system-ui, sans-serif'; mctx.fillStyle = C.muted;
+  mctx.fillText('facilitated diffusion', CH, 36); mctx.fillText('facilitated diffusion', CA, 36); mctx.fillText('active transport', PU, 36);
+  mctx.textAlign = 'left'; mctx.fillText('Outside the cell', 12, 20); mctx.fillText('Cytoplasm', 12, MH - 10);
+}
+function mCounts(){
+  const row = (k, name, col) => {
+    const all = mols.filter(m => m.k === k), inn = all.filter(m => m.st === 'in').length, out = all.filter(m => m.st === 'out').length;
+    return '<div class="cnt"><b><i class="sw" style="background:var(' + col + ')"></i>' + name + '</b><span>out ' + out + ' · in ' + inn + '</span></div>';
+  };
+  $('mCounts').innerHTML = row('ion', 'Ions (channel)', '--ion') + row('glu', 'Glucose (carrier)', '--glu') + row('pump', 'Ions (active transport)', '--sol') +
+    '<div class="cnt"><b><i class="sw" style="background:var(--atp)"></i>ATP used</b><span>' + atpUsed + '</span></div>';
+}
+const mPlay = $('mPlay'); mPlay.textContent = mRun ? 'Pause' : 'Play';
+mPlay.addEventListener('click', () => { mRun = !mRun; mPlay.textContent = mRun ? 'Pause' : 'Play'; });
+$('mReset').addEventListener('click', () => { mReset(); mCounts(); });
+$('mInhib').addEventListener('change', pumpCap);
+mSize(); window.addEventListener('resize', mSize); mReset(); mCounts();
+setInterval(mCounts, 400);
+
+/* ================= 4. BULK ================= */
+let bMode = 'endo', bTimer = null;
+const bP = $('bP');
+function bDraw(){
+  const p = +bP.value / 100;
+  // endocytosis progress e: 0 → vesicle formed; exocytosis is the reverse
+  const e = bMode === 'endo' ? p : 1 - p;
+  const Y = 110, cx = 220;
+  let s = '<rect x="0" y="0" width="440" height="' + (Y - 6) + '" fill="var(--aq)"/><rect x="0" y="' + (Y + 6) + '" width="440" height="' + (260 - Y - 6) + '" fill="var(--cyto)"/>';
+  s += '<text x="10" y="22" font-size="12.5" font-family="IBM Plex Sans, sans-serif" fill="var(--muted)">Outside the cell</text><text x="10" y="250" font-size="12.5" font-family="IBM Plex Sans, sans-serif" fill="var(--muted)">Cytoplasm</text>';
+  let partY;
+  if (e < 0.72){
+    const k = e / 0.72, D = 95 * k, w = 70 - 38 * Math.max(0, (k - 0.5) / 0.5);
+    const d = 'M0 ' + Y + ' L' + (cx - 90) + ' ' + Y + ' C' + (cx - 50) + ' ' + Y + ' ' + (cx - w) + ' ' + Y + ' ' + (cx - w) + ' ' + (Y + D * 0.55) +
+      ' C' + (cx - w) + ' ' + (Y + D) + ' ' + (cx + w) + ' ' + (Y + D) + ' ' + (cx + w) + ' ' + (Y + D * 0.55) +
+      ' C' + (cx + w) + ' ' + Y + ' ' + (cx + 50) + ' ' + Y + ' ' + (cx + 90) + ' ' + Y + ' L440 ' + Y;
+    s += '<path d="' + d + '" fill="none" stroke="var(--mem)" stroke-width="10" stroke-linecap="round"/>';
+    partY = 55 + (Y + D * 0.6 - 55) * k;
+  } else {
+    const k = (e - 0.72) / 0.28, vy = Y + 70 + 50 * k;
+    s += '<path d="M0 ' + Y + ' L440 ' + Y + '" stroke="var(--mem)" stroke-width="10"/>';
+    s += '<circle cx="' + cx + '" cy="' + vy + '" r="34" fill="none" stroke="var(--mem)" stroke-width="10"/>';
+    partY = vy;
+  }
+  s += '<g transform="translate(' + cx + ' ' + partY + ')"><path d="M-16 0 C-16 -14 -4 -18 6 -14 C18 -10 18 6 10 12 C0 18 -16 12 -16 0 Z" fill="var(--sol)"/></g>';
+  const atpShow = bMode === 'endo' ? (e > 0.15 && e < 0.9) : (e > 0.1 && e < 0.85);
+  if (atpShow) s += '<rect x="340" y="200" width="56" height="24" rx="12" fill="var(--atp)"/><text x="368" y="216" text-anchor="middle" font-size="12" font-weight="600" font-family="IBM Plex Sans, sans-serif" fill="var(--surface)">ATP</text>';
+  $('bulkSvg').innerHTML = fixSvg(s);
+  let cap;
+  if (bMode === 'endo'){
+    cap = e < 0.15 ? 'A large particle or molecule comes into contact with the cell surface membrane.' :
+      e < 0.72 ? 'The membrane folds inwards and surrounds the substance. This uses ATP.' :
+      'The membrane fuses and pinches off, forming a vesicle that carries the substance into the cytoplasm.';
+  } else {
+    cap = e > 0.72 ? 'A vesicle containing the substance, often from the Golgi apparatus, moves towards the cell surface membrane. This uses ATP.' :
+      e > 0.15 ? 'The vesicle fuses with the cell surface membrane and opens to the outside.' :
+      'The contents are released outside the cell, and the vesicle membrane becomes part of the cell surface membrane.';
+  }
+  $('bCap').textContent = cap;
+  $('bPo').textContent = Math.round(p * 100) + ' %';
+}
+function setMode(m){ bMode = m; $('bEndo').setAttribute('aria-pressed', m === 'endo'); $('bExo').setAttribute('aria-pressed', m === 'exo'); bP.value = 0; bDraw(); }
+$('bEndo').addEventListener('click', () => setMode('endo'));
+$('bExo').addEventListener('click', () => setMode('exo'));
+bP.addEventListener('input', bDraw);
+$('bPlay').addEventListener('click', () => {
+  if (bTimer){ clearInterval(bTimer); bTimer = null; $('bPlay').textContent = 'Play'; return; }
+  if (+bP.value >= 100) bP.value = 0;
+  $('bPlay').textContent = 'Pause';
+  bTimer = setInterval(() => { bP.value = +bP.value + 1; bDraw(); if (+bP.value >= 100){ clearInterval(bTimer); bTimer = null; $('bPlay').textContent = 'Play'; } }, 45);
+});
+bP.value = 45; bDraw();
+
+/* ================= loop ================= */
+function loop(){ if (fRun) fStep(); fDraw(); if (mRun) mStep(); mDraw(); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

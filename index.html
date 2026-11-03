@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interactive Biology Resources</title>
+<meta name="description" content="Interactive animations and virtual practicals for International GCSE and International A Level Biology.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#eef2ef;--panel:#fff;--ink:#18241f;--muted:#56655e;--line:#cfd8d3;--leaf:#2f7d4f;--leaf-soft:#dcefe3;--water-edge:#7fb0c8;--lamp:#f2b632;
+--display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;--body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#111815;--panel:#18221e;--ink:#e6eee9;--muted:#9db0a6;--line:#2e3c36;--leaf:#5cc489;--leaf-soft:#1f3a2b;--water-edge:#4f88a6;--lamp:#f4c04d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111815;--panel:#18221e;--ink:#e6eee9;--muted:#9db0a6;--line:#2e3c36;--leaf:#5cc489;--leaf-soft:#1f3a2b;--water-edge:#4f88a6;--lamp:#f4c04d;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+header{padding:56px 0 28px}
+.kicker,.tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--leaf)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(32px,6vw,56px);line-height:1.02;letter-spacing:-.02em;margin:10px 0 16px;text-wrap:balance}
+.lede{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:62ch;margin:0}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;padding:0;list-style:none}
+.stats li{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px}
+.stats b{font-family:var(--display);color:var(--leaf)}
+section{padding:28px 0}
+.shead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px;border-top:2px solid var(--ink);padding-top:14px;margin-bottom:18px}
+h2{font-family:var(--display);font-weight:800;font-size:clamp(22px,3vw,30px);margin:0;letter-spacing:-.01em}
+.shead p{margin:0;color:var(--muted);max-width:60ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;color:inherit;text-decoration:none;transition:transform .15s,border-color .15s,box-shadow .15s}
+.card:hover,.card:focus-visible{transform:translateY(-2px);border-color:var(--leaf);box-shadow:0 6px 18px rgba(0,0,0,.08);outline:none}
+.card h3{font-family:var(--display);font-weight:600;font-size:19px;margin:0;line-height:1.2}
+.card p{margin:0;color:var(--muted);font-size:15px;flex:1}
+.go{font-weight:700;color:var(--leaf);font-size:14px;margin-top:6px}
+.about{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.about div{background:var(--leaf-soft);border-radius:14px;padding:16px}
+.about h3{font-family:var(--display);font-size:17px;margin:0 0 6px}
+.about p{margin:0;font-size:15px}
+footer{padding:28px 0 48px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);margin-top:20px}
+footer p{margin:0 0 6px;max-width:80ch}
+@media (prefers-reduced-motion: reduce){.card{transition:none}.card:hover{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="kicker">Interactive biology · virtual practicals</span>
+    <h1>Interactive Biology Resources</h1>
+    <p class="lede">Animations and virtual practicals I design and code for International GCSE and International A Level Biology. I make them for the moments when a concept needs to be seen moving, or a core practical can’t be carried out in the lab.</p>
+    <ul class="stats">
+      <li><b>9</b> virtual core practicals</li>
+      <li><b>10</b> topic explorers</li>
+      <li><b>5</b> A Level membrane and transport models</li>
+    </ul>
+  </header>
+
+  <section aria-labelledby="h-cp">
+    <div class="shead"><h2 id="h-cp">International GCSE: Core practicals</h2><p>Each one runs the full method: set up, collect simulated results with realistic variation, record them and plot the graph.</p></div>
+    <div class="grid">
+      <a class="card" href="food-tests-lab.html">
+        <span class="tag">Core Practical 1</span>
+        <h3>Food Tests</h3>
+        <p>Test foods for glucose, starch, protein and fat, record the colours and decide what each food contains.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="enzyme-temperature-lab.html">
+        <span class="tag">Core Practical 2</span>
+        <h3>Enzymes and Temperature</h3>
+        <p>Time how fast amylase digests starch at different temperatures, repeat, and find the optimum.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="diffusion-osmosis-lab.html">
+        <span class="tag">Core Practical 3</span>
+        <h3>Diffusion and Osmosis</h3>
+        <p>Osmosis in potato cylinders and diffusion into agar cubes, with results tables and graphs.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="photosynthesis-lab.html">
+        <span class="tag">Core Practical 4</span>
+        <h3>Photosynthesis</h3>
+        <p>Pondweed bubbles, floating leaf discs, starch tests and mineral deficiency: change one variable and look for the pattern.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="respiring-seeds-lab.html">
+        <span class="tag">Core Practical 5</span>
+        <h3>Respiring Seeds</h3>
+        <p>Show that germinating seeds give out carbon dioxide and heat when they respire.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="breathing-exercise-lab.html">
+        <span class="tag">Core Practical 6</span>
+        <h3>Breathing and Exercise</h3>
+        <p>Compare carbon dioxide in inhaled and exhaled air, then see how exercise changes breathing rate.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="seed-germination-lab.html">
+        <span class="tag">Core Practical 7</span>
+        <h3>Seed Germination</h3>
+        <p>Predict, then test which conditions seeds need to germinate: water, oxygen, warmth and light.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="quadrat-sampling-lab.html">
+        <span class="tag">Core Practical 8</span>
+        <h3>Quadrat Sampling</h3>
+        <p>Use random quadrats to estimate the daisy population in two areas of a field.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="yeast-respiration-lab.html">
+        <span class="tag">Core Practical 9</span>
+        <h3>Yeast Respiration</h3>
+        <p>Investigate how temperature and glucose concentration change the rate of anaerobic respiration in yeast.</p>
+        <span class="go">Open →</span>
+      </a>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-top">
+    <div class="shead"><h2 id="h-top">International GCSE: Topic explorers</h2><p>Animated models of processes that are hard to see, with self-marking questions on several pages.</p></div>
+    <div class="grid">
+      <a class="card" href="diffusion-osmosis.html">
+        <span class="tag">Topic explorer · with questions</span>
+        <h3>Diffusion and Osmosis</h3>
+        <p>How particles spread out, how water crosses a partially permeable membrane, and what happens to cells in different solutions.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="enzyme-action.html">
+        <span class="tag">Topic explorer · with questions</span>
+        <h3>Enzyme Action</h3>
+        <p>The active site, the lock and key model, and how temperature and pH affect enzymes.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="photosynthesis-leaf.html">
+        <span class="tag">Topic explorer · with questions</span>
+        <h3>Photosynthesis and the Leaf</h3>
+        <p>How a plant makes glucose, and how the leaf is adapted for photosynthesis.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="limiting-factors.html">
+        <span class="tag">Topic explorer · with questions</span>
+        <h3>Limiting Factors</h3>
+        <p>Change light, carbon dioxide and temperature, see which factor limits the rate, and how growers use this.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="breathing-gas-exchange.html">
+        <span class="tag">Topic explorer · with questions</span>
+        <h3>Breathing and Gas Exchange</h3>
+        <p>Ribs, intercostal muscles and diaphragm, the bell jar model, and diffusion in an alveolus.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="heart-circulation.html">
+        <span class="tag">Topic explorer · with questions</span>
+        <h3>The Heart and Circulation</h3>
+        <p>Watch the heart pump, follow a red blood cell around the body, and see how exercise and adrenaline change heart rate.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="nervous-system.html">
+        <span class="tag">Topic explorer</span>
+        <h3>Reflexes and Synapses</h3>
+        <p>Follow an electrical impulse along a reflex arc and across a synapse, slowed down so it can be seen.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="eye-focus.html">
+        <span class="tag">Topic explorer</span>
+        <h3>The Eye: Focusing and the Pupil Reflex</h3>
+        <p>Move the sliders and watch the ciliary muscles, suspensory ligaments and iris respond.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="skin-temperature.html">
+        <span class="tag">Topic explorer</span>
+        <h3>The Skin and Temperature Control</h3>
+        <p>Compare the skin when the body is too hot and too cold, step by step.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="inheritance.html">
+        <span class="tag">Topic explorer</span>
+        <h3>Inheritance and Natural Selection</h3>
+        <p>Predict offspring with a Punnett square, breed them to test it, and watch natural selection over generations.</p>
+        <span class="go">Open →</span>
+      </a>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-ial">
+    <div class="shead"><h2 id="h-ial">International A Level: Unit 1, cell membranes and transport</h2><p>Models linked to specification points, built for students to test ideas rather than just watch.</p></div>
+    <div class="grid">
+      <a class="card" href="ial-membrane-model.html">
+        <span class="tag">Spec 2.2 · with questions</span>
+        <h3>Fluid Mosaic Explorer</h3>
+        <p>Tap any part of the membrane to see what it does, add molecules to see which cross, and change temperature and ethanol.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="ial-beetroot-lab.html">
+        <span class="tag">Core Practical 3 · Spec 2.3</span>
+        <h3>Beetroot Permeability</h3>
+        <p>How temperature and ethanol affect membrane permeability, measured by pigment leaking from beetroot cells.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="ial-osmosis-lab.html">
+        <span class="tag">Spec 2.4 · with questions</span>
+        <h3>Osmosis and Water Potential</h3>
+        <p>Why water moves at the particle level, then find the water potential of potato tissue with graded sucrose solutions.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="ial-transport-lab.html">
+        <span class="tag">Spec 2.1 and 2.5</span>
+        <h3>Transport Across Membranes</h3>
+        <p>Diffusion, SA:V, facilitated diffusion, active transport and bulk transport, each with a model you can change.</p>
+        <span class="go">Open →</span>
+      </a>
+      <a class="card" href="ial-gas-exchange.html">
+        <span class="tag">Spec 2.1</span>
+        <h3>Gas Exchange in the Lungs</h3>
+        <p>Zoom from the lungs to the two cells between air and blood, then see how Fick’s law controls the rate.</p>
+        <span class="go">Open →</span>
+      </a>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-about">
+    <div class="shead"><h2 id="h-about">How they’re built</h2></div>
+    <div class="about">
+      <div><h3>Hand-coded</h3><p>Each page is a single self-contained HTML file using SVG and JavaScript, with no plugins or logins, so it runs on a phone, a tablet or the classroom board.</p></div>
+      <div><h3>Practical first</h3><p>Virtual labs follow the real method and give results with natural variation, so students still have to repeat, average and spot anomalies.</p></div>
+      <div><h3>Accessible</h3><p>Readable type, light and dark modes, labels that can be hidden for self-testing, and animations that can be paused or stepped through.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Designed and built by Laura.</p>
+    <p>These are independent teaching resources aligned to the Pearson Edexcel International GCSE and International A Level Biology specifications. They are not produced or endorsed by Pearson. Results in the virtual practicals are simulated.</p>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<title>Respiring Seeds Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a lab bench — tabbed stations, each with the apparatus + controls on the left and the results book on the right */
+:root{
+  --bg:#eef2ef; --panel:#ffffff; --ink:#18241f; --muted:#56655e; --line:#cfd8d3;
+  --leaf:#2f7d4f; --leaf-soft:#dcefe3; --lamp:#f2b632; --water:#cfe6f2; --water-edge:#7fb0c8;
+  --warn:#b4501e; --warn-soft:#fbe9df; --ok:#2f7d4f; --ok-soft:#e1f2e7; --navy:#1d2140; --iodine:#c9772a;
+  --scene:#f7faf8; --glass:#ffffff;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,38px);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:2px 0 0}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--leaf)}
+nav.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+nav.tabs button{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:10px 16px;border-radius:999px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+nav.tabs button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:3px solid var(--lamp);outline-offset:2px}
+.station{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.station{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 4px}
+.card h3{font-size:15px;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.aim{margin:0 0 10px;color:var(--muted)}
+svg.scene{width:100%;height:auto;display:block;background:var(--scene);border-radius:10px;border:1px solid var(--line)}
+.controls{display:grid;gap:12px;margin-top:12px}
+.ctrl{display:grid;gap:4px}
+.ctrl label,.ctrl .lbl{font-weight:700}
+.ctrl .val{font-family:var(--mono);color:var(--leaf)}
+input[type=range]{width:100%;accent-color:var(--leaf)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--leaf);background:var(--leaf-soft);font-weight:700}
+.iv{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.iv .chip{border:2px dashed var(--leaf);border-radius:8px;padding:4px 10px;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-weight:700;border:0;background:var(--leaf);color:var(--panel);padding:10px 16px;border-radius:10px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.readout{font-family:var(--mono);font-size:15px;background:var(--scene);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.msg{border-radius:10px;padding:10px 12px;margin-top:10px}
+.msg.ok{background:var(--ok-soft)}
+.msg.warn{background:var(--warn-soft)}
+.msg>b:first-child{display:block}
+.check{display:flex;gap:8px;align-items:center;font-weight:700}
+.check input{width:20px;height:20px;accent-color:var(--leaf)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--scene);font-size:14px}
+td.mean{font-weight:700;color:var(--leaf)}
+td .x{font:inherit;border:0;background:none;color:var(--muted);cursor:pointer;text-decoration:underline}
+.empty{color:var(--muted);font-style:italic;padding:10px 0}
+.fair{margin-top:8px}
+svg.graph{width:100%;height:auto;display:block}
+.graph text{fill:var(--ink);font-family:var(--body);font-size:12px}
+.graph .axis{stroke:var(--ink)}
+.graph .grid{stroke:var(--line)}
+.graph .pt{fill:var(--leaf)}
+.graph .ln{stroke:var(--leaf);fill:none;stroke-width:2.5}
+.graph .bar{fill:var(--leaf)}
+.limit{font-weight:700}
+.steps{display:grid;gap:8px}
+.step{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.step .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--scene);border:2px solid var(--line);font-weight:700}
+.step.done .n{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+.step.now{border-color:var(--leaf)}
+.step p{margin:2px 0 6px;color:var(--muted)}
+.pred{display:grid;gap:6px;margin-top:6px}
+.pred .prow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pred .prow span{min-width:180px;font-weight:700}
+.key{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.key span{display:flex;gap:6px;align-items:center}
+.sw{width:18px;height:18px;border-radius:4px;border:1px solid var(--line);display:inline-block}
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.reffig{margin:0;background:#fff;border-radius:10px;padding:8px;border:1px solid var(--line)}
+.reffig img{width:100%;height:auto;display:block}
+.reffig figcaption{font-size:12px;color:#56655e;text-align:right}
+footer{color:var(--muted);font-size:13px;margin-top:20px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.wide{grid-column:1/-1}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatches div{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--scene)}
+.swatches i{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);display:inline-block}
+select{font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.small{font-size:13px;color:var(--muted)}
+</style>
+<div class="wrap">
+<header class="top"><div>
+  <div class="tag">Core Practical · Biology</div>
+  <h1>Respiring Seeds Lab</h1>
+  <p class="sub">Show that living seeds give out carbon dioxide and heat when they respire.</p>
+</div></header>
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tab-a" aria-selected="true" data-st="a">1 · Carbon dioxide</button>
+  <button role="tab" id="tab-b" aria-selected="false" data-st="b">2 · Heat</button>
+</nav>
+
+<section id="st-a" class="station">
+  <div class="card">
+    <h2>Carbon dioxide from respiring seeds</h2>
+    <p class="aim">Hydrogencarbonate indicator changes colour with the amount of carbon dioxide. Living, germinating seeds respire and give out carbon dioxide.</p>
+    <div class="swatches"><div><i style="background:#7b3fa0"></i>purple = less CO₂ than air</div><div><i style="background:#d2343a"></i>red = same as air</div><div><i style="background:#ee9a2c"></i>orange</div><div><i style="background:#f2d23a"></i>yellow = more CO₂ than air</div></div>
+    <svg class="scene" id="sceneA" viewBox="0 0 600 260" role="img" aria-label="Three test tubes in a water bath with hydrogencarbonate indicator, seeds or glass beads on a gauze platform" style="margin-top:10px"></svg>
+    <div class="controls">
+      <div class="ctrl"><span class="lbl">Water bath temperature</span>
+        <div class="seg" id="temp"><button data-v="10" aria-pressed="false">10 °C</button><button data-v="20" aria-pressed="true">20 °C</button><button data-v="30" aria-pressed="false">30 °C</button><button data-v="40" aria-pressed="false">40 °C</button></div></div>
+      <div class="row"><button class="btn" id="goA">Put the bungs in and start the stopwatch</button><span class="readout" id="clockA">0 min</span></div>
+      <p class="small">The stopwatch runs 60× faster than real time (1 second = 1 minute).</p>
+      <div id="msgA" class="msg" hidden></div>
+      <p class="aim"><b>Why each tube?</b> Tube B (boiled seeds) shows the CO₂ comes from <b>living</b> seeds. Tube C (glass beads) is a control with the same volume, so the change is not caused by the tube or the air. The gauze stops seeds touching the indicator.</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Results</h2>
+    <p class="aim">Time for tube A to turn yellow. Do 3 repeats at each temperature. The rows already here are example results.</p>
+    <div class="tablewrap"><table id="tblA"></table></div>
+    <div id="fairA" class="msg warn fair" hidden></div>
+    <h3>Graph</h3>
+    <svg class="graph" id="graphA" viewBox="0 0 460 280" role="img" aria-label="Graph of time to turn yellow against temperature"></svg>
+    <div class="row"><button class="btn alt" id="clearA">Clear results</button></div>
+  </div>
+</section>
+
+<section id="st-b" class="station" hidden>
+  <div class="card">
+    <h2>Heat from respiring seeds</h2>
+    <p class="aim">Respiration releases energy. Some is lost as <b>heat</b>. Vacuum flasks stop heat escaping, so we can measure it.</p>
+    <svg class="scene" id="sceneB" viewBox="0 0 600 260" role="img" aria-label="Two vacuum flasks with thermometers, one with germinating seeds and one with boiled seeds"></svg>
+    <div class="controls">
+      <label class="check"><input type="checkbox" id="dis" checked> Rinse both sets of seeds in disinfectant first</label>
+      <div class="row"><button class="btn" id="dayB">Wait 1 day</button><span class="readout" id="dayR">Day 0</span><button class="btn alt" id="resetB">Start again</button></div>
+      <div id="msgB" class="msg" hidden></div>
+      <p class="aim"><b>Why?</b> Boiled seeds are dead, so flask B is the control. Disinfectant kills microorganisms on the seeds. If they are not killed, the <b>microorganisms</b> respire and make heat too. The cotton wool plug lets oxygen in.</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Results</h2>
+    <div class="tablewrap"><table id="tblB"></table></div>
+    <h3>Graph</h3>
+    <svg class="graph" id="graphB" viewBox="0 0 460 280" role="img" aria-label="Graph of temperature against day for both flasks"></svg>
+  </div>
+</section>
+
+<footer>Simulated results based on the Edexcel International GCSE respiration practical. Real seeds vary more than this model.</footer>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const VP=['fill','stroke','font-family','stop-color'];
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a){const v=String(a[k]);if(VP.includes(k)&&v.includes('var('))e.style.setProperty(k,v);else e.setAttribute(k,v)}if(p)p.appendChild(e);return e};
+document.querySelectorAll('svg *').forEach(n=>{[...n.attributes].forEach(at=>{if(VP.includes(at.name)&&at.value.includes('var(')){n.style.setProperty(at.name,at.value);n.removeAttribute(at.name)}})});
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const tabsEls=[...document.querySelectorAll('nav.tabs button')];
+tabsEls.forEach(b=>b.addEventListener('click',()=>{
+  tabsEls.forEach(x=>x.setAttribute('aria-selected',x===b));
+  tabsEls.forEach(x=>{const st=document.getElementById('st-'+x.dataset.st);if(st)st.hidden=(x!==b)});
+}));
+const isOn=id=>!document.getElementById(id).hidden;
+function seg(id,onChange){
+  const box=$(id);
+  box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));onChange(b.dataset.v)});
+  return ()=>box.querySelector('[aria-pressed="true"]').dataset.v;
+}
+function setSeg(id,v){$(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===String(v)))}
+function showMsg(id,kind,title,body){const m=$(id);m.hidden=false;m.className='msg '+kind;m.innerHTML='<b>'+title+'</b>'+body}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function mkHead(t,cols){ // cols: [[text,rowspan,colspan]...] rows
+  const th0=t.createTHead();cols.forEach(rw=>{const r=th0.insertRow();rw.forEach(([x,rs,cs])=>{const th=document.createElement('th');th.textContent=x;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;r.appendChild(th)})});
+}
+function barChart(g,labels,vals,yLabel,xLabel,colours){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const yMaxRaw=Math.max(1,...vals.filter(v=>v!=null));const st=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/st)*st;
+  const sy=v=>H-B-(v/yMax)*(H-B-T);
+  for(let v=0;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  const bw=(W-L-R)/Math.max(labels.length,1);
+  labels.forEach((lb,i)=>{const v=vals[i];const x=L+i*bw+bw*.18;
+    if(v!=null)el('rect',{x,y:sy(v),width:bw*.64,height:H-B-sy(v),class:'bar',fill:colours?colours[i]:'var(--leaf)'},g);
+    const t=el('text',{x:x+bw*.32,y:H-B+16,'text-anchor':'middle','font-size':11},g);t.textContent=lb});
+}
+function lineChart(g,pts,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const ys=pts.map(p=>p.y);const yMinRaw=Math.min(0,...ys);const yMaxRaw=Math.max(1,...ys);
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xs=pts.map(p=>p.x);const xMaxRaw=Math.max(1e-9,...xs, opts.xMax||0);const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;const xMin=opts.xMin||0;
+  const sx=v=>L+((v-xMin)/(xMax-xMin))*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(3)}
+  for(let v=xMin;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:sy(Math.max(0,yMin)),y2:sy(Math.max(0,yMin)),class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+  const sorted=[...pts].sort((a,b)=>a.x-b.x);
+  if(!opts.noLine)el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+  sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+}
+function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+function Book(opts){
+  // opts: table, graph, fair, ivLabel(), unitLabel, fmt, controls(), isBar(), xMode()
+  const st={rows:new Map(),snap:null,changed:new Set()};
+  function add(iv,val,controlSnap){
+    if(!st.snap) st.snap=controlSnap;
+    for(const k in controlSnap) if(st.snap[k]!==controlSnap[k]) st.changed.add(k);
+    const arr=st.rows.get(iv)||[];
+    if(arr.length>=3) return false;
+    arr.push(val);st.rows.set(iv,arr);render();return true;
+  }
+  function count(iv){return (st.rows.get(iv)||[]).length}
+  function clear(){st.rows.clear();st.snap=null;st.changed.clear();render()}
+  function del(iv){st.rows.delete(iv);if(!st.rows.size){st.snap=null;st.changed.clear()}render()}
+  function mean(a){const n=a.filter(v=>v!=null);return n.length?n.reduce((s,v)=>s+v,0)/n.length:null}
+  function render(){
+    const t=opts.table;t.innerHTML='';
+    const keys=[...st.rows.keys()].sort(opts.sort);
+    const th0=t.createTHead();const h1=th0.insertRow(),h=th0.insertRow();
+    const mk=(row,txt,rs,cs)=>{const th=document.createElement('th');th.textContent=txt;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;row.appendChild(th)};
+    mk(h1,opts.ivLabel(),2);mk(h1,typeof opts.dvHead==='function'?opts.dvHead():opts.dvHead,0,4);mk(h1,'',2);
+    ['Trial 1','Trial 2','Trial 3','Mean'].forEach(x=>mk(h,x));
+    const tb=t.createTBody();
+    if(!keys.length){const r=tb.insertRow();const c=r.insertCell();c.colSpan=6;c.className='empty';c.textContent='No results yet. Set up, then press the button to measure.'}
+    keys.forEach(k=>{const r=tb.insertRow();const a=st.rows.get(k);
+      r.insertCell().textContent=opts.fmtIV(k);
+      for(let i=0;i<3;i++)r.insertCell().textContent=a[i]===undefined?'':(a[i]===null?(opts.nullLabel||'none'):opts.fmt(a[i]));
+      const m=r.insertCell();m.className='mean';const mv=mean(a);m.textContent=mv==null?(a.length?'–':''):opts.fmt(mv,true);
+      const x=r.insertCell();const b=document.createElement('button');b.className='x';b.textContent='delete';b.onclick=()=>del(k);x.appendChild(b)});
+    if(st.changed.size){opts.fair.hidden=false;opts.fair.innerHTML='<b>Not a fair test</b>You changed: '+[...st.changed].join(', ')+'. Only the independent variable should change. Clear the results and start again.'}
+    else opts.fair.hidden=true;
+    if(opts.graphFn) opts.graphFn(keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null)); else graph(keys);
+  }
+  function graph(keys){
+    const g=opts.graph;g.innerHTML='';
+    const W=460,H=280,L=58,R=14,T=14,B=52;
+    const pts=keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null);
+    const yMaxRaw=Math.max(1,...pts.map(p=>p.y));
+    const step=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/step)*step||step*5;
+    const sy=v=>H-B-(v/yMax)*(H-B-T);
+    for(let v=0;v<=yMax+1e-9;v+=step){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+    el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+    const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=opts.yLabel;
+    const xl=el('text',{x:(L+W-R)/2,y:H-10,'text-anchor':'middle'},g);xl.textContent=opts.xLabel();
+    if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+    if(opts.isBar()){
+      const bw=(W-L-R)/Math.max(pts.length,1);
+      pts.forEach((p,i)=>{const x=L+i*bw+bw*.2;el('rect',{x,y:sy(p.y),width:bw*.6,height:H-B-sy(p.y),class:'bar',fill:opts.barColour?opts.barColour(p.k):'var(--leaf)'},g);
+        const t=el('text',{x:x+bw*.3,y:H-B+16,'text-anchor':'middle'},g);t.textContent=opts.fmtIV(p.k)});
+      return;
+    }
+    const xs=pts.map(p=>opts.xVal(p.k));const xMaxRaw=Math.max(...xs,1e-9);
+    const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+    const sx=v=>L+(v/xMax)*(W-L-R);
+    for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+    const sorted=pts.map(p=>({x:opts.xVal(p.k),y:p.y})).sort((a,b)=>a.x-b.x);
+    el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+    sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+  }
+  function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+  render();
+  return {add,count,clear,render,rows:st.rows};
+}
+
+function multiLine(g,series,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const all=series.flatMap(s=>s.pts);
+  const yMinRaw=opts.yMin!=null?opts.yMin:Math.min(0,...all.map(p=>p.y));const yMaxRaw=Math.max(opts.yMaxMin||1,...all.map(p=>p.y));
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xMaxRaw=Math.max(opts.xMax||1,...all.map(p=>p.x));const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+  const sx=v=>L+(v/xMax)*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  series.forEach((s,i)=>{const p=[...s.pts].sort((a,b)=>a.x-b.x);
+    if(p.length>1)el('polyline',{points:p.map(q=>sx(q.x)+','+sy(q.y)).join(' '),fill:'none',stroke:s.colour,'stroke-width':2.5,'stroke-dasharray':s.dash||''},g);
+    p.forEach(q=>el('circle',{cx:sx(q.x),cy:sy(q.y),r:4.5,fill:s.colour},g));
+    const lx=L+10+i*150;el('rect',{x:lx,y:T+2,width:14,height:4,fill:s.colour},g);const t=el('text',{x:lx+20,y:T+8,'font-size':12},g);t.textContent=s.name});
+}
+
+
+/* ---------- CO2 ---------- */
+const A={T:20,run:false,t:0,ty:0,done:false};
+const fT=T=>T<=30?2**((T-30)/10):0.55;
+function mix(a,b,f){const p=x=>[1,3,5].map(i=>parseInt(x.substr(i,2),16));const A_=p(a),B_=p(b);return '#'+A_.map((v,i)=>Math.round(v+(B_[i]-v)*f).toString(16).padStart(2,'0')).join('')}
+function indCol(L){return L<=0?'#d2343a':L<.5?mix('#d2343a','#ee9a2c',L*2):mix('#ee9a2c','#f2d23a',Math.min(1,(L-.5)*2))}
+function drawA(){
+  const svg=$('#sceneA');svg.innerHTML='';
+  el('rect',{x:30,y:120,width:540,height:120,rx:8,fill:'var(--water)',stroke:'var(--water-edge)','stroke-width':2},svg);
+  const t=el('text',{x:300,y:232,'text-anchor':'middle','font-size':13,fill:'var(--ink)'},svg);t.textContent='water bath '+A.T+' °C';
+  const L=A.t/(A.ty||1);
+  [['A','germinating seeds',L],['B','boiled (dead) seeds',0],['C','glass beads',0]].forEach(([k,lab,lev],i)=>{
+    const x=120+i*180;
+    el('path',{d:`M${x-26} 40 L${x-26} 190 A26 26 0 0 0 ${x+26} 190 L${x+26} 40`,fill:'var(--glass)',stroke:'var(--muted)','stroke-width':2},svg);
+    el('rect',{x:x-30,y:30,width:60,height:16,rx:4,fill:'#6b4b3a'},svg);
+    el('path',{d:`M${x-24} 150 L${x-24} 190 A24 24 0 0 0 ${x+24} 190 L${x+24} 150 Z`,fill:indCol(A.run||A.done?lev:0)},svg);
+    el('line',{x1:x-24,x2:x+24,y1:120,y2:120,stroke:'var(--muted)','stroke-width':2,'stroke-dasharray':'3 3'},svg);
+    for(let j=0;j<6;j++){const cx=x-18+j*7.2;if(k==='C')el('circle',{cx,cy:112,r:4,fill:'#dfe7ee',stroke:'#9aa7b2'},svg);else el('ellipse',{cx,cy:112,rx:4,ry:5,fill:k==='A'?'#c9b46a':'#a69a74',stroke:'#7a6a3a'},svg)}
+    if(k==='A'&&A.run)for(let j=0;j<3;j++)el('path',{d:`M${x-14+j*14} 116 q 3 8 0 14`,stroke:'#7a8a3a','stroke-width':1.5,fill:'none'},svg);
+    const a=el('text',{x,y:22,'text-anchor':'middle','font-size':15,'font-weight':700,fill:'var(--ink)'},svg);a.textContent='Tube '+k;
+    const b=el('text',{x,y:258,'text-anchor':'middle','font-size':12,fill:'var(--ink)'},svg);b.textContent=lab;
+  });
+}
+const bookA=Book({table:$('#tblA'),graph:$('#graphA'),fair:$('#fairA'),ivLabel:()=>'Temperature (°C)',dvHead:'Time for tube A to turn yellow (min)',
+  fmt:(v,m)=>m?v.toFixed(0):String(v),fmtIV:k=>String(k),sort:(a,b)=>a-b,isBar:()=>false,xVal:k=>+k,xLabel:()=>'',yLabel:'',
+  graphFn:pts=>lineChart($('#graphA'),pts.map(p=>({x:+p.k,y:p.y})),'Mean time to turn yellow (min)','Temperature (°C)',{xMax:40})});
+let lA=performance.now();
+function loopA(now){const dt=Math.min(.1,(now-lA)/1000);lA=now;
+  if(A.run){A.t+=dt*60/60*1; // minutes: 1 real s = 1 min
+    $('#clockA').textContent=Math.floor(A.t)+' min';drawA();
+    if(A.t>=A.ty){A.run=false;A.done=true;const v=Math.round(A.ty);bookA.add(A.T,v,{});$('#goA').disabled=false;
+      showMsg('#msgA','ok','Tube A is yellow','Time recorded: <b>'+v+' min</b>. Tubes B and C stayed red: dead seeds do not respire.'+(A.T===40?' At 40 °C it was slower: the enzymes for respiration start to be <b>denatured</b>.':''))}}
+  requestAnimationFrame(loopA)}
+requestAnimationFrame(loopA);
+$('#goA').onclick=()=>{if(bookA.count(A.T)>=3){showMsg('#msgA','warn','Three repeats done','Choose another temperature or delete that row.');return}
+  A.ty=30/fT(A.T)*Math.exp(gauss()*.06);A.t=0;A.run=true;A.done=false;$('#goA').disabled=true;$('#msgA').hidden=true};
+seg('#temp',v=>{if(A.run)return;A.T=+v;A.t=0;A.done=false;$('#clockA').textContent='0 min';drawA()});
+$('#clearA').onclick=()=>bookA.clear();
+[[10,[62,58,61]],[30,[30,31,29]]].forEach(([T,a])=>a.forEach(v=>bookA.add(T,v,{})));
+drawA();
+
+/* ---------- heat ---------- */
+const B={day:0,dis:true,a:[20],b:[20]};
+function drawB(){
+  const svg=$('#sceneB');svg.innerHTML='';
+  [['A','germinating seeds',B.a],['B','boiled seeds',B.b]].forEach(([k,lab,arr],i)=>{
+    const x=170+i*260,T=arr[arr.length-1];
+    el('rect',{x:x-50,y:70,width:100,height:170,rx:22,fill:'#cfd6dc',stroke:'var(--muted)','stroke-width':2},svg);
+    el('rect',{x:x-40,y:80,width:80,height:150,rx:16,fill:'var(--glass)',stroke:'var(--muted)'},svg);
+    for(let j=0;j<40;j++)el('ellipse',{cx:x+rnd(-30,30),cy:rnd(130,222),rx:4,ry:5,fill:k==='A'?'#c9b46a':'#a69a74'},svg);
+    el('rect',{x:x-22,y:58,width:44,height:22,rx:6,fill:'#f4f1ea',stroke:'#c9c2b0'},svg);
+    el('rect',{x:x-4,y:10,width:8,height:150,rx:4,fill:'var(--panel)',stroke:'var(--muted)'},svg);
+    const h=Math.max(10,(T-10)*5);el('rect',{x:x-2,y:150-h,width:4,height:h,fill:'#d2343a'},svg);
+    const r=el('text',{x:x+14,y:30,'font-size':16,'font-weight':700,fill:'var(--ink)','font-family':'var(--mono)'},svg);r.textContent=T.toFixed(1)+' °C';
+    const a=el('text',{x,y:256,'text-anchor':'middle','font-size':13,fill:'var(--ink)'},svg);a.textContent='Flask '+k+': '+lab;
+  });
+  const t=$('#tblB');t.innerHTML='';mkHead(t,[[['Day',2],['Temperature (°C)',0,2]],[['Flask A (germinating)'],['Flask B (boiled)']]]);
+  const tb=t.createTBody();B.a.forEach((v,d)=>{const r=tb.insertRow();[d,v.toFixed(1),B.b[d].toFixed(1)].forEach(x=>r.insertCell().textContent=x)});
+  multiLine($('#graphB'),[{name:'A germinating',colour:'#2f7d4f',pts:B.a.map((y,x)=>({x,y}))},{name:'B boiled',colour:'#b4501e',dash:'6 4',pts:B.b.map((y,x)=>({x,y}))}],'Temperature (°C)','Day',{xMax:5,yMin:15,yMaxMin:30});
+  $('#dayR').textContent='Day '+B.day;$('#dayB').disabled=B.day>=5;
+}
+$('#dayB').onclick=()=>{B.day++;B.a.push(20+2.1*B.day+gauss()*.25);B.b.push(B.dis?20+gauss()*.15:20+Math.max(0,B.day-1)*0.9+gauss()*.2);drawB();
+  if(B.day===5)showMsg('#msgB',B.dis?'ok':'warn',B.dis?'Flask A is warmer':'Flask B warmed up too',B.dis?'Germinating seeds respire and release heat. The boiled seeds are dead, so flask B stayed at about 20 °C.':'The boiled seeds are dead, but <b>microorganisms</b> on them were not killed. The microorganisms respired and released heat. This is why we rinse seeds in disinfectant.')};
+$('#resetB').onclick=()=>{B.day=0;B.a=[20];B.b=[20];$('#msgB').hidden=true;drawB()};
+$('#dis').onchange=e=>{B.dis=e.target.checked;$('#resetB').click()};
+drawB();
+
+})();
+</script>
+
+</body></html>

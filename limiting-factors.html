@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>Limiting Factors</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a lab bench — tabbed stations, each with the apparatus + controls on the left and the results book on the right */
+:root{
+  --bg:#eef2ef; --panel:#ffffff; --ink:#18241f; --muted:#56655e; --line:#cfd8d3;
+  --leaf:#2f7d4f; --leaf-soft:#dcefe3; --lamp:#f2b632; --water:#cfe6f2; --water-edge:#7fb0c8;
+  --warn:#b4501e; --warn-soft:#fbe9df; --ok:#2f7d4f; --ok-soft:#e1f2e7; --navy:#1d2140; --iodine:#c9772a;
+  --scene:#f7faf8; --glass:#ffffff;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,38px);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:2px 0 0}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--leaf)}
+nav.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+nav.tabs button{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:10px 16px;border-radius:999px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+nav.tabs button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:3px solid var(--lamp);outline-offset:2px}
+.station{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.station{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 4px}
+.card h3{font-size:15px;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.aim{margin:0 0 10px;color:var(--muted)}
+svg.scene{width:100%;height:auto;display:block;background:var(--scene);border-radius:10px;border:1px solid var(--line)}
+.controls{display:grid;gap:12px;margin-top:12px}
+.ctrl{display:grid;gap:4px}
+.ctrl label,.ctrl .lbl{font-weight:700}
+.ctrl .val{font-family:var(--mono);color:var(--leaf)}
+input[type=range]{width:100%;accent-color:var(--leaf)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--leaf);background:var(--leaf-soft);font-weight:700}
+.iv{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.iv .chip{border:2px dashed var(--leaf);border-radius:8px;padding:4px 10px;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-weight:700;border:0;background:var(--leaf);color:var(--panel);padding:10px 16px;border-radius:10px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.readout{font-family:var(--mono);font-size:15px;background:var(--scene);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.msg{border-radius:10px;padding:10px 12px;margin-top:10px}
+.msg.ok{background:var(--ok-soft)}
+.msg.warn{background:var(--warn-soft)}
+.msg>b:first-child{display:block}
+.check{display:flex;gap:8px;align-items:center;font-weight:700}
+.check input{width:20px;height:20px;accent-color:var(--leaf)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--scene);font-size:14px}
+td.mean{font-weight:700;color:var(--leaf)}
+td .x{font:inherit;border:0;background:none;color:var(--muted);cursor:pointer;text-decoration:underline}
+.empty{color:var(--muted);font-style:italic;padding:10px 0}
+.fair{margin-top:8px}
+svg.graph{width:100%;height:auto;display:block}
+.graph text{fill:var(--ink);font-family:var(--body);font-size:12px}
+.graph .axis{stroke:var(--ink)}
+.graph .grid{stroke:var(--line)}
+.graph .pt{fill:var(--leaf)}
+.graph .ln{stroke:var(--leaf);fill:none;stroke-width:2.5}
+.graph .bar{fill:var(--leaf)}
+.limit{font-weight:700}
+.steps{display:grid;gap:8px}
+.step{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.step .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--scene);border:2px solid var(--line);font-weight:700}
+.step.done .n{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+.step.now{border-color:var(--leaf)}
+.step p{margin:2px 0 6px;color:var(--muted)}
+.pred{display:grid;gap:6px;margin-top:6px}
+.pred .prow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pred .prow span{min-width:180px;font-weight:700}
+.key{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.key span{display:flex;gap:6px;align-items:center}
+.sw{width:18px;height:18px;border-radius:4px;border:1px solid var(--line);display:inline-block}
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.reffig{margin:0;background:#fff;border-radius:10px;padding:8px;border:1px solid var(--line)}
+.reffig img{width:100%;height:auto;display:block}
+.reffig figcaption{font-size:12px;color:#56655e;text-align:right}
+footer{color:var(--muted);font-size:13px;margin-top:20px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.wide{grid-column:1/-1}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatches div{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--scene)}
+.swatches i{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);display:inline-block}
+select{font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.small{font-size:13px;color:var(--muted)}
+
+.twocol{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:600px){.twocol{grid-template-columns:1fr}}
+.meter{height:26px;border-radius:13px;background:var(--scene);border:1px solid var(--line);overflow:hidden}
+.meter div{height:100%;background:var(--leaf);transition:width .4s}
+.phscale{height:14px;border-radius:7px;background:linear-gradient(90deg,#d2343a,#ee9a2c,#f2d23a,#7cc04a,#2f7d4f,#3d7be0,#5a3fa0)}
+canvas.scene{width:100%;height:auto;display:block;background:var(--scene);border-radius:10px;border:1px solid var(--line)}
+.qwrap{display:grid;gap:14px}
+.qcard{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel);display:grid;gap:8px}
+.qhead{display:flex;justify-content:space-between;align-items:center}
+.qnum{font-family:var(--mono);font-size:13px;color:var(--leaf);letter-spacing:.04em}
+.qmarks{font-weight:700;color:var(--muted)}
+.qstem{margin:0;color:var(--muted)}
+.qtext{margin:0}
+.qimg{max-width:min(100%,520px);height:auto;background:#fff;border-radius:8px;border:1px solid var(--line);padding:6px}
+.opts{display:grid;gap:6px}
+.opt{display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.opt input{margin-top:3px;width:18px;height:18px;accent-color:var(--leaf);flex:none}
+.ol{font-weight:700;min-width:16px}
+textarea{width:100%;font:inherit;padding:8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink);resize:vertical}
+.numin{font:inherit;width:120px;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.qcard .btn{justify-self:start}
+.fb{border-radius:10px;padding:10px 12px}
+.fb.ok{background:var(--ok-soft)}.fb.warn{background:var(--warn-soft)}.fb.ms{background:var(--scene);border:1px solid var(--line);display:grid;gap:6px}
+.fb p{margin:0}
+.score{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--leaf);color:var(--panel);padding:10px 14px;border-radius:10px}
+</style>
+</head>
+<body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<div class="wrap">
+<header class="top"><div>
+  <div class="tag">Animation · Biology</div>
+  <h1>Photosynthesis: Limiting Factors</h1>
+  <p class="sub">Change the light, carbon dioxide and temperature. See which factor is limiting, how the graphs change, and how farmers use this to increase the growth of plants.</p>
+</div></header>
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tab-a" aria-selected="true" data-st="a">1 · Limiting factors and graphs</button>
+  <button role="tab" id="tab-c" aria-selected="false" data-st="c">2 · Increasing the growth of plants</button>
+  <button role="tab" id="tab-q" aria-selected="false" data-st="q">3 · Check your understanding</button>
+</nav>
+
+<style>.lfmsg{font-size:17px}</style>
+<section id="st-a" class="station">
+  <div class="card">
+    <h2>Limiting factors and graphs</h2>
+    <p class="aim">Photosynthesis needs <b>light</b>, <b>carbon dioxide</b> and a suitable <b>temperature</b>. The factor in the <b>shortest supply</b> holds the rate back: this is the <b>limiting factor</b>.</p>
+    <canvas id="cA" width="900" height="460" class="scene" aria-label="Pondweed in a beaker giving off bubbles, with bars for light, carbon dioxide and temperature"></canvas>
+    <div class="controls" style="margin-top:10px">
+      <div class="ctrl"><span class="lbl">Which factor do you want to change? (x-axis of the graph)</span><div class="seg" id="bX"><button data-v="L" aria-pressed="true">Light intensity</button><button data-v="C" aria-pressed="false">Carbon dioxide</button><button data-v="T" aria-pressed="false">Temperature</button></div></div>
+    </div>
+    <canvas id="cB" width="900" height="420" class="scene" style="margin-top:10px" aria-label="Graph of rate of photosynthesis against the chosen factor, drawn as the factor increases"></canvas>
+    <div id="aMsg" class="msg ok lfmsg"></div>
+    <div class="controls">
+      <div class="row"><button class="btn" id="bPlay">▶ Play</button><button class="btn alt" id="bKeep">Keep this line</button><button class="btn alt" id="bClear">Clear kept lines</button></div>
+      <div class="ctrl" id="wL"><label for="aL">Light intensity <span class="val" id="aLV"></span></label><input type="range" id="aL" min="0" max="100" value="0"></div>
+      <div class="ctrl" id="wC"><label for="aC">Carbon dioxide concentration <span class="val" id="aCV"></span></label><input type="range" id="aC" min="0" max="16" value="4"></div>
+      <div class="ctrl" id="wT"><label for="aT">Temperature <span class="val" id="aTV"></span></label><input type="range" id="aT" min="0" max="50" value="25"></div>
+      <div class="ctrl"><span class="lbl">Exam-style graphs</span><div class="seg" id="bPre"><button data-v="co2">Two CO₂ levels</button><button data-v="temp">Two temperatures</button><button data-v="light">Two light intensities</button></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>How to use this</h2>
+    <ol>
+      <li>Choose the factor to change. Its slider is highlighted. The other two factors stay the same (control variables).</li>
+      <li>Press <b>Play</b>, or move the highlighted slider, or drag the dot on the graph. Watch the pondweed, the bars and the graph change together.</li>
+      <li>Press <b>Keep this line</b>, change one of the other factors, then play again to compare.</li>
+    </ol>
+    <h3>Reading the bars</h3>
+    <p>Each bar shows how fast photosynthesis <b>could</b> go with that factor. The rate (dashed line) can only be as high as the <b>lowest bar</b>, the limiting factor.</p>
+    <h3>Reading the graph</h3>
+    <div class="tablewrap"><table class="reftab"><tbody>
+      <tr><td><b>line going up</b></td><td>the factor on the <b>x-axis</b> is the limiting factor</td></tr>
+      <tr><td><b>line flat (plateau)</b></td><td>the x-axis factor is <b>no longer</b> limiting. <b>Another factor</b> is limiting.</td></tr>
+      <tr><td><b>higher plateau</b></td><td>the other factor was increased, so the rate can go higher</td></tr>
+      <tr><td><b>temperature line falls</b></td><td>above the optimum, enzymes <b>denature</b></td></tr>
+    </tbody></table></div>
+    <div class="tablewrap" style="margin-top:10px"><table class="reftab"><tbody>
+      <tr><td><b>light</b></td><td>provides the <b>energy</b> for photosynthesis</td></tr>
+      <tr><td><b>carbon dioxide</b></td><td>a <b>reactant</b>: it is used to make glucose</td></tr>
+      <tr><td><b>temperature</b></td><td>controls the <b>enzymes</b>: more kinetic energy and collisions up to the optimum; too hot and they <b>denature</b></td></tr>
+    </tbody></table></div>
+    <p class="small">Exam tip: on the flat part, do <b>not</b> write "light is the limiting factor". Write "light is <b>not</b> limiting; CO₂ (or temperature) is limiting".</p>
+  </div>
+</section>
+
+<section id="st-c" class="station" hidden>
+  <div class="card">
+    <h2>Increasing the growth of plants</h2>
+    <p class="aim">A farmer wants crops to grow faster. Which equipment should they turn on? Each one costs money.</p>
+    <canvas id="cC" width="900" height="420" class="scene" aria-label="A glasshouse with crops, lamps, a heater and a paraffin burner"></canvas>
+    <div class="controls">
+      <div class="ctrl"><span class="lbl">Season</span><div class="seg" id="cS"><button data-v="win" aria-pressed="true">Winter</button><button data-v="sum" aria-pressed="false">Summer</button></div></div>
+      <div class="ctrl"><span class="lbl">Equipment</span><div class="row" style="gap:8px;flex-wrap:wrap">
+        <label class="opt"><input type="checkbox" id="cLamp"> Lamps (more light)</label>
+        <label class="opt"><input type="checkbox" id="cHeat"> Heater (warmer)</label>
+        <label class="opt"><input type="checkbox" id="cPar"> Paraffin burner (more CO₂ and warmer)</label></div></div>
+    </div>
+    <div id="cMsg" class="msg ok lfmsg"></div>
+  </div>
+  <div class="card">
+    <h2>Why use a glasshouse?</h2>
+    <ul>
+      <li>The glass lets light in and traps heat, so the <b>temperature</b> is higher.</li>
+      <li>Farmers can add <b>artificial light</b>, <b>heating</b> and extra <b>carbon dioxide</b> (e.g. a paraffin burner).</li>
+      <li>This increases the <b>rate of photosynthesis</b>, so crops grow faster and the <b>yield</b> is higher.</li>
+      <li>It is only worth paying for the factor that is <b>limiting</b>. Increasing a factor that is not limiting costs money but does not increase the rate.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="st-q" hidden>
+  <div class="card">
+    <h2>Check your understanding</h2>
+    <p class="aim">Multiple-choice and calculation questions are marked for you. For written answers, write your answer first, then press <b>Show mark scheme</b> and tick each point you made.</p>
+    <div id="qScore" class="score"></div>
+    <div id="qList" class="qwrap" style="margin-top:14px"></div>
+    <p class="small"><span id="qSrc"></span> Your score is not saved: take a screenshot of it when you finish.</p>
+  </div>
+</section>
+
+<footer>Simplified model for teaching. The numbers are not real measurements.</footer>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const VP=['fill','stroke','font-family','stop-color'];
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a){const v=String(a[k]);if(VP.includes(k)&&v.includes('var('))e.style.setProperty(k,v);else e.setAttribute(k,v)}if(p)p.appendChild(e);return e};
+document.querySelectorAll('svg *').forEach(n=>{[...n.attributes].forEach(at=>{if(VP.includes(at.name)&&at.value.includes('var(')){n.style.setProperty(at.name,at.value);n.removeAttribute(at.name)}})});
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const tabsEls=[...document.querySelectorAll('nav.tabs button')];
+tabsEls.forEach(b=>b.addEventListener('click',()=>{
+  tabsEls.forEach(x=>x.setAttribute('aria-selected',x===b));
+  tabsEls.forEach(x=>{const st=document.getElementById('st-'+x.dataset.st);if(st)st.hidden=(x!==b)});
+}));
+const isOn=id=>!document.getElementById(id).hidden;
+function seg(id,onChange){
+  const box=$(id);
+  box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));onChange(b.dataset.v)});
+  return ()=>box.querySelector('[aria-pressed="true"]').dataset.v;
+}
+function setSeg(id,v){$(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===String(v)))}
+function showMsg(id,kind,title,body){const m=$(id);m.hidden=false;m.className='msg '+kind;m.innerHTML='<b>'+title+'</b>'+body}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function mkHead(t,cols){ // cols: [[text,rowspan,colspan]...] rows
+  const th0=t.createTHead();cols.forEach(rw=>{const r=th0.insertRow();rw.forEach(([x,rs,cs])=>{const th=document.createElement('th');th.textContent=x;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;r.appendChild(th)})});
+}
+function barChart(g,labels,vals,yLabel,xLabel,colours){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const yMaxRaw=Math.max(1,...vals.filter(v=>v!=null));const st=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/st)*st;
+  const sy=v=>H-B-(v/yMax)*(H-B-T);
+  for(let v=0;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  const bw=(W-L-R)/Math.max(labels.length,1);
+  labels.forEach((lb,i)=>{const v=vals[i];const x=L+i*bw+bw*.18;
+    if(v!=null)el('rect',{x,y:sy(v),width:bw*.64,height:H-B-sy(v),class:'bar',fill:colours?colours[i]:'var(--leaf)'},g);
+    const t=el('text',{x:x+bw*.32,y:H-B+16,'text-anchor':'middle','font-size':11},g);t.textContent=lb});
+}
+function lineChart(g,pts,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const ys=pts.map(p=>p.y);const yMinRaw=Math.min(0,...ys);const yMaxRaw=Math.max(1,...ys);
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xs=pts.map(p=>p.x);const xMaxRaw=Math.max(1e-9,...xs, opts.xMax||0);const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;const xMin=opts.xMin||0;
+  const sx=v=>L+((v-xMin)/(xMax-xMin))*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(3)}
+  for(let v=xMin;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:sy(Math.max(0,yMin)),y2:sy(Math.max(0,yMin)),class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+  const sorted=[...pts].sort((a,b)=>a.x-b.x);
+  if(!opts.noLine)el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+  sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+}
+function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+function Book(opts){
+  // opts: table, graph, fair, ivLabel(), unitLabel, fmt, controls(), isBar(), xMode()
+  const st={rows:new Map(),snap:null,changed:new Set()};
+  function add(iv,val,controlSnap){
+    if(!st.snap) st.snap=controlSnap;
+    for(const k in controlSnap) if(st.snap[k]!==controlSnap[k]) st.changed.add(k);
+    const arr=st.rows.get(iv)||[];
+    if(arr.length>=3) return false;
+    arr.push(val);st.rows.set(iv,arr);render();return true;
+  }
+  function count(iv){return (st.rows.get(iv)||[]).length}
+  function clear(){st.rows.clear();st.snap=null;st.changed.clear();render()}
+  function del(iv){st.rows.delete(iv);if(!st.rows.size){st.snap=null;st.changed.clear()}render()}
+  function mean(a){const n=a.filter(v=>v!=null);return n.length?n.reduce((s,v)=>s+v,0)/n.length:null}
+  function render(){
+    const t=opts.table;t.innerHTML='';
+    const keys=[...st.rows.keys()].sort(opts.sort);
+    const th0=t.createTHead();const h1=th0.insertRow(),h=th0.insertRow();
+    const mk=(row,txt,rs,cs)=>{const th=document.createElement('th');th.textContent=txt;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;row.appendChild(th)};
+    mk(h1,opts.ivLabel(),2);mk(h1,typeof opts.dvHead==='function'?opts.dvHead():opts.dvHead,0,4);mk(h1,'',2);
+    ['Trial 1','Trial 2','Trial 3','Mean'].forEach(x=>mk(h,x));
+    const tb=t.createTBody();
+    if(!keys.length){const r=tb.insertRow();const c=r.insertCell();c.colSpan=6;c.className='empty';c.textContent='No results yet. Set up, then press the button to measure.'}
+    keys.forEach(k=>{const r=tb.insertRow();const a=st.rows.get(k);
+      r.insertCell().textContent=opts.fmtIV(k);
+      for(let i=0;i<3;i++)r.insertCell().textContent=a[i]===undefined?'':(a[i]===null?(opts.nullLabel||'none'):opts.fmt(a[i]));
+      const m=r.insertCell();m.className='mean';const mv=mean(a);m.textContent=mv==null?(a.length?'–':''):opts.fmt(mv,true);
+      const x=r.insertCell();const b=document.createElement('button');b.className='x';b.textContent='delete';b.onclick=()=>del(k);x.appendChild(b)});
+    if(st.changed.size){opts.fair.hidden=false;opts.fair.innerHTML='<b>Not a fair test</b>You changed: '+[...st.changed].join(', ')+'. Only the independent variable should change. Clear the results and start again.'}
+    else opts.fair.hidden=true;
+    if(opts.graphFn) opts.graphFn(keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null)); else graph(keys);
+  }
+  function graph(keys){
+    const g=opts.graph;g.innerHTML='';
+    const W=460,H=280,L=58,R=14,T=14,B=52;
+    const pts=keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null);
+    const yMaxRaw=Math.max(1,...pts.map(p=>p.y));
+    const step=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/step)*step||step*5;
+    const sy=v=>H-B-(v/yMax)*(H-B-T);
+    for(let v=0;v<=yMax+1e-9;v+=step){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+    el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+    const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=opts.yLabel;
+    const xl=el('text',{x:(L+W-R)/2,y:H-10,'text-anchor':'middle'},g);xl.textContent=opts.xLabel();
+    if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+    if(opts.isBar()){
+      const bw=(W-L-R)/Math.max(pts.length,1);
+      pts.forEach((p,i)=>{const x=L+i*bw+bw*.2;el('rect',{x,y:sy(p.y),width:bw*.6,height:H-B-sy(p.y),class:'bar',fill:opts.barColour?opts.barColour(p.k):'var(--leaf)'},g);
+        const t=el('text',{x:x+bw*.3,y:H-B+16,'text-anchor':'middle'},g);t.textContent=opts.fmtIV(p.k)});
+      return;
+    }
+    const xs=pts.map(p=>opts.xVal(p.k));const xMaxRaw=Math.max(...xs,1e-9);
+    const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+    const sx=v=>L+(v/xMax)*(W-L-R);
+    for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+    const sorted=pts.map(p=>({x:opts.xVal(p.k),y:p.y})).sort((a,b)=>a.x-b.x);
+    el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+    sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+  }
+  function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+  render();
+  return {add,count,clear,render,rows:st.rows};
+}
+
+function multiLine(g,series,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const all=series.flatMap(s=>s.pts);
+  const yMinRaw=opts.yMin!=null?opts.yMin:Math.min(0,...all.map(p=>p.y));const yMaxRaw=Math.max(opts.yMaxMin||1,...all.map(p=>p.y));
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xMaxRaw=Math.max(opts.xMax||1,...all.map(p=>p.x));const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+  const sx=v=>L+(v/xMax)*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  series.forEach((s,i)=>{const p=[...s.pts].sort((a,b)=>a.x-b.x);
+    if(p.length>1)el('polyline',{points:p.map(q=>sx(q.x)+','+sy(q.y)).join(' '),fill:'none',stroke:s.colour,'stroke-width':2.5,'stroke-dasharray':s.dash||''},g);
+    p.forEach(q=>el('circle',{cx:sx(q.x),cy:sy(q.y),r:4.5,fill:s.colour},g));
+    const lx=L+10+i*150;el('rect',{x:lx,y:T+2,width:14,height:4,fill:s.colour},g);const t=el('text',{x:lx+20,y:T+8,'font-size':12},g);t.textContent=s.name});
+}
+
+
+function ink(){return getComputedStyle(document.body).color}
+const FONT=s=>s+'px "Atkinson Hyperlegible",system-ui,sans-serif';
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+/* ---------- model ---------- */
+// each factor gives the maximum rate it allows (0-100); the rate is a smooth minimum of the three
+const tL=L=>L*1.6;                     // light intensity 0-100 arbitrary units
+const tC=C=>C/0.15*100;                // CO2 in %, 0-0.16
+function fT(T){return T<=0?0:T<=30?Math.pow(T/30,1.2):Math.max(0,1-Math.pow((T-30)/16,2))}
+const tT=T=>100*fT(T);
+function smin(a){if(a.some(x=>x<=0))return 0;const n=10;return Math.pow(a.reduce((s,x)=>s+Math.pow(x,-n),0),-1/n)}
+function rate(L,C,T){return 0.9*smin([tL(L),tC(C),tT(T)])}   // bubbles per minute
+const NAME={L:'light intensity',C:'carbon dioxide concentration',T:'temperature'};
+const SHORT={L:'light',C:'carbon dioxide',T:'temperature'};
+function limiting(L,C,T){const t={L:tL(L),C:tC(C),T:tT(T)};const k=Object.keys(t).sort((a,b)=>t[a]-t[b]);return {k:k[0],t,close:t[k[1]]-t[k[0]]<4?k[1]:null}}
+const fmt={L:v=>Math.round(v)+' a.u.',C:v=>v.toFixed(2)+' %',T:v=>Math.round(v)+' °C'};
+const cToV=v=>v/100; // slider 0-16 -> 0.00-0.16 %
+
+
+/* ================= TAB 1: SCENE + GRAPH ================= */
+const cA=$('#cA'),gA=cA.getContext('2d');const A={L:0,C:0.04,T:25,x:'L',kept:[],play:false,bub:[],acc:0,fizz:[]};
+for(let i=0;i<60;i++)A.fizz.push({x:rnd(110,330),y:rnd(200,420),s:rnd(0,1)});
+const XMAX={L:100,C:0.16,T:50};const XLAB={L:'light intensity (arbitrary units)',C:'carbon dioxide concentration (%)',T:'temperature (°C)'};
+const LC=['#2a6fdb','#d2603c','#7a4fc0','#1f7a3d','#b8860b'];
+const TAG={L:v=>'light '+Math.round(v),C:v=>'CO₂ '+v.toFixed(2)+'%',T:v=>Math.round(v)+' °C'};
+function fixedLabel(x,f){return Object.keys(NAME).filter(k=>k!==x).map(k=>TAG[k](f[k])).join(', ')}
+function curve(x,fixed){const pts=[];for(let i=0;i<=200;i++){const v=XMAX[x]*i/200;const p=Object.assign({},fixed);p[x]=v;pts.push([v,rate(p.L,p.C,p.T)])}return pts}
+function stepA(dt){if(A.play){A[A.x]=Math.min(XMAX[A.x],A[A.x]+dt*XMAX[A.x]*0.15);if(A[A.x]>=XMAX[A.x]){A.play=false;$('#bPlay').textContent='▶ Play again'}toSliders()}
+  const r=rate(A.L,A.C,A.T);A.acc+=r/60*dt*2.2;while(A.acc>=1){A.acc-=1;A.bub.push({x:220+rnd(-6,6),y:228,r:rnd(3,5)})}
+  A.bub.forEach(b=>{b.y-=dt*90;b.x+=Math.sin(b.y/9)*0.4});A.bub=A.bub.filter(b=>b.y>150);
+  A.fizz.forEach(f=>{f.y-=dt*12;if(f.y<200)f.y=420})}
+function drawA(){const g=gA,c=ink();g.clearRect(0,0,900,460);
+  const br=A.L/100;g.save();g.globalAlpha=0.08+0.5*br;const grd=g.createRadialGradient(60,120,5,60,120,260);grd.addColorStop(0,'#ffe680');grd.addColorStop(1,'rgba(255,230,128,0)');g.fillStyle=grd;g.fillRect(0,0,420,460);g.restore();
+  g.fillStyle='#444';rr(g,20,96,46,48,6);g.fill();g.beginPath();g.arc(66,120,22,-1.3,1.3);g.fillStyle=`rgb(255,${200+Math.round(40*br)},${80+Math.round(60*br)})`;g.fill();
+  const warm=Math.max(0,Math.min(1,(A.T-15)/30)),cold=Math.max(0,Math.min(1,(15-A.T)/15));
+  g.fillStyle=`rgba(${120+100*warm},${190-60*warm+20*cold},${235-120*warm},.35)`;g.fillRect(104,190,232,236);
+  g.lineWidth=4;g.strokeStyle='rgba(120,150,170,.9)';g.beginPath();g.moveTo(100,160);g.lineTo(100,430);g.lineTo(340,430);g.lineTo(340,160);g.stroke();
+  const nF=Math.round(A.C/0.16*60);A.fizz.slice(0,nF).forEach(f=>{g.beginPath();g.arc(f.x,f.y,2,0,7);g.fillStyle='rgba(90,90,100,.6)';g.fill()});
+  g.strokeStyle='#2f7a35';g.lineWidth=7;g.lineCap='round';g.beginPath();g.moveTo(220,410);g.quadraticCurveTo(205,320,220,230);g.stroke();
+  g.lineWidth=4;for(let y=250;y<400;y+=22){g.beginPath();g.moveTo(214+((y-230)/180)*-6,y);g.lineTo(190,y-14);g.moveTo(214,y+6);g.lineTo(242,y-8);g.stroke()}
+  A.bub.forEach(b=>{g.beginPath();g.arc(b.x,b.y,b.r,0,7);g.strokeStyle='#5b8fc9';g.lineWidth=1.5;g.stroke()});
+  rr(g,360,180,16,200,8);g.fillStyle='#fff';g.fill();g.strokeStyle=c;g.lineWidth=1.5;g.stroke();g.beginPath();g.arc(368,392,14,0,7);g.fillStyle='#d23c48';g.fill();g.fillRect(363,380-(A.T/50)*190,10,(A.T/50)*190+6);
+  g.fillStyle=c;g.font='bold '+FONT(18);g.textAlign='center';g.fillText(Math.round(A.T)+' °C',368,170);
+  g.fillText('lamp',43,88);g.fillText('pondweed',220,452);g.font=FONT(15);g.fillText('dots = dissolved CO₂',220,186);
+  const lim=limiting(A.L,A.C,A.T),r=rate(A.L,A.C,A.T);const X0=500,BW=90,GAP=40,BASE=400,H=300;
+  const cols={L:'#e8b62c',C:'#6b6f78',T:'#d2603c'};
+  ['L','C','T'].forEach((k,i)=>{const x=X0+i*(BW+GAP);const v=Math.min(100,lim.t[k]);const h=v/100*H;
+    rr(g,x,BASE-H,BW,H,8);g.fillStyle='rgba(128,128,128,.12)';g.fill();
+    rr(g,x,BASE-h,BW,h,8);g.fillStyle=cols[k];g.fill();
+    if(r>0.5&&(k===lim.k||k===lim.close)){g.lineWidth=5;g.strokeStyle='#1f7a3d';rr(g,x-3,BASE-H-3,BW+6,H+6,10);g.stroke();g.fillStyle='#1f7a3d';g.font='bold '+FONT(17);g.textAlign='center';g.fillText('LIMITING',x+BW/2,BASE-H-14)}
+    g.fillStyle=c;g.font='bold '+FONT(18);g.textAlign='center';g.fillText(['light','CO₂','temperature'][i],x+BW/2,BASE+26)});
+  const ry=BASE-r/0.9/100*H;g.setLineDash([10,6]);g.strokeStyle=c;g.lineWidth=2.5;g.beginPath();g.moveTo(X0-20,ry);g.lineTo(X0+3*BW+2*GAP+20,ry);g.stroke();g.setLineDash([]);
+  g.fillStyle=c;g.font='bold '+FONT(20);g.textAlign='left';g.fillText('Rate: '+Math.round(r)+' bubbles per minute',500,40)}
+const cB=$('#cB'),gB=cB.getContext('2d');const GL=90,GR=20,GT=20,GB=64;
+function drawB(){const g=gB,c=ink();g.clearRect(0,0,900,420);const W=900,H=420;
+  const sx=v=>GL+v/XMAX[A.x]*(W-GL-GR),sy=v=>H-GB-v/100*(H-GB-GT);
+  g.strokeStyle='rgba(128,128,128,.25)';g.lineWidth=1;g.fillStyle=c;g.font=FONT(17);g.textAlign='right';
+  for(let v=0;v<=100;v+=20){g.beginPath();g.moveTo(GL,sy(v));g.lineTo(W-GR,sy(v));g.stroke();g.fillText(v,GL-8,sy(v)+6)}
+  g.textAlign='center';const st=A.x==='C'?0.02:A.x==='T'?5:10;for(let v=0;v<=XMAX[A.x]+1e-9;v+=st){g.fillText(A.x==='C'?v.toFixed(2):v,sx(v),H-GB+24)}
+  g.strokeStyle=c;g.lineWidth=2;g.beginPath();g.moveTo(GL,GT);g.lineTo(GL,H-GB);g.lineTo(W-GR,H-GB);g.stroke();
+  g.font='bold '+FONT(18);g.fillText(XLAB[A.x],(GL+W-GR)/2,H-12);g.save();g.translate(24,(GT+H-GB)/2);g.rotate(-Math.PI/2);g.fillText('rate (bubbles per minute)',0,0);g.restore();
+  const line=(pts,col,w,lab)=>{if(pts.length<2)return;g.beginPath();pts.forEach(([v,r],i)=>{i?g.lineTo(sx(v),sy(r)):g.moveTo(sx(v),sy(r))});g.strokeStyle=col;g.lineWidth=w;g.stroke();
+    if(lab){const [v,r]=pts[Math.round((pts.length-1)*0.72)];g.fillStyle=col;g.font='bold '+FONT(17);g.textAlign='left';const tw=g.measureText(lab).width;g.fillText(lab,Math.min(sx(v),W-GR-tw-6),Math.max(GT+16,sy(r)-10))}};
+  A.kept.filter(k=>k.x===A.x).forEach((k,i)=>line(k.pts,LC[(i+1)%LC.length],3.5,k.lab));
+  const fx={L:A.L,C:A.C,T:A.T};const pts=curve(A.x,fx);const v=A[A.x];const upto=Math.round(v/XMAX[A.x]*200);
+  line(pts.slice(0,upto+1),c,4,upto>60?fixedLabel(A.x,fx):null);
+  const r=rate(A.L,A.C,A.T);
+  g.beginPath();g.arc(sx(v),sy(r),10,0,7);g.fillStyle='#1f7a3d';g.fill();g.strokeStyle='#fff';g.lineWidth=3;g.stroke();
+  g.setLineDash([5,5]);g.strokeStyle='#1f7a3d';g.lineWidth=1.5;g.beginPath();g.moveTo(sx(v),sy(r));g.lineTo(sx(v),H-GB);g.moveTo(sx(v),sy(r));g.lineTo(GL,sy(r));g.stroke();g.setLineDash([]);
+  if(v<XMAX[A.x]*0.03){g.fillStyle='#1f7a3d';g.font='bold '+FONT(17);g.textAlign='left';g.fillText('← press Play, or drag the dot',sx(v)+18,sy(r)-14)}}
+function msgA(){const x=A.x,v=A[x];const p={L:A.L,C:A.C,T:A.T};const r=rate(p.L,p.C,p.T);const lim=limiting(p.L,p.C,p.T);
+  const q=Object.assign({},p);q[x]=Math.min(XMAX[x],v+XMAX[x]*0.01);const slope=rate(q.L,q.C,q.T)-r;const cap=s=>s[0].toUpperCase()+s.slice(1);
+  let m;if(r<0.5)m='<b>No photosynthesis</b>'+(p.L===0?'There is no light, so there is no energy for photosynthesis.':p.C===0?'There is no carbon dioxide, so no glucose can be made.':p.T>40?'It is too hot: the enzymes are denatured.':'It is too cold for the enzymes to work.');
+  else if(p.T>36&&(x!=='T'||slope<0))m='<b>It is too hot</b>Above the optimum temperature the <b>enzymes denature</b>, so the rate decreases.';
+  else if(slope>0.12)m='<b>The line is going up</b><b>'+cap(NAME[x])+'</b> is the limiting factor: increasing it increases the rate.';
+  else{const o=lim.k===x?(lim.close||lim.k):lim.k;m='<b>The line is flat (plateau)</b>'+cap(NAME[x])+' is <b>not</b> limiting here. <b>'+cap(NAME[o])+'</b> is limiting: increase it to get a higher plateau.'}
+  $('#aMsg').innerHTML=m}
+function toSliders(){$('#aL').value=A.L;$('#aC').value=Math.round(A.C*100);$('#aT').value=A.T;labels()}
+function labels(){$('#aLV').textContent=fmt.L(A.L);$('#aCV').textContent=fmt.C(A.C)+(Math.abs(A.C-0.04)<0.001?' (normal air)':'');$('#aTV').textContent=fmt.T(A.T);
+  ['L','C','T'].forEach(k=>{const w=$('#w'+k);const on=k===A.x;w.style.outline=on?'3px solid #1f7a3d':'none';w.style.outlineOffset='6px';w.style.borderRadius='8px';w.querySelector('label').innerHTML=w.querySelector('label').innerHTML.replace(/ \(x-axis\)| \(kept the same\)/,'').replace(/(<span)/,(on?' (x-axis)':' (kept the same)')+' $1')})}
+function fromSliders(){A.L=+$('#aL').value;A.C=cToV(+$('#aC').value);A.T=+$('#aT').value;A.play=false;$('#bPlay').textContent='▶ Play';labels()}
+['#aL','#aC','#aT'].forEach(s=>$(s).oninput=fromSliders);
+seg('#bX',v=>{A.x=v;A.play=false;A[v]=0;$('#bPlay').textContent='▶ Play';toSliders()});
+$('#bPlay').onclick=()=>{if(A.play){A.play=false;$('#bPlay').textContent='▶ Play';return}if(A[A.x]>=XMAX[A.x]*0.995)A[A.x]=0;A.play=true;$('#bPlay').textContent='❚❚ Pause'};
+$('#bKeep').onclick=()=>{const fx={L:A.L,C:A.C,T:A.T};A.kept.push({x:A.x,pts:curve(A.x,fx),lab:fixedLabel(A.x,fx)});if(A.kept.length>5)A.kept.shift()};
+$('#bClear').onclick=()=>{A.kept=[]};
+seg('#bPre',v=>{A.kept=[];const P={co2:{x:'L',a:{C:0.04,T:25},b:{C:0.12,T:25}},temp:{x:'L',a:{C:0.12,T:15},b:{C:0.12,T:28}},light:{x:'C',a:{L:30,T:25},b:{L:90,T:25}}}[v];
+  A.x=P.x;setSeg('#bX',P.x);Object.assign(A,P.a);const fx={L:A.L,C:A.C,T:A.T};A.kept.push({x:A.x,pts:curve(A.x,fx),lab:fixedLabel(A.x,fx)});
+  Object.assign(A,P.b);A[A.x]=0;A.play=true;$('#bPlay').textContent='❚❚ Pause';toSliders();
+  setTimeout(()=>$('#bPre').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed','false')),400)});
+function dragB(e){const rc=cB.getBoundingClientRect();const x=(e.clientX-rc.left)/rc.width*900;A[A.x]=Math.max(0,Math.min(1,(x-GL)/(900-GL-GR)))*XMAX[A.x];if(A.x!=='C')A[A.x]=Math.round(A[A.x]);else A.C=Math.round(A.C*100)/100;A.play=false;$('#bPlay').textContent='▶ Play';toSliders()}
+let dragging=false;cB.addEventListener('pointerdown',e=>{dragging=true;cB.setPointerCapture(e.pointerId);dragB(e)});cB.addEventListener('pointermove',e=>{if(dragging)dragB(e)});cB.addEventListener('pointerup',()=>dragging=false);cB.style.touchAction='none';cB.style.cursor='pointer';
+toSliders();
+let lA=performance.now();function loopA(now){const dt=Math.min(.05,(now-lA)/1000);lA=now;if(isOn('st-a')){stepA(dt);drawA();drawB();msgA()}requestAnimationFrame(loopA)}requestAnimationFrame(loopA);
+
+/* ================= TAB 3: GLASSHOUSE ================= */
+const cC=$('#cC'),gC=cC.getContext('2d');const C={s:'win',t:0};
+function gh(){const base=C.s==='win'?{L:25,C:0.04,T:8}:{L:85,C:0.04,T:24};const f=Object.assign({},base);
+  if(!C.s)return f;const lamp=$('#cLamp').checked,heat=$('#cHeat').checked,par=$('#cPar').checked;
+  if(lamp)f.L=Math.max(f.L,80);if(heat)f.T=Math.max(f.T,24);if(par){f.C=0.12;f.T=Math.max(f.T,C.s==='win'?16:26)}
+  return {f,lamp,heat,par,cost:(lamp?1:0)+(heat?1:0)+(par?1:0)}}
+function drawC(dt){const g=gC,c=ink();g.clearRect(0,0,900,420);const G=gh(),f=G.f;C.t+=dt;
+  // sky
+  g.fillStyle=C.s==='win'?'#c9d3dd':'#cfe8fb';g.fillRect(0,0,900,300);g.fillStyle=C.s==='win'?'#e8eef3':'#9bc58a';g.fillRect(0,300,900,120);
+  if(C.s==='sum'){g.beginPath();g.arc(820,60,34,0,7);g.fillStyle='#ffd34d';g.fill()}else{g.beginPath();g.arc(820,60,26,0,7);g.fillStyle='#f3f1e6';g.fill()}
+  // glasshouse
+  g.beginPath();g.moveTo(140,300);g.lineTo(140,150);g.lineTo(380,70);g.lineTo(620,150);g.lineTo(620,300);g.closePath();g.fillStyle='rgba(220,240,255,.55)';g.fill();g.lineWidth=4;g.strokeStyle='#7a8a96';g.stroke();
+  g.lineWidth=2;for(let x=200;x<620;x+=60){g.beginPath();g.moveTo(x,300);g.lineTo(x,x<380?150-(x-140)/240*80:70+(x-380)/240*80);g.stroke()}
+  if(G.lamp){for(let x=200;x<=560;x+=120){g.fillStyle='#ffe680';g.fillRect(x-20,150,40,10);g.save();g.globalAlpha=.25;g.beginPath();g.moveTo(x-20,160);g.lineTo(x+20,160);g.lineTo(x+50,290);g.lineTo(x-50,290);g.closePath();g.fillStyle='#ffe680';g.fill();g.restore()}}
+  if(G.heat){rr(g,160,250,50,40,6);g.fillStyle='#b74a3a';g.fill();g.fillStyle='#fff';g.font='bold '+FONT(14);g.textAlign='center';g.fillText('heater',185,275)}
+  if(G.par){rr(g,555,255,46,35,6);g.fillStyle='#555';g.fill();g.beginPath();g.moveTo(578,255);g.quadraticCurveTo(570,235,580,220);g.strokeStyle='rgba(90,90,100,.6)';g.lineWidth=4;g.stroke();g.fillStyle='#fff';g.font='bold '+FONT(13);g.textAlign='center';g.fillText('burner',578,277)}
+  // plants: height ~ rate
+  const r=rate(f.L,f.C,f.T);const h=30+r*1.3;for(let x=240;x<=520;x+=40){g.strokeStyle='#2f7a35';g.lineWidth=5;g.beginPath();g.moveTo(x,300);g.lineTo(x,300-h);g.stroke();g.fillStyle='#3f9a45';g.beginPath();g.ellipse(x-12,300-h*0.6,12,6,-0.5,0,7);g.ellipse(x+12,300-h*0.75,12,6,0.5,0,7);g.fill()}
+  // readouts
+  const lim=limiting(f.L,f.C,f.T);g.fillStyle='#1d2a44';g.font='bold '+FONT(18);g.textAlign='left';
+  const rows=[['light',fmt.L(f.L)],['CO₂',fmt.C(f.C)],['temperature',fmt.T(f.T)],['rate',Math.round(r)+' bubbles/min'],['cost','€'.repeat(G.cost)||'none']];
+  rr(g,640,110,250,170,10);g.fillStyle='rgba(255,255,255,.85)';g.fill();rows.forEach(([a,b],i)=>{g.fillStyle='#1d2a44';g.font='bold '+FONT(17);g.fillText(a,654,140+i*30);g.font=FONT(17);g.fillText(b,770,140+i*30)});
+  $('#cMsg').innerHTML='<b>Limiting factor: '+NAME[lim.k]+'</b>'+(C.s==='win'&&!G.lamp&&lim.k==='L'?'In winter the days are short and dull. Lamps would help.':'')+(C.s==='sum'&&G.heat?' In summer the heater is not needed: temperature is not limiting, so this costs money for no extra growth.':'')+(C.s==='win'&&G.lamp&&!G.heat&&!G.par?' Now it is too cold: add heat (heater or paraffin burner).':'')+(G.par?' The paraffin burner adds CO₂ <b>and</b> heat.':'')}
+let lC=performance.now();function loopC(now){const dt=Math.min(.05,(now-lC)/1000);lC=now;if(isOn('st-c'))drawC(dt);requestAnimationFrame(loopC)}requestAnimationFrame(loopC);
+seg('#cS',v=>{C.s=v});
+
+const IMGS={};
+/* ---------- self-marking exam practice ---------- */
+function Quiz(rootSel,scoreSel,Qs){
+  const root=$(rootSel);const st=Qs.map(()=>({got:0,done:false}));
+  function total(){const max=Qs.reduce((s,q)=>s+q.marks,0),got=st.reduce((s,x)=>s+x.got,0),done=st.filter(x=>x.done).length;
+    $(scoreSel).innerHTML=`<b>Score: ${got} / ${max}</b> · ${done} of ${Qs.length} questions marked`+(done===Qs.length?` · <b>${Math.round(got/max*100)}%</b>`:'')}
+  Qs.forEach((q,i)=>{
+    const c=document.createElement('div');c.className='qcard';
+    let h=`<div class="qhead"><span class="qnum">${q.n}</span><span class="qmarks">(${q.marks} mark${q.marks>1?'s':''})</span></div>`;
+    if(q.stem)h+=`<p class="qstem">${q.stem}</p>`;
+    if(q.img)h+=`<img class="qimg" src="${IMGS[q.img]}" alt="${q.alt||''}">`;
+    h+=`<p class="qtext"><b>${q.text}</b></p>`;
+    if(q.type==='mcq')h+=`<div class="opts">${q.opts.map((o,j)=>`<label class="opt"><input type="radio" name="q${i}" value="${j}"> <span class="ol">${'ABCD'[j]}</span> ${o}</label>`).join('')}</div><button class="btn" data-a="check">Check</button>`;
+    else if(q.type==='str')h+=`<div class="row"><input type="text" class="numin" aria-label="Your answer"><button class="btn" data-a="check">Check</button></div>`;
+    else if(q.type==='num')h+=`<div class="row"><input type="text" inputmode="decimal" class="numin" id="n${i}" aria-label="Your answer"> <span>${q.unit||''}</span><button class="btn" data-a="check">Check</button></div>`;
+    else h+=`<textarea id="t${i}" rows="${Math.max(2,q.marks+1)}" placeholder="Write your answer here, then press Show mark scheme." aria-label="Your answer"></textarea><button class="btn" data-a="ms">Show mark scheme</button>`;
+    h+=`<div class="fb" hidden></div>`;
+    c.innerHTML=h;root.appendChild(c);
+    const fb=c.querySelector('.fb');
+    c.addEventListener('click',e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;
+      if(a==='check'&&q.type==='mcq'){const sel=c.querySelector('input:checked');if(!sel){fb.hidden=false;fb.className='fb warn';fb.innerHTML='Choose an answer first.';return}
+        const ok=+sel.value===q.ans;st[i]={got:ok?1:0,done:true};fb.hidden=false;fb.className='fb '+(ok?'ok':'warn');
+        fb.innerHTML=(ok?'<b>Correct.</b> ':'<b>Not quite.</b> The answer is <b>'+'ABCD'[q.ans]+' '+q.opts[q.ans]+'</b>. ')+(q.why||'');total()}
+      if(a==='check'&&q.type==='str'){const v=c.querySelector('.numin').value.trim();if(!v){fb.hidden=false;fb.className='fb warn';fb.innerHTML='Type your answer first.';return}
+        const g=q.grade(v);st[i]={got:g,done:true};fb.hidden=false;fb.className='fb '+(g===q.marks?'ok':'warn');fb.innerHTML=`<b>${g} / ${q.marks}.</b> `+q.working;total()}
+      if(a==='check'&&q.type==='num'){const v=parseFloat(String(c.querySelector('.numin').value).replace(',','.'));if(isNaN(v)){fb.hidden=false;fb.className='fb warn';fb.innerHTML='Type a number first.';return}
+        const ok=q.accept(v);st[i]={got:ok?q.marks:0,done:true};fb.hidden=false;fb.className='fb '+(ok?'ok':'warn');fb.innerHTML=(ok?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.working;total()}
+      if(a==='ms'){fb.hidden=false;fb.className='fb ms';
+        fb.innerHTML=`<p><b>Mark scheme.</b> Tick each point your answer makes${q.max?' (maximum '+q.max+')':''}:</p>`+q.points.map((p,j)=>`<label class="opt"><input type="checkbox" data-p="${j}"> ${p}</label>`).join('')+(q.note?`<p class="small">${q.note}</p>`:'')+`<p class="mk">Your mark: <b>0</b> / ${q.marks}</p>`;
+        fb.querySelectorAll('input').forEach(x=>x.onchange=()=>{const k=fb.querySelectorAll('input:checked').length;const n=q.score?q.score(k):Math.min(q.max||q.marks,q.marks,k);st[i]={got:n,done:true};fb.querySelector('.mk b').textContent=n;total()});
+        st[i].done=true;total()}
+    });
+  });
+  total();
+}
+const Qs=[
+ {n:'Check 1',type:'mcq',marks:1,text:'What is a limiting factor?',opts:['The factor that is in the largest supply','The factor in the shortest supply, which stops the rate increasing','Any factor that kills the plant','The factor that is measured in an experiment'],ans:1},
+ {n:'Check 2',type:'mcq',marks:1,text:'A graph of rate of photosynthesis against light intensity goes up and then levels off. What is the limiting factor in the flat part of the graph?',opts:['light intensity','not light intensity: another factor, such as carbon dioxide concentration or temperature','oxygen concentration','the amount of water in the beaker'],ans:1,why:'On the plateau, increasing light makes no difference, so light is not limiting.'},
+ {n:'Check 3',type:'mcq',marks:1,text:'In summer, a glasshouse is warm and bright, but the rate of photosynthesis is not increasing. What should the farmer add?',opts:['more heating','more lamps','more carbon dioxide (e.g. a paraffin burner)','nothing can increase it'],ans:2,why:'Light and temperature are already high, so carbon dioxide is most likely to be the limiting factor.'},
+ {n:'Check 4',type:'mcq',marks:1,text:'Why does the rate of photosynthesis fall at very high temperatures?',opts:['The plant runs out of light','The enzymes are denatured','There is too much carbon dioxide','The stomata open'],ans:1}
+];
+const QSRC='These questions were written for this page.';
+
+Quiz('#qList','#qScore',Qs);document.getElementById('qSrc').textContent='Questions: '+QSRC;
+
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<title>Diffusion and Osmosis Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a lab bench — tabbed stations, each with the apparatus + controls on the left and the results book on the right */
+:root{
+  --bg:#eef2ef; --panel:#ffffff; --ink:#18241f; --muted:#56655e; --line:#cfd8d3;
+  --leaf:#2f7d4f; --leaf-soft:#dcefe3; --lamp:#f2b632; --water:#cfe6f2; --water-edge:#7fb0c8;
+  --warn:#b4501e; --warn-soft:#fbe9df; --ok:#2f7d4f; --ok-soft:#e1f2e7; --navy:#1d2140; --iodine:#c9772a;
+  --scene:#f7faf8; --glass:#ffffff;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111815; --panel:#18221e; --ink:#e6eee9; --muted:#9db0a6; --line:#2e3c36;
+  --leaf:#5cc489; --leaf-soft:#1f3a2b; --lamp:#f4c04d; --water:#1d3442; --water-edge:#4f88a6;
+  --warn:#f08a55; --warn-soft:#3a2219; --ok:#5cc489; --ok-soft:#183126; --navy:#0e1030; --iodine:#d98a3c;
+  --scene:#141d19; --glass:#1c2622; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,38px);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:2px 0 0}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--leaf)}
+nav.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+nav.tabs button{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:10px 16px;border-radius:999px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+nav.tabs button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:3px solid var(--lamp);outline-offset:2px}
+.station{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.station{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 4px}
+.card h3{font-size:15px;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.aim{margin:0 0 10px;color:var(--muted)}
+svg.scene{width:100%;height:auto;display:block;background:var(--scene);border-radius:10px;border:1px solid var(--line)}
+.controls{display:grid;gap:12px;margin-top:12px}
+.ctrl{display:grid;gap:4px}
+.ctrl label,.ctrl .lbl{font-weight:700}
+.ctrl .val{font-family:var(--mono);color:var(--leaf)}
+input[type=range]{width:100%;accent-color:var(--leaf)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--leaf);background:var(--leaf-soft);font-weight:700}
+.iv{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.iv .chip{border:2px dashed var(--leaf);border-radius:8px;padding:4px 10px;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-weight:700;border:0;background:var(--leaf);color:var(--panel);padding:10px 16px;border-radius:10px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.readout{font-family:var(--mono);font-size:15px;background:var(--scene);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.msg{border-radius:10px;padding:10px 12px;margin-top:10px}
+.msg.ok{background:var(--ok-soft)}
+.msg.warn{background:var(--warn-soft)}
+.msg>b:first-child{display:block}
+.check{display:flex;gap:8px;align-items:center;font-weight:700}
+.check input{width:20px;height:20px;accent-color:var(--leaf)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--scene);font-size:14px}
+td.mean{font-weight:700;color:var(--leaf)}
+td .x{font:inherit;border:0;background:none;color:var(--muted);cursor:pointer;text-decoration:underline}
+.empty{color:var(--muted);font-style:italic;padding:10px 0}
+.fair{margin-top:8px}
+svg.graph{width:100%;height:auto;display:block}
+.graph text{fill:var(--ink);font-family:var(--body);font-size:12px}
+.graph .axis{stroke:var(--ink)}
+.graph .grid{stroke:var(--line)}
+.graph .pt{fill:var(--leaf)}
+.graph .ln{stroke:var(--leaf);fill:none;stroke-width:2.5}
+.graph .bar{fill:var(--leaf)}
+.limit{font-weight:700}
+.steps{display:grid;gap:8px}
+.step{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.step .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--scene);border:2px solid var(--line);font-weight:700}
+.step.done .n{background:var(--leaf);border-color:var(--leaf);color:var(--panel)}
+.step.now{border-color:var(--leaf)}
+.step p{margin:2px 0 6px;color:var(--muted)}
+.pred{display:grid;gap:6px;margin-top:6px}
+.pred .prow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pred .prow span{min-width:180px;font-weight:700}
+.key{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.key span{display:flex;gap:6px;align-items:center}
+.sw{width:18px;height:18px;border-radius:4px;border:1px solid var(--line);display:inline-block}
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.reffig{margin:0;background:#fff;border-radius:10px;padding:8px;border:1px solid var(--line)}
+.reffig img{width:100%;height:auto;display:block}
+.reffig figcaption{font-size:12px;color:#56655e;text-align:right}
+footer{color:var(--muted);font-size:13px;margin-top:20px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.ref{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:900px){.ref{grid-template-columns:1fr}}
+.reftab td{text-align:left;vertical-align:top}
+.wide{grid-column:1/-1}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatches div{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--scene)}
+.swatches i{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);display:inline-block}
+select{font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.small{font-size:13px;color:var(--muted)}
+</style>
+<div class="wrap">
+<header class="top"><div>
+  <div class="tag">Core Practical · Biology</div>
+  <h1>Diffusion and Osmosis Lab</h1>
+  <p class="sub">Osmosis in a living system (potato) and diffusion in a non-living system (agar cubes).</p>
+</div></header>
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tab-a" aria-selected="true" data-st="a">1 · Osmosis: potato cylinders</button>
+  <button role="tab" id="tab-b" aria-selected="false" data-st="b">2 · Diffusion: agar cubes</button>
+</nav>
+
+<section id="st-a" class="station">
+  <div class="card">
+    <h2>Osmosis in potato cylinders</h2>
+    <p class="aim">Potato cells are <b>living</b>. Water moves by osmosis from a dilute solution to a more concentrated solution, across a partially permeable membrane.</p>
+    <svg class="scene" id="sceneA" viewBox="0 0 600 250" role="img" aria-label="A potato cylinder in a boiling tube of sucrose solution, and a balance"></svg>
+    <div class="controls">
+      <div class="ctrl"><span class="lbl">Sucrose solution concentration (mol/dm³)</span>
+        <div class="seg" id="conc"><button data-v="0" aria-pressed="false">0.0 (water)</button><button data-v="0.2" aria-pressed="true">0.2</button><button data-v="0.4" aria-pressed="false">0.4</button><button data-v="0.6" aria-pressed="false">0.6</button><button data-v="0.8" aria-pressed="false">0.8</button><button data-v="1" aria-pressed="false">1.0</button></div></div>
+      <div class="row" id="stepsA"></div>
+      <label class="check"><input type="checkbox" id="blot" checked> Blot the cylinder dry with a paper towel before the second weighing</label>
+      <div id="msgA" class="msg" hidden></div>
+      <p class="aim"><b>Control variables:</b> same size of cylinder (cut with a cork borer, same length), same volume of solution, same time (24 hours), same temperature.</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Results</h2>
+    <p class="aim">Percentage change in mass = (end mass − start mass) ÷ start mass × 100. The rows already here are example results.</p>
+    <div class="tablewrap"><table id="tblA"></table></div>
+    <div id="fairA" class="msg warn fair" hidden></div>
+    <h3>Graph</h3>
+    <svg class="graph" id="graphA" viewBox="0 0 460 280" role="img" aria-label="Graph of percentage change in mass against sucrose concentration"></svg>
+    <p class="small">Where the line crosses 0, there is <b>no net movement of water</b>. This is the concentration inside the potato cells.</p>
+    <div class="row"><button class="btn alt" id="clearA">Clear results</button></div>
+  </div>
+</section>
+
+<section id="st-b" class="station" hidden>
+  <div class="card">
+    <h2>Diffusion into agar cubes</h2>
+    <p class="aim">Agar is <b>non-living</b>. The cubes contain an indicator that is <b style="color:#c2185b">pink</b> in alkali. They are put in acid. As acid diffuses in, the cube turns <b>colourless</b> from the outside in.</p>
+    <svg class="scene" id="sceneB" viewBox="0 0 600 252" role="img" aria-label="Three agar cubes of different sizes in acid, cut in half to show the pink centre"></svg>
+    <div class="controls">
+      <div class="row"><button class="btn" id="goB">Put the cubes in acid and start the stopwatch</button><span class="readout" id="clockB">00:00</span></div>
+      <p class="small">The stopwatch runs 30× faster than real time. The pictures show each cube cut in half.</p>
+      <div id="msgB" class="msg" hidden></div>
+      <p class="aim"><b>Control variables:</b> same concentration and volume of acid, same temperature, cubes fully covered.</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Results</h2>
+    <div class="tablewrap"><table id="tblB"></table></div>
+    <h3>Graph</h3>
+    <svg class="graph" id="graphB" viewBox="0 0 460 280" role="img" aria-label="Graph of time against surface area to volume ratio"></svg>
+    <p class="small"><b>Smaller cube → bigger surface area to volume ratio → acid reaches the centre faster.</b> This is why cells are small, and why large organisms need exchange surfaces and transport systems.</p>
+  </div>
+</section>
+
+<footer>Simulated results based on the Edexcel International GCSE diffusion and osmosis practical. Real potatoes vary more than this model.</footer>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const VP=['fill','stroke','font-family','stop-color'];
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a){const v=String(a[k]);if(VP.includes(k)&&v.includes('var('))e.style.setProperty(k,v);else e.setAttribute(k,v)}if(p)p.appendChild(e);return e};
+document.querySelectorAll('svg *').forEach(n=>{[...n.attributes].forEach(at=>{if(VP.includes(at.name)&&at.value.includes('var(')){n.style.setProperty(at.name,at.value);n.removeAttribute(at.name)}})});
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const tabsEls=[...document.querySelectorAll('nav.tabs button')];
+tabsEls.forEach(b=>b.addEventListener('click',()=>{
+  tabsEls.forEach(x=>x.setAttribute('aria-selected',x===b));
+  tabsEls.forEach(x=>{const st=document.getElementById('st-'+x.dataset.st);if(st)st.hidden=(x!==b)});
+}));
+const isOn=id=>!document.getElementById(id).hidden;
+function seg(id,onChange){
+  const box=$(id);
+  box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));onChange(b.dataset.v)});
+  return ()=>box.querySelector('[aria-pressed="true"]').dataset.v;
+}
+function setSeg(id,v){$(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===String(v)))}
+function showMsg(id,kind,title,body){const m=$(id);m.hidden=false;m.className='msg '+kind;m.innerHTML='<b>'+title+'</b>'+body}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function mkHead(t,cols){ // cols: [[text,rowspan,colspan]...] rows
+  const th0=t.createTHead();cols.forEach(rw=>{const r=th0.insertRow();rw.forEach(([x,rs,cs])=>{const th=document.createElement('th');th.textContent=x;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;r.appendChild(th)})});
+}
+function barChart(g,labels,vals,yLabel,xLabel,colours){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const yMaxRaw=Math.max(1,...vals.filter(v=>v!=null));const st=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/st)*st;
+  const sy=v=>H-B-(v/yMax)*(H-B-T);
+  for(let v=0;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  const bw=(W-L-R)/Math.max(labels.length,1);
+  labels.forEach((lb,i)=>{const v=vals[i];const x=L+i*bw+bw*.18;
+    if(v!=null)el('rect',{x,y:sy(v),width:bw*.64,height:H-B-sy(v),class:'bar',fill:colours?colours[i]:'var(--leaf)'},g);
+    const t=el('text',{x:x+bw*.32,y:H-B+16,'text-anchor':'middle','font-size':11},g);t.textContent=lb});
+}
+function lineChart(g,pts,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const ys=pts.map(p=>p.y);const yMinRaw=Math.min(0,...ys);const yMaxRaw=Math.max(1,...ys);
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xs=pts.map(p=>p.x);const xMaxRaw=Math.max(1e-9,...xs, opts.xMax||0);const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;const xMin=opts.xMin||0;
+  const sx=v=>L+((v-xMin)/(xMax-xMin))*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(3)}
+  for(let v=xMin;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:sy(Math.max(0,yMin)),y2:sy(Math.max(0,yMin)),class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+  const sorted=[...pts].sort((a,b)=>a.x-b.x);
+  if(!opts.noLine)el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+  sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+}
+function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+function Book(opts){
+  // opts: table, graph, fair, ivLabel(), unitLabel, fmt, controls(), isBar(), xMode()
+  const st={rows:new Map(),snap:null,changed:new Set()};
+  function add(iv,val,controlSnap){
+    if(!st.snap) st.snap=controlSnap;
+    for(const k in controlSnap) if(st.snap[k]!==controlSnap[k]) st.changed.add(k);
+    const arr=st.rows.get(iv)||[];
+    if(arr.length>=3) return false;
+    arr.push(val);st.rows.set(iv,arr);render();return true;
+  }
+  function count(iv){return (st.rows.get(iv)||[]).length}
+  function clear(){st.rows.clear();st.snap=null;st.changed.clear();render()}
+  function del(iv){st.rows.delete(iv);if(!st.rows.size){st.snap=null;st.changed.clear()}render()}
+  function mean(a){const n=a.filter(v=>v!=null);return n.length?n.reduce((s,v)=>s+v,0)/n.length:null}
+  function render(){
+    const t=opts.table;t.innerHTML='';
+    const keys=[...st.rows.keys()].sort(opts.sort);
+    const th0=t.createTHead();const h1=th0.insertRow(),h=th0.insertRow();
+    const mk=(row,txt,rs,cs)=>{const th=document.createElement('th');th.textContent=txt;if(rs)th.rowSpan=rs;if(cs)th.colSpan=cs;row.appendChild(th)};
+    mk(h1,opts.ivLabel(),2);mk(h1,typeof opts.dvHead==='function'?opts.dvHead():opts.dvHead,0,4);mk(h1,'',2);
+    ['Trial 1','Trial 2','Trial 3','Mean'].forEach(x=>mk(h,x));
+    const tb=t.createTBody();
+    if(!keys.length){const r=tb.insertRow();const c=r.insertCell();c.colSpan=6;c.className='empty';c.textContent='No results yet. Set up, then press the button to measure.'}
+    keys.forEach(k=>{const r=tb.insertRow();const a=st.rows.get(k);
+      r.insertCell().textContent=opts.fmtIV(k);
+      for(let i=0;i<3;i++)r.insertCell().textContent=a[i]===undefined?'':(a[i]===null?(opts.nullLabel||'none'):opts.fmt(a[i]));
+      const m=r.insertCell();m.className='mean';const mv=mean(a);m.textContent=mv==null?(a.length?'–':''):opts.fmt(mv,true);
+      const x=r.insertCell();const b=document.createElement('button');b.className='x';b.textContent='delete';b.onclick=()=>del(k);x.appendChild(b)});
+    if(st.changed.size){opts.fair.hidden=false;opts.fair.innerHTML='<b>Not a fair test</b>You changed: '+[...st.changed].join(', ')+'. Only the independent variable should change. Clear the results and start again.'}
+    else opts.fair.hidden=true;
+    if(opts.graphFn) opts.graphFn(keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null)); else graph(keys);
+  }
+  function graph(keys){
+    const g=opts.graph;g.innerHTML='';
+    const W=460,H=280,L=58,R=14,T=14,B=52;
+    const pts=keys.map(k=>({k,y:mean(st.rows.get(k))})).filter(p=>p.y!=null);
+    const yMaxRaw=Math.max(1,...pts.map(p=>p.y));
+    const step=niceStep(yMaxRaw/5);const yMax=Math.ceil(yMaxRaw/step)*step||step*5;
+    const sy=v=>H-B-(v/yMax)*(H-B-T);
+    for(let v=0;v<=yMax+1e-9;v+=step){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+    el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+    const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=opts.yLabel;
+    const xl=el('text',{x:(L+W-R)/2,y:H-10,'text-anchor':'middle'},g);xl.textContent=opts.xLabel();
+    if(!pts.length){const t=el('text',{x:(L+W-R)/2,y:(H-B+T)/2,'text-anchor':'middle',fill:'var(--muted)'},g);t.textContent='Your graph appears here';return}
+    if(opts.isBar()){
+      const bw=(W-L-R)/Math.max(pts.length,1);
+      pts.forEach((p,i)=>{const x=L+i*bw+bw*.2;el('rect',{x,y:sy(p.y),width:bw*.6,height:H-B-sy(p.y),class:'bar',fill:opts.barColour?opts.barColour(p.k):'var(--leaf)'},g);
+        const t=el('text',{x:x+bw*.3,y:H-B+16,'text-anchor':'middle'},g);t.textContent=opts.fmtIV(p.k)});
+      return;
+    }
+    const xs=pts.map(p=>opts.xVal(p.k));const xMaxRaw=Math.max(...xs,1e-9);
+    const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+    const sx=v=>L+(v/xMax)*(W-L-R);
+    for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(3)}
+    const sorted=pts.map(p=>({x:opts.xVal(p.k),y:p.y})).sort((a,b)=>a.x-b.x);
+    el('polyline',{points:sorted.map(p=>sx(p.x)+','+sy(p.y)).join(' '),class:'ln'},g);
+    sorted.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p.y),r:5,class:'pt'},g));
+  }
+  function niceStep(s){const p=10**Math.floor(Math.log10(s||1));const n=s/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+  render();
+  return {add,count,clear,render,rows:st.rows};
+}
+
+function multiLine(g,series,yLabel,xLabel,opts={}){
+  g.innerHTML='';const W=460,H=280,L=58,R=14,T=14,B=52;
+  const all=series.flatMap(s=>s.pts);
+  const yMinRaw=opts.yMin!=null?opts.yMin:Math.min(0,...all.map(p=>p.y));const yMaxRaw=Math.max(opts.yMaxMin||1,...all.map(p=>p.y));
+  const st=niceStep((yMaxRaw-yMinRaw)/5);const yMax=Math.ceil(yMaxRaw/st)*st,yMin=Math.floor(yMinRaw/st)*st;
+  const xMaxRaw=Math.max(opts.xMax||1,...all.map(p=>p.x));const xs0=niceStep(xMaxRaw/5);const xMax=Math.ceil(xMaxRaw/xs0)*xs0;
+  const sx=v=>L+(v/xMax)*(W-L-R),sy=v=>H-B-((v-yMin)/(yMax-yMin))*(H-B-T);
+  for(let v=yMin;v<=yMax+1e-9;v+=st){el('line',{x1:L,x2:W-R,y1:sy(v),y2:sy(v),class:'grid'},g);const t=el('text',{x:L-6,y:sy(v)+4,'text-anchor':'end'},g);t.textContent=+v.toFixed(2)}
+  for(let v=0;v<=xMax+1e-9;v+=xs0){el('line',{x1:sx(v),x2:sx(v),y1:H-B,y2:H-B+5,class:'axis'},g);const t=el('text',{x:sx(v),y:H-B+18,'text-anchor':'middle'},g);t.textContent=+v.toFixed(2)}
+  el('line',{x1:L,x2:L,y1:T,y2:H-B,class:'axis'},g);el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'},g);
+  const yl=el('text',{x:14,y:(H-B+T)/2,'text-anchor':'middle',transform:`rotate(-90 14 ${(H-B+T)/2})`},g);yl.textContent=yLabel;
+  const xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle'},g);xl.textContent=xLabel;
+  series.forEach((s,i)=>{const p=[...s.pts].sort((a,b)=>a.x-b.x);
+    if(p.length>1)el('polyline',{points:p.map(q=>sx(q.x)+','+sy(q.y)).join(' '),fill:'none',stroke:s.colour,'stroke-width':2.5,'stroke-dasharray':s.dash||''},g);
+    p.forEach(q=>el('circle',{cx:sx(q.x),cy:sy(q.y),r:4.5,fill:s.colour},g));
+    const lx=L+10+i*150;el('rect',{x:lx,y:T+2,width:14,height:4,fill:s.colour},g);const t=el('text',{x:lx+20,y:T+8,'font-size':12},g);t.textContent=s.name});
+}
+
+
+/* ---------- osmosis ---------- */
+const A={c:'0.2',step:0,m0:0,m1:0,blot:true};
+const pct=c=>-30*Math.tanh((c-0.3)*2.5)+gauss()*1.2;
+const bookA=Book({table:$('#tblA'),graph:$('#graphA'),fair:$('#fairA'),ivLabel:()=>'Concentration (mol/dm³)',dvHead:'Percentage change in mass (%)',
+  fmt:(v,m)=>(v>0?'+':'')+v.toFixed(1),fmtIV:k=>(+k).toFixed(1),sort:(a,b)=>a-b,isBar:()=>false,xVal:k=>+k,xLabel:()=>'',yLabel:'',
+  graphFn:pts=>lineChart($('#graphA'),pts.map(p=>({x:+p.k,y:p.y})),'Mean % change in mass','Sucrose concentration (mol/dm³)',{xMax:1})});
+function drawA(){
+  const svg=$('#sceneA');svg.innerHTML='';
+  el('path',{d:'M90 30 L90 200 A30 30 0 0 0 150 200 L150 30',fill:'var(--glass)',stroke:'var(--muted)','stroke-width':2},svg);
+  el('path',{d:'M92 70 L92 200 A28 28 0 0 0 148 200 L148 70 Z',fill:'var(--water)'},svg);
+  const t=el('text',{x:120,y:245,'text-anchor':'middle','font-size':13,fill:'var(--ink)'},svg);t.textContent=(+A.c).toFixed(1)+' mol/dm³ sucrose';
+  let scale=1;if(A.step>=2)scale=1+A.pc/100;
+  const h=90*scale,w=20*Math.sqrt(scale);
+  if(A.step>=1&&A.step<3){el('rect',{x:120-w/2,y:200-h,width:w,height:h,rx:4,fill:'#efe1a8',stroke:'#b49a4a'},svg)}
+  // balance
+  el('rect',{x:330,y:170,width:220,height:50,rx:8,fill:'var(--panel)',stroke:'var(--muted)','stroke-width':2},svg);
+  el('rect',{x:360,y:150,width:160,height:20,rx:3,fill:'var(--scene)',stroke:'var(--muted)'},svg);
+  el('rect',{x:350,y:180,width:140,height:30,rx:4,fill:'#1b2a24'},svg);
+  const shown=A.step===0?'0.00':A.step===1||A.step===2?'—':(A.m1).toFixed(2);
+  const r=el('text',{x:480,y:202,'text-anchor':'end','font-size':20,fill:'#8df0b0','font-family':'var(--mono)'},svg);r.textContent=(A.step===1?A.m0.toFixed(2):shown)+' g';
+  if(A.step===1||A.step>=3){el('rect',{x:395,y:132,width:90,height:18,rx:4,fill:'#efe1a8',stroke:'#b49a4a'},svg)}
+  const lab=el('text',{x:440,y:125,'text-anchor':'middle','font-size':13,fill:'var(--ink)'},svg);
+  lab.textContent=A.step>=3?(A.pc>0?'Longer and firm (turgid)':A.pc<-3?'Shorter and floppy (flaccid)':'About the same'):'';
+  const box=$('#stepsA');box.innerHTML='';
+  const B=(txt,fn,alt)=>{const b=document.createElement('button');b.className='btn'+(alt?' alt':'');b.textContent=txt;b.onclick=fn;box.appendChild(b)};
+  if(A.step===0)B('Cut and weigh a potato cylinder',()=>{A.m0=+(rnd(2,3)).toFixed(2);A.step=1;A.pc=pct(+A.c);$('#msgA').hidden=true;drawA()});
+  else if(A.step===1)B('Put it in the solution for 24 hours',()=>{A.step=2;drawA()});
+  else if(A.step===2)B('Take it out and weigh it again',()=>{A.blot=$('#blot').checked;A.m1=+(A.m0*(1+A.pc/100)+(A.blot?0:0.12)).toFixed(2);A.step=3;record();drawA()});
+  else B('Start a new cylinder',()=>{A.step=0;drawA()},true);
+}
+function record(){
+  const p=(A.m1-A.m0)/A.m0*100;
+  bookA.add(A.c,+p.toFixed(1),{blot:A.blot?'yes':'no'});
+  showMsg('#msgA',A.blot?'ok':'warn',A.blot?'Mass recorded':'Not blotted dry',
+    `Start ${A.m0.toFixed(2)} g → end ${A.m1.toFixed(2)} g.<br>% change = (${A.m1.toFixed(2)} − ${A.m0.toFixed(2)}) ÷ ${A.m0.toFixed(2)} × 100 = <b>${(p>0?'+':'')+p.toFixed(1)}%</b>.`+
+    (A.blot?(p>0?' Water moved <b>into</b> the potato cells: the solution was more dilute than the cells.':' Water moved <b>out of</b> the potato cells: the solution was more concentrated than the cells.'):' Water on the outside of the cylinder was weighed too, so the end mass is too high. Always blot dry.'));
+}
+seg('#conc',v=>{if(A.step===1||A.step===2)return;A.c=v;A.step=0;drawA()});
+$('#clearA').onclick=()=>bookA.clear();
+[[0,[19.8,21.5,20.4]],[0.4,[-6.9,-7.8,-6.1]],[1,[-28.0,-26.9,-29.1]]].forEach(([c,a])=>a.forEach(v=>bookA.add(String(c),v,{blot:'yes'})));
+drawA();
+
+/* ---------- agar cubes ---------- */
+const SZ=[1,2,3];const K=720; // s per cm^2
+const B={run:false,t:0,done:[null,null,null]};
+function drawB(){
+  const svg=$('#sceneB');svg.innerHTML='';
+  el('rect',{x:20,y:20,width:560,height:212,rx:8,fill:'var(--water)',stroke:'var(--water-edge)','stroke-width':2},svg);
+  const tl=el('text',{x:300,y:244,'text-anchor':'middle','font-size':12,fill:'var(--ink)'},svg);tl.textContent='hydrochloric acid';
+  SZ.forEach((s,i)=>{const px=s*55,cx=110+i*190,cy=112;
+    el('rect',{x:cx-px/2,y:cy-px/2,width:px,height:px,fill:'#f7f3f5',stroke:'#9b6b80','stroke-width':1.5},svg);
+    const half=s/2;const pen=Math.min(half,Math.sqrt(B.t/K));
+    const inner=Math.max(0,(half-pen)*2*55);
+    if(inner>0)el('rect',{x:cx-inner/2,y:cy-inner/2,width:inner,height:inner,fill:'#e0559a'},svg);
+    const t=el('text',{x:cx,y:220,'text-anchor':'middle','font-size':13,'font-weight':700,fill:'var(--ink)'},svg);t.textContent=s+' cm cube';
+  });
+}
+function tableB(){
+  const t=$('#tblB');t.innerHTML='';
+  mkHead(t,[[['Cube side (cm)'],['Surface area (cm²)'],['Volume (cm³)'],['SA : V'],['Time to go colourless (s)']]]);
+  const tb=t.createTBody();
+  SZ.forEach((s,i)=>{const r=tb.insertRow();[s,6*s*s,s**3,(6/s).toFixed(1)+' : 1',B.done[i]==null?'':B.done[i]].forEach(v=>r.insertCell().textContent=v)});
+  const pts=SZ.map((s,i)=>B.done[i]==null?null:{x:6/s,y:B.done[i]}).filter(Boolean);
+  lineChart($('#graphB'),pts,'Time to go colourless (s)','Surface area : volume ratio',{xMax:6});
+}
+let lastB=performance.now();
+function loopB(now){const dt=Math.min(.1,(now-lastB)/1000);lastB=now;
+  if(B.run){B.t+=dt*30;SZ.forEach((s,i)=>{const need=K*(s/2)**2;if(B.done[i]==null&&B.t>=need){B.done[i]=Math.round(need*(1+gauss()*.04));tableB()}});
+    $('#clockB').textContent=String(Math.floor(B.t/60)).padStart(2,'0')+':'+String(Math.floor(B.t%60)).padStart(2,'0');drawB();
+    if(B.done.every(v=>v!=null)){B.run=false;$('#goB').disabled=false;showMsg('#msgB','ok','All three cubes are colourless','The smallest cube went colourless first. It has the biggest surface area compared to its volume, and the shortest distance to the centre.')}}
+  requestAnimationFrame(loopB)}
+requestAnimationFrame(loopB);
+$('#goB').onclick=()=>{B.t=0;B.done=[null,null,null];B.run=true;$('#goB').disabled=true;$('#msgB').hidden=true;tableB()};
+drawB();tableB();
+
+})();
+</script>
+
+</body></html>

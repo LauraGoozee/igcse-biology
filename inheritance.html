@@ -1,0 +1,851 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<title>Inheritance Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: tabbed lab — each tab pairs a working area (Punnett square / habitat / dish) with a side card of controls and results, then exam answers; shared quiz at the end */
+:root{
+  --bg:#eef3f6; --surface:#ffffff; --ink:#13222c; --muted:#556874; --line:#d2dce3;
+  --accent:#1d6a86; --accent-soft:#d9ebf2;
+  --dom:#1d6a86; --rec:#b5651d; --rec-soft:#f6e7d6;
+  --plant:#3f8a4a; --plant-dark:#2b6534; --flower:#c86fa8; --seed:#b9c44a; --seed-edge:#7c8a2a; --black:#22262a; --brown:#8a5a34; --cat:#e0a35e; --cat-edge:#8a5a2c;
+  --bark-light:#c9c4b4; --bark-light2:#b3ad9b; --lichen:#a9b98f; --bark-dark:#3b3936; --bark-dark2:#2c2a28;
+  --moth-pale:#ece6d3; --moth-pale-dot:#6f6a5c; --moth-dark:#1e1c1a;
+  --bact:#7aa3b5; --resist:#c4452f; --dish:#f3f7f9; --agar:#f1e9c6;
+  --good:#2f7d4f; --good-soft:#dcefe3; --bad:#b3412f; --bad-soft:#f6dfda;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e161c; --surface:#15212a; --ink:#e4edf2; --muted:#93a7b4; --line:#293a46;
+  --accent:#62b4d2; --accent-soft:#183544;
+  --dom:#62b4d2; --rec:#e3a161; --rec-soft:#3a2a18;
+  --plant:#64b26f; --plant-dark:#3f8a4a; --flower:#e08cc0; --seed:#c7d260; --seed-edge:#97a33c; --black:#0b0d0f; --brown:#a8754a; --cat:#d0954f; --cat-edge:#f0c48c;
+  --dish:#1b2a33; --agar:#3b3725;
+  --good:#6cc191; --good-soft:#173326; --bad:#f08a76; --bad-soft:#3a201b; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0e161c; --surface:#15212a; --ink:#e4edf2; --muted:#93a7b4; --line:#293a46;
+  --accent:#62b4d2; --accent-soft:#183544;
+  --dom:#62b4d2; --rec:#e3a161; --rec-soft:#3a2a18;
+  --plant:#64b26f; --plant-dark:#3f8a4a; --flower:#e08cc0; --seed:#c7d260; --seed-edge:#97a33c; --black:#0b0d0f; --brown:#a8754a; --cat:#d0954f; --cat-edge:#f0c48c;
+  --dish:#1b2a33; --agar:#3b3725;
+  --good:#6cc191; --good-soft:#173326; --bad:#f08a76; --bad-soft:#3a201b; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);margin:0}
+.wrap{max-width:1140px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:grid;gap:22px}
+header{display:grid;gap:6px}
+.eyebrow{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font:800 clamp(1.7rem,4.2vw,2.6rem)/1.08 var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font:700 1.25rem/1.2 var(--f-display);margin:0;text-wrap:balance}
+h3{font:700 1.02rem/1.25 var(--f-display);margin:0}
+.lede{color:var(--muted);margin:0;max-width:65ch}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tab{font:700 1rem var(--f-display);background:none;border:0;color:var(--muted);padding:10px 14px 12px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+.panel{display:grid;gap:20px}
+[hidden]{display:none!important}
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:920px){.lab{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px;min-width:0}
+.side{display:grid;gap:14px;min-width:0}
+.note{font-size:.86rem;color:var(--muted);margin:0}
+.message{font-weight:700;margin:0;min-height:1.5em}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:700 .9rem var(--f-body);border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.label{font-weight:700;font-size:.92rem}
+.chip{display:inline-block;font-weight:700;font-size:.88rem;padding:3px 10px;border-radius:999px;background:var(--bg)}
+.chip.good{background:var(--good-soft);color:var(--good)}
+
+/* alleles */
+.D{color:var(--dom);font-weight:800}
+.r{color:var(--rec);font-weight:800}
+
+/* parent picker */
+.parents{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.parent{display:grid;gap:6px}
+.gtbtns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.gt{font:800 1.05rem var(--f-display);border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:8px 4px;border-radius:8px;cursor:pointer;display:grid;justify-items:center;gap:2px}
+.gt svg{width:34px;height:34px}
+.gt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.gt small{font:400 .7rem var(--f-body);color:var(--muted)}
+
+/* genetic diagram */
+.diagram{display:grid;grid-template-columns:150px minmax(0,1fr) minmax(0,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.diagram > div{padding:10px 12px;border-bottom:1px solid var(--line);min-width:0}
+.diagram .rl{background:var(--bg);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+.diagram .val{font-size:1.02rem}
+.diagram .cross{grid-column:2 / 4;text-align:center}
+@media (max-width:560px){.diagram{grid-template-columns:100px minmax(0,1fr) minmax(0,1fr)}}
+.gam{display:inline-flex;gap:8px}
+.gam span{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;border:2px solid var(--line);font:800 1.05rem var(--f-display);background:var(--surface)}
+
+.punnett{display:grid;grid-template-columns:70px repeat(2,minmax(0,140px));grid-template-rows:56px repeat(2,minmax(0,120px));gap:6px;justify-content:center}
+.pc{border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;align-content:center;gap:2px;background:var(--surface);text-align:center;transition:opacity .3s, transform .3s}
+.pc.head{background:var(--bg);font:800 1.4rem var(--f-display)}
+.pc.head small{font:400 .7rem var(--f-body);color:var(--muted)}
+.pc.corner{background:none;border:0;font-size:.75rem;color:var(--muted)}
+.pc .g{font:800 1.5rem var(--f-display)}
+.pc svg{width:46px;height:46px}
+.pc .ph{font-size:.8rem;color:var(--muted)}
+.pc.hide{opacity:0;transform:scale(.9)}
+.pc.rec-cell{background:var(--rec-soft)}
+
+.ratio{display:flex;flex-wrap:wrap;gap:10px}
+.ratio div{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--bg)}
+.ratio b{font:800 1.3rem var(--f-display)}
+
+/* breeding */
+.brood{display:flex;flex-wrap:wrap;gap:2px;min-height:40px}
+.brood svg{width:26px;height:26px}
+.bars{display:grid;gap:8px}
+.barrow{display:grid;grid-template-columns:110px minmax(0,1fr) 120px;gap:8px;align-items:center;font-size:.86rem}
+.barbox{position:relative;height:16px;border-radius:8px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.barbox i{position:absolute;left:0;top:0;bottom:0;background:var(--dom);transition:width .4s}
+.barbox i.rec{background:var(--rec)}
+.barbox b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.tabnum{font-variant-numeric:tabular-nums}
+
+/* habitat */
+.stagebox{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0}
+.stagebox svg{width:100%;height:auto;display:block;border-radius:8px;touch-action:manipulation}
+.moth{cursor:crosshair}
+.timer{font:800 1.4rem var(--f-display);font-variant-numeric:tabular-nums}
+.counts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.counts div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.counts span{display:block;font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.counts b{font:800 1.4rem var(--f-display);font-variant-numeric:tabular-nums}
+canvas.graph{width:100%;height:190px;display:block}
+
+.path{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+@media (max-width:760px){.path{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.step{border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.86rem;line-height:1.3;background:var(--bg);min-width:0;transition:background .2s,border-color .2s}
+.step b{display:block;font-family:var(--f-display);font-size:.92rem}
+.step .role{color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
+.step.active{background:var(--accent-soft);border-color:var(--accent)}
+
+.answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:700px){.answers{grid-template-columns:minmax(0,1fr)}}
+.answer{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:8px;align-content:start;min-width:0}
+.answer ol,.answer ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.answer .tag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:420px;font-size:.92rem}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-display)}
+
+.quiz{display:grid;gap:14px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.q p{margin:0;font-weight:700}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font:1rem var(--f-body);border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:9px 12px;border-radius:8px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{background:var(--good-soft);border-color:var(--good);color:var(--good);font-weight:700}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.opt:disabled{cursor:default}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">IGCSE Biology · Inheritance</div>
+    <h1>Inheritance and natural selection</h1>
+    <p class="lede">Predict offspring with a Punnett square, then breed them to test your prediction. Watch natural selection change a population over many generations.</p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Simulations">
+    <button class="tab" role="tab" id="tab-mono" aria-controls="monohybrid" aria-selected="true">1. Monohybrid crosses</button>
+    <button class="tab" role="tab" id="tab-moth" aria-controls="peppered-moths" aria-selected="false">2. Natural selection: moths</button>
+    <button class="tab" role="tab" id="tab-abx" aria-controls="antibiotic-resistance" aria-selected="false">3. Antibiotic resistance</button>
+  </div>
+
+  <!-- ===================== MONOHYBRID ===================== -->
+  <section id="monohybrid" class="panel" role="tabpanel" aria-labelledby="tab-mono">
+    <div class="lab">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <h2>Genetic diagram</h2>
+          <button class="btn" type="button" id="stepBtn">Show it step by step</button>
+        </div>
+        <div class="diagram" id="diag"></div>
+        <div class="punnett" id="punnett" aria-label="Punnett square"></div>
+        <div>
+          <span class="label">Offspring ratio and probability</span>
+          <div class="ratio" id="ratio" style="margin-top:6px"></div>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="card">
+          <span class="label">Characteristic</span>
+          <div class="btns" id="charBtns"></div>
+          <p class="note" id="charNote"></p>
+        </div>
+        <div class="card">
+          <div class="parents">
+            <div class="parent"><span class="label">Parent 1</span><div class="gtbtns" id="p1"></div></div>
+            <div class="parent"><span class="label">Parent 2</span><div class="gtbtns" id="p2"></div></div>
+          </div>
+          <span class="label">Common crosses</span>
+          <div class="btns">
+            <button class="btn" type="button" data-cross="DD,rr">Pure-breeding cross</button>
+            <button class="btn" type="button" data-cross="Dr,Dr">Two heterozygous</button>
+            <button class="btn" type="button" data-cross="Dr,rr">Heterozygous × recessive</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+        <h2>Breed the offspring</h2>
+        <div class="btns">
+          <button class="btn primary" type="button" data-breed="4">Breed 4</button>
+          <button class="btn primary" type="button" data-breed="20">Breed 20</button>
+          <button class="btn primary" type="button" data-breed="100">Breed 100</button>
+          <button class="btn primary" type="button" data-breed="1000">Breed 1000</button>
+        </div>
+      </div>
+      <p class="note">Each offspring gets one allele from each parent, chosen at random. The black line on each bar shows the expected percentage.</p>
+      <div class="brood" id="brood" aria-live="polite"></div>
+      <div class="bars" id="bars"></div>
+      <p class="message" id="breedMsg"></p>
+    </div>
+
+    <div class="answers">
+      <div class="answer">
+        <span class="tag">Key words</span>
+        <div class="tablewrap"><table>
+          <tbody>
+            <tr><th scope="row">Allele</th><td>A different form of a gene</td></tr>
+            <tr><th scope="row">Dominant</th><td>Shown in the phenotype even if only one copy is present</td></tr>
+            <tr><th scope="row">Recessive</th><td>Only shown if there are two copies (no dominant allele)</td></tr>
+            <tr><th scope="row">Homozygous</th><td>Two identical alleles, e.g. TT or tt</td></tr>
+            <tr><th scope="row">Heterozygous</th><td>Two different alleles, e.g. Tt</td></tr>
+            <tr><th scope="row">Genotype</th><td>The alleles an organism has, e.g. Tt</td></tr>
+            <tr><th scope="row">Phenotype</th><td>The characteristic you can see, e.g. tall</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="answer">
+        <span class="tag">Exam tips</span>
+        <ul>
+          <li>Choose a letter where the capital and small letter look <b>different</b>, e.g. T and t. Avoid S and s, or C and c.</li>
+          <li>Write the <b>parent genotypes</b>, then the <b>gametes</b>, then the Punnett square.</li>
+          <li>Give the <b>ratio</b> of phenotypes, e.g. 3 tall : 1 short.</li>
+          <li>A ratio is a <b>prediction</b>. Real numbers of offspring are rarely exact, especially when there are only a few.</li>
+          <li>Probability can be written as a fraction, a percentage or a decimal: 1/4 = 25% = 0.25.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PEPPERED MOTHS ===================== -->
+  <section id="peppered-moths" class="panel" role="tabpanel" aria-labelledby="tab-moth" hidden>
+    <div class="lab">
+      <div class="stagebox">
+        <svg id="habitat" viewBox="0 0 640 400" role="img" aria-label="Moths resting on tree bark">
+          <g id="bark"></g>
+          <g id="moths"></g>
+          <g id="pecks"></g>
+        </svg>
+        <p class="message" id="mothMsg" aria-live="polite"></p>
+      </div>
+      <div class="side">
+        <div class="card">
+          <span class="label">Tree bark</span>
+          <div class="btns">
+            <button class="btn" type="button" id="envClean" aria-pressed="false">Clean, with lichen</button>
+            <button class="btn" type="button" id="envSoot" aria-pressed="true">Black with soot</button>
+          </div>
+          <span class="label">Birds hunt the moths</span>
+          <div class="btns">
+            <button class="btn primary" type="button" id="mothNext">Next generation</button>
+            <button class="btn" type="button" id="mothRun">Run 10 generations</button>
+          </div>
+          <div class="btns">
+            <button class="btn" type="button" id="beBird">You are the bird (10 s)</button>
+            <button class="btn" type="button" id="mothReset">Start again</button>
+          </div>
+          <div class="timer" id="birdTimer" hidden></div>
+        </div>
+        <div class="card">
+          <div class="counts">
+            <div><span>Generation</span><b id="genN">0</b></div>
+            <div><span>Dark moths</span><b id="darkPct">10%</b></div>
+          </div>
+          <canvas class="graph" id="mothGraph" role="img" aria-label="Graph of percentage of dark moths over generations"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Natural selection: the four steps</h2>
+      <div class="path" id="mothPath">
+        <div class="step"><span class="role">1 · Variation</span><b>Pale and dark moths</b>Colour is caused by different alleles. The dark allele first came from a mutation.</div>
+        <div class="step"><span class="role">2 · Survival</span><b>Camouflaged moths survive</b>Birds see and eat the moths that stand out.</div>
+        <div class="step"><span class="role">3 · Reproduction</span><b>Survivors breed</b>They pass on their alleles for colour.</div>
+        <div class="step"><span class="role">4 · Over generations</span><b>The allele becomes more common</b>The advantageous colour increases in the population.</div>
+      </div>
+      <p class="note">In Britain in the 1800s, factory smoke killed the lichen and covered tree bark in soot. Dark moths became much more common in polluted areas. After the air became cleaner, pale moths became common again.</p>
+    </div>
+
+    <div class="answers">
+      <div class="answer">
+        <span class="tag">Exam answer · explain natural selection</span>
+        <ol>
+          <li>There is <b>variation</b> in the population, caused by differences in <b>alleles</b> (from mutation).</li>
+          <li>Individuals with an <b>advantageous</b> characteristic are more likely to <b>survive</b>.</li>
+          <li>They are more likely to <b>reproduce</b> and <b>pass on</b> their advantageous alleles.</li>
+          <li>Over <b>many generations</b>, the advantageous allele becomes <b>more common</b> in the population.</li>
+        </ol>
+      </div>
+      <div class="answer">
+        <span class="tag">Avoid these mistakes</span>
+        <ul>
+          <li>Moths do <b>not</b> change colour to match the tree. Each moth's colour is set by its alleles.</li>
+          <li>Moths do not <b>choose</b> or <b>try</b> to be dark. Mutations are random.</li>
+          <li>Selection acts on <b>individuals</b>, but the <b>population</b> changes over generations.</li>
+          <li>Always mention <b>alleles being passed on</b> to offspring.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ANTIBIOTIC RESISTANCE ===================== -->
+  <section id="antibiotic-resistance" class="panel" role="tabpanel" aria-labelledby="tab-abx" hidden>
+    <div class="lab">
+      <div class="stagebox">
+        <svg id="dish" viewBox="0 0 640 420" role="img" aria-label="Bacteria growing in a dish">
+          <circle cx="320" cy="210" r="196" style="fill:var(--dish);stroke:var(--line);stroke-width:4"/>
+          <circle cx="320" cy="210" r="184" id="agar" style="fill:var(--agar)"/>
+          <circle cx="320" cy="210" r="184" id="abxTint" style="fill:var(--accent)" opacity="0"/>
+          <g id="bacteria"></g>
+        </svg>
+        <p class="message" id="abxMsg" aria-live="polite"></p>
+        <p class="note">Resistant bacteria are coloured red so you can see them. In real life they look the same as the others.</p>
+      </div>
+      <div class="side">
+        <div class="card">
+          <span class="label">Do each step in order</span>
+          <div class="btns" style="display:grid;gap:8px">
+            <button class="btn" type="button" id="abxMut">1. A random mutation happens</button>
+            <button class="btn" type="button" id="abxDrug">2. Treat with the antibiotic</button>
+            <button class="btn" type="button" id="abxGrow">3. Survivors reproduce</button>
+            <button class="btn" type="button" id="abxReset">Start again</button>
+          </div>
+          <p class="note">Try treating again after the survivors reproduce. What happens to the infection?</p>
+        </div>
+        <div class="card">
+          <div class="counts">
+            <div><span>Bacteria</span><b id="abxN">0</b></div>
+            <div><span>Resistant</span><b id="abxPct">0%</b></div>
+          </div>
+          <canvas class="graph" id="abxGraph" role="img" aria-label="Graph of percentage of resistant bacteria after each step"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>How resistance spreads</h2>
+      <div class="path" id="abxPath">
+        <div class="step"><span class="role">1 · Variation</span><b>Random mutation</b>A new allele for resistance appears.</div>
+        <div class="step"><span class="role">2 · Increased survival</span><b>Antibiotic kills the others</b>Bacteria with the resistance allele survive.</div>
+        <div class="step"><span class="role">3 · Increased reproduction</span><b>Survivors reproduce</b>The resistance allele is passed on.</div>
+        <div class="step"><span class="role">4 · Allele frequency rises</span><b>A resistant strain</b>The antibiotic no longer works. A different one is needed.</div>
+      </div>
+    </div>
+
+    <div class="answers">
+      <div class="answer">
+        <span class="tag">Exam answer · how resistance develops</span>
+        <ol>
+          <li>A random <b>mutation</b> gives a bacterium an allele for <b>resistance</b>.</li>
+          <li>When the antibiotic is used, bacteria <b>without</b> the allele die. Resistant bacteria <b>survive</b>.</li>
+          <li>The survivors <b>reproduce</b> and <b>pass on</b> the resistance allele.</li>
+          <li>Over several generations the resistance allele becomes <b>more common</b>, forming a resistant strain.</li>
+        </ol>
+      </div>
+      <div class="answer">
+        <span class="tag">Avoid these mistakes</span>
+        <ul>
+          <li>The antibiotic does <b>not cause</b> the mutation. The mutation is random and happens first.</li>
+          <li>Bacteria do not "get used to" or "become immune to" an antibiotic.</li>
+          <li>Say <b>bacteria</b> become resistant, not the person.</li>
+          <li>Resistant infections are harder to treat, so a <b>different antibiotic</b> is needed.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="quiz" aria-labelledby="quizTitle">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <h2 id="quizTitle">Check yourself</h2>
+      <span class="chip" id="score">0 / 10</span>
+    </div>
+    <div id="quiz" class="quiz"></div>
+    <div><button class="btn" id="resetQuiz" type="button">Try the questions again</button></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(id){ return document.getElementById(id); }
+  function rnd(a,b){ return a + Math.random()*(b-a); }
+
+  /* ---------- tabs ---------- */
+  var tabs = {'monohybrid':$('tab-mono'), 'peppered-moths':$('tab-moth'), 'antibiotic-resistance':$('tab-abx')};
+  function show(id){
+    if(!tabs[id]) id = 'monohybrid';
+    Object.keys(tabs).forEach(function(k){ var on = k === id; tabs[k].setAttribute('aria-selected', on?'true':'false'); $(k).hidden = !on; });
+    drawMothGraph(); drawAbxGraph();
+  }
+  Object.keys(tabs).forEach(function(k){ tabs[k].addEventListener('click', function(){ show(k); try{ history.replaceState(null,'','#'+k); }catch(e){ location.hash = k; } }); });
+  window.addEventListener('hashchange', function(){ show(location.hash.slice(1)); });
+
+  /* =========================================================
+     MONOHYBRID CROSSES
+     Genotypes are stored as 'DD', 'Dr', 'rr' (dominant / recessive allele) and shown with the chosen letter.
+     ========================================================= */
+  var CHARS = {
+    height:{name:'Pea plant height', L:'T', dom:'Tall', rec:'Short', note:'In pea plants, the allele for tall (T) is dominant to the allele for short (t).'},
+    seed:{name:'Pea seed shape', L:'R', dom:'Round', rec:'Wrinkled', note:'The allele for round seeds (R) is dominant to the allele for wrinkled seeds (r).'},
+    fur:{name:'Mouse fur colour', L:'B', dom:'Black', rec:'Brown', note:'In this mouse, the allele for black fur (B) is dominant to the allele for brown fur (b).'},
+    hair:{name:'Cat hair length', L:'H', dom:'Short hair', rec:'Long hair', note:'In cats, the allele for short hair (H) is dominant to the allele for long hair (h).'}
+  };
+  var ch = 'height', p1 = 'Dr', p2 = 'Dr';
+
+  function icon(kind, dominant){
+    if(kind === 'height'){
+      var h = dominant ? 40 : 18, top = 46 - h;
+      return '<svg viewBox="0 0 50 50" aria-hidden="true"><rect x="16" y="44" width="18" height="5" rx="1" style="fill:var(--brown)"/>' +
+        '<path d="M25 44 L25 '+top+'" style="stroke:var(--plant-dark);stroke-width:2.5;fill:none"/>' +
+        '<ellipse cx="19" cy="'+(44-h*0.35)+'" rx="6" ry="3" style="fill:var(--plant)" transform="rotate(-25 19 '+(44-h*0.35)+')"/>' +
+        '<ellipse cx="31" cy="'+(44-h*0.65)+'" rx="6" ry="3" style="fill:var(--plant)" transform="rotate(25 31 '+(44-h*0.65)+')"/>' +
+        '<circle cx="25" cy="'+top+'" r="4" style="fill:var(--flower)"/></svg>';
+    }
+    if(kind === 'seed'){
+      if(dominant) return '<svg viewBox="0 0 50 50" aria-hidden="true"><circle cx="25" cy="25" r="16" style="fill:var(--seed);stroke:var(--seed-edge);stroke-width:2"/><circle cx="20" cy="20" r="4" fill="#ffffff" opacity=".5"/></svg>';
+      var d = '';
+      for(var i=0;i<=24;i++){ var a = i/24*Math.PI*2, rr = 15 + (i%2 ? -3.2 : 1.5); d += (i?'L':'M') + (25+rr*Math.cos(a)).toFixed(1) + ' ' + (25+rr*Math.sin(a)).toFixed(1); }
+      return '<svg viewBox="0 0 50 50" aria-hidden="true"><path d="'+d+'Z" style="fill:var(--seed);stroke:var(--seed-edge);stroke-width:2;stroke-linejoin:round"/><path d="M18 22 q4 4 8 0 M24 30 q4 3 8 -1" style="fill:none;stroke:var(--seed-edge);stroke-width:1.5"/></svg>';
+    }
+    if(kind === 'hair'){
+      var fluff = '';
+      if(!dominant){
+        var d2 = '', nb = 14;
+        for(var j=0;j<nb;j++){
+          var a0 = j/nb*Math.PI*2, a1 = (j+1)/nb*Math.PI*2, am = (a0+a1)/2;
+          if(!j) d2 += 'M'+(25+18*Math.cos(a0)).toFixed(1)+' '+(29+17*Math.sin(a0)).toFixed(1);
+          d2 += ' Q'+(25+25*Math.cos(am)).toFixed(1)+' '+(29+24*Math.sin(am)).toFixed(1)+' '+(25+18*Math.cos(a1)).toFixed(1)+' '+(29+17*Math.sin(a1)).toFixed(1);
+        }
+        fluff = '<path d="'+d2+'Z" style="fill:var(--cat);stroke:var(--cat-edge);stroke-width:1.2;stroke-linejoin:round"/>' +
+                '<path d="M8 40 q 4 -3 6 0 M36 40 q 4 -3 6 0 M20 46 q 3 -3 5 0" style="fill:none;stroke:var(--cat-edge);stroke-width:1"/>';
+      }
+      return '<svg viewBox="0 0 50 50" aria-hidden="true">' + fluff +
+        '<path d="M11 20 L 13 5 L 22 14 Z M39 20 L 37 5 L 28 14 Z" style="fill:var(--cat);stroke:var(--cat-edge);stroke-width:1.5;stroke-linejoin:round"/>' +
+        '<path d="M14 15 L 15 9 L 19 13 Z M36 15 L 35 9 L 31 13 Z" style="fill:var(--flower)"/>' +
+        '<ellipse cx="25" cy="28" rx="14" ry="13" style="fill:var(--cat);stroke:var(--cat-edge);stroke-width:1.5"/>' +
+        '<ellipse cx="20" cy="26" rx="2" ry="3" style="fill:var(--black)"/><ellipse cx="30" cy="26" rx="2" ry="3" style="fill:var(--black)"/>' +
+        '<path d="M23 32 L 27 32 L 25 34.5 Z" style="fill:var(--flower)"/>' +
+        '<path d="M25 34.5 q -2 2 -4 1 M25 34.5 q 2 2 4 1 M16 31 L 6 29 M16 33 L 7 35 M34 31 L 44 29 M34 33 L 43 35" style="fill:none;stroke:var(--cat-edge);stroke-width:1"/>' +
+        '</svg>';
+    }
+    var col = dominant ? 'var(--black)' : 'var(--brown)';
+    return '<svg viewBox="0 0 50 50" aria-hidden="true"><path d="M8 34 q -6 6 -2 12" style="fill:none;stroke:'+col+';stroke-width:2"/>' +
+      '<ellipse cx="24" cy="31" rx="16" ry="10" style="fill:'+col+'"/><circle cx="38" cy="24" r="7" style="fill:'+col+'"/>' +
+      '<circle cx="37" cy="16" r="4.5" style="fill:'+col+'"/><circle cx="37" cy="16" r="2.2" style="fill:var(--flower)"/>' +
+      '<circle cx="41" cy="23" r="1.3" fill="#ffffff"/><circle cx="45" cy="26" r="1.4" style="fill:var(--flower)"/></svg>';
+  }
+  function fmt(gt){
+    var c = CHARS[ch], up = c.L, lo = c.L.toLowerCase();
+    return gt.split('').map(function(x){ return x === 'D' ? '<span class="D">'+up+'</span>' : '<span class="r">'+lo+'</span>'; }).join('');
+  }
+  function allele(x){ return x === 'D' ? '<span class="D">'+CHARS[ch].L+'</span>' : '<span class="r">'+CHARS[ch].L.toLowerCase()+'</span>'; }
+  function isDom(gt){ return gt.indexOf('D') >= 0; }
+  function pheno(gt){ return isDom(gt) ? CHARS[ch].dom : CHARS[ch].rec; }
+  function zyg(gt){ return gt === 'DD' ? 'homozygous dominant' : gt === 'rr' ? 'homozygous recessive' : 'heterozygous'; }
+  function combine(a, b){ return (a === 'D' || b === 'D') ? (a === 'D' && b === 'D' ? 'DD' : 'Dr') : 'rr'; }
+
+  // character buttons
+  Object.keys(CHARS).forEach(function(k){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'char-'+k; b.textContent = CHARS[k].name;
+    b.addEventListener('click', function(){ ch = k; renderMono(); clearBrood(); });
+    $('charBtns').appendChild(b);
+  });
+  function buildParentButtons(){
+    ['p1','p2'].forEach(function(pid){
+      var box = $(pid); box.innerHTML = '';
+      ['DD','Dr','rr'].forEach(function(gt){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'gt'; b.id = pid+'-'+gt;
+        b.innerHTML = icon(ch, isDom(gt)) + '<span>'+fmt(gt)+'</span><small>'+pheno(gt)+'</small>';
+        b.setAttribute('aria-pressed', (pid === 'p1' ? p1 : p2) === gt ? 'true' : 'false');
+        b.addEventListener('click', function(){ if(pid === 'p1') p1 = gt; else p2 = gt; renderMono(); clearBrood(); });
+        box.appendChild(b);
+      });
+    });
+  }
+  document.querySelectorAll('[data-cross]').forEach(function(b){
+    b.addEventListener('click', function(){ var c = b.getAttribute('data-cross').split(','); p1 = c[0]; p2 = c[1]; renderMono(); clearBrood(); });
+  });
+
+  var revealStep = 99;
+  function renderMono(){
+    var c = CHARS[ch];
+    Object.keys(CHARS).forEach(function(k){ $('char-'+k).setAttribute('aria-pressed', k === ch ? 'true' : 'false'); });
+    $('charNote').textContent = c.note;
+    buildParentButtons();
+    var g1 = p1.split(''), g2 = p2.split('');
+    function uniq(a){ return a.filter(function(x,i){ return a.indexOf(x) === i; }); }
+    var rows = [
+      ['Parent phenotypes', pheno(p1), pheno(p2)],
+      ['Parent genotypes', fmt(p1) + ' <span class="note">('+zyg(p1)+')</span>', fmt(p2) + ' <span class="note">('+zyg(p2)+')</span>'],
+      ['Gametes', '<span class="gam">'+uniq(g1).map(function(x){ return '<span>'+allele(x)+'</span>'; }).join('')+'</span>', '<span class="gam">'+uniq(g2).map(function(x){ return '<span>'+allele(x)+'</span>'; }).join('')+'</span>']
+    ];
+    var html = '';
+    rows.forEach(function(r, i){
+      var vis = i < revealStep ? '' : ' style="visibility:hidden"';
+      html += '<div class="rl"'+vis+'>'+r[0]+'</div><div class="val"'+vis+'>'+r[1]+'</div><div class="val"'+vis+'>'+r[2]+'</div>';
+    });
+    $('diag').innerHTML = html;
+
+    // Punnett square: parent 1 gametes across the top, parent 2 down the side
+    var P = '<div class="pc corner">Parent 2 ↓<br>Parent 1 →</div>';
+    g1.forEach(function(a){ P += '<div class="pc head'+(revealStep < 3 ? ' hide' : '')+'">'+allele(a)+'<small>gamete</small></div>'; });
+    var counts = {DD:0, Dr:0, rr:0}, k = 0;
+    g2.forEach(function(b){
+      P += '<div class="pc head'+(revealStep < 3 ? ' hide' : '')+'">'+allele(b)+'<small>gamete</small></div>';
+      g1.forEach(function(a){
+        var o = combine(a, b); counts[o]++;
+        var hidden = revealStep < 4 + k ? ' hide' : '';
+        P += '<div class="pc'+(o === 'rr' ? ' rec-cell' : '')+hidden+'"><span class="g">'+fmt(o)+'</span>'+icon(ch, isDom(o))+'<span class="ph">'+pheno(o)+'</span></div>';
+        k++;
+      });
+    });
+    $('punnett').innerHTML = P;
+
+    // ratio
+    var domN = counts.DD + counts.Dr, recN = counts.rr;
+    var R = '';
+    if(revealStep >= 8){
+      R += '<div><span class="note">Genotypes</span><br><b>' + ['DD','Dr','rr'].filter(function(g){ return counts[g]; }).map(function(g){ return counts[g] + ' ' + fmt(g); }).join(' : ') + '</b></div>';
+      R += '<div><span class="note">Phenotypes</span><br><b>' + [[domN, c.dom],[recN, c.rec]].filter(function(x){ return x[0]; }).map(function(x){ return x[0] + ' ' + x[1].toLowerCase(); }).join(' : ') + '</b></div>';
+      R += '<div><span class="note">Probability of '+c.dom.toLowerCase()+'</span><br><b>'+(domN*25)+'%</b> <span class="note">('+domN+'/4)</span></div>';
+      R += '<div><span class="note">Probability of '+c.rec.toLowerCase()+'</span><br><b>'+(recN*25)+'%</b> <span class="note">('+recN+'/4)</span></div>';
+    }
+    $('ratio').innerHTML = R;
+    expected = {dom: domN/4, rec: recN/4};
+  }
+  var expected = {dom:.75, rec:.25};
+
+  var stepTimer = null;
+  $('stepBtn').addEventListener('click', function(){
+    clearInterval(stepTimer);
+    revealStep = 0; renderMono();
+    stepTimer = setInterval(function(){
+      revealStep++; renderMono();
+      if(revealStep >= 8) clearInterval(stepTimer);
+    }, reduce ? 150 : 900);
+  });
+
+  function clearBrood(){ $('brood').innerHTML = ''; $('bars').innerHTML = ''; $('breedMsg').textContent = 'Choose how many offspring to breed.'; }
+  document.querySelectorAll('[data-breed]').forEach(function(b){
+    b.addEventListener('click', function(){ breed(+b.getAttribute('data-breed')); });
+  });
+  function breed(n){
+    var c = CHARS[ch], dom = 0, kids = [];
+    for(var i=0;i<n;i++){
+      var a = p1[Math.random() < .5 ? 0 : 1], bb = p2[Math.random() < .5 ? 0 : 1];
+      var o = combine(a, bb); kids.push(o); if(isDom(o)) dom++;
+    }
+    var rec = n - dom;
+    var shown = kids.slice(0, 100);
+    $('brood').innerHTML = shown.map(function(o){ return icon(ch, isDom(o)); }).join('') + (n > 100 ? '<span class="note" style="align-self:center;margin-left:6px">…showing 100 of '+n+'</span>' : '');
+    function row(label, count, exp, cls){
+      var pct = count/n*100;
+      return '<div class="barrow"><span>'+label+'</span><div class="barbox"><i class="'+cls+'" style="width:'+pct.toFixed(1)+'%"></i><b style="left:calc('+(exp*100).toFixed(1)+'% - 1px)"></b></div><span class="tabnum">'+count+' ('+pct.toFixed(0)+'%) · exp. '+(exp*100).toFixed(0)+'%</span></div>';
+    }
+    $('bars').innerHTML = row(c.dom, dom, expected.dom, '') + row(c.rec, rec, expected.rec, 'rec');
+    var diff = Math.abs(dom/n - expected.dom)*100;
+    var m;
+    if(n <= 20) m = 'With only ' + n + ' offspring, the results can be quite far from the expected ratio. Fertilisation is random.';
+    else if(diff < 3) m = 'With ' + n + ' offspring, the results are very close to the expected ratio.';
+    else m = 'The results are close to the expected ratio. Try breeding more offspring.';
+    $('breedMsg').textContent = m;
+  }
+  renderMono(); clearBrood();
+
+  /* =========================================================
+     PEPPERED MOTHS
+     Each moth is pale or dark; offspring have the same colour as the parent (inherited alleles),
+     with a small chance of mutation. Birds catch moths that stand out more often.
+     ========================================================= */
+  var N = 40, env = 'soot', moths = [], gen = 0, mothHist = [], busy = false;
+  var BARK = {
+    clean:{base:'var(--bark-light)', streak:'var(--bark-light2)', extra:'var(--lichen)'},
+    soot:{base:'var(--bark-dark)', streak:'var(--bark-dark2)', extra:'#4a4743'}
+  };
+  function drawBark(){
+    var b = BARK[env], g = '<rect x="0" y="0" width="640" height="400" style="fill:'+b.base+'"/>';
+    var seed = 7;
+    function r(){ seed = (seed*9301 + 49297) % 233280; return seed/233280; }
+    for(var i=0;i<70;i++){ var x = r()*640, w = 2 + r()*8; g += '<rect x="'+x.toFixed(0)+'" y="0" width="'+w.toFixed(1)+'" height="400" style="fill:'+b.streak+'" opacity="'+(0.4+r()*0.5).toFixed(2)+'"/>'; }
+    for(var j=0;j<55;j++){ g += '<ellipse cx="'+(r()*640).toFixed(0)+'" cy="'+(r()*400).toFixed(0)+'" rx="'+(8+r()*22).toFixed(0)+'" ry="'+(5+r()*12).toFixed(0)+'" style="fill:'+b.extra+'" opacity="'+(env==='clean'?0.75:0.5)+'"/>'; }
+    for(var k=0;k<160;k++){ g += '<circle cx="'+(r()*640).toFixed(0)+'" cy="'+(r()*400).toFixed(0)+'" r="'+(1+r()*2.2).toFixed(1)+'" style="fill:'+(env==='clean' ? 'var(--moth-pale-dot)' : '#1a1918')+'" opacity=".55"/>'; }
+    $('bark').innerHTML = g;
+    $('envClean').setAttribute('aria-pressed', env === 'clean' ? 'true' : 'false');
+    $('envSoot').setAttribute('aria-pressed', env === 'soot' ? 'true' : 'false');
+  }
+  function newMoth(dark){ return {x:rnd(30,610), y:rnd(30,370), rot:rnd(-25,25), dark:dark, id:Math.random().toString(36).slice(2)}; }
+  function mothSVG(m){
+    var wing = m.dark ? 'var(--moth-dark)' : 'var(--moth-pale)';
+    var dots = '';
+    if(!m.dark){ for(var i=0;i<6;i++){ dots += '<circle cx="'+((i%3)*6-6 + (i<3?-6:6))+'" cy="'+((i<3?-2:3)+(i%2))+'" r="1.2" style="fill:var(--moth-pale-dot)"/>'; } }
+    return '<g class="moth" data-id="'+m.id+'" transform="translate('+m.x.toFixed(1)+' '+m.y.toFixed(1)+') rotate('+m.rot.toFixed(1)+')">' +
+      '<rect x="-22" y="-16" width="44" height="32" fill="transparent"/>' +
+      '<path d="M0 -3 C -10 -14, -22 -10, -20 4 C -16 10, -6 8, 0 4 Z" style="fill:'+wing+'"/>' +
+      '<path d="M0 -3 C 10 -14, 22 -10, 20 4 C 16 10, 6 8, 0 4 Z" style="fill:'+wing+'"/>' + dots +
+      '<ellipse cx="0" cy="1" rx="2.2" ry="7" style="fill:'+(m.dark?'#0d0c0b':'#8a8473')+'"/></g>';
+  }
+  function drawMoths(){ $('moths').innerHTML = moths.map(mothSVG).join(''); updateMothCounts(); }
+  function darkFrac(){ return moths.length ? moths.filter(function(m){ return m.dark; }).length / moths.length : 0; }
+  function updateMothCounts(){
+    $('genN').textContent = gen;
+    $('darkPct').textContent = Math.round(darkFrac()*100) + '%';
+  }
+  function camouflaged(m){ return env === 'soot' ? m.dark : !m.dark; }
+  function highlight(pathId, i){ document.querySelectorAll('#'+pathId+' .step').forEach(function(s, j){ s.classList.toggle('active', j === i); }); }
+
+  function resetMoths(){
+    gen = 0; moths = [];
+    for(var i=0;i<N;i++) moths.push(newMoth(i < 4));
+    mothHist = [[0, darkFrac()]];
+    drawBark(); drawMoths(); drawMothGraph(); $('pecks').innerHTML = '';
+    highlight('mothPath', 0);
+    $('mothMsg').textContent = 'Generation 0: most moths are pale. A few are dark because of a mutation. Press "Next generation" or be the bird.';
+  }
+
+  function reproduce(survivors){
+    var kids = [];
+    while(kids.length < N){
+      var parent = survivors[Math.floor(Math.random()*survivors.length)];
+      var dark = parent.dark;
+      if(Math.random() < 0.015) dark = !dark;     // rare random mutation
+      kids.push(newMoth(dark));
+    }
+    return kids;
+  }
+  function huntAuto(){
+    var survivors = moths.filter(function(m){ return Math.random() < (camouflaged(m) ? 0.78 : 0.28); });
+    if(survivors.length < 4) survivors = moths.slice().sort(function(a,b){ return (camouflaged(b)?1:0) - (camouflaged(a)?1:0); }).slice(0, 6);
+    return survivors;
+  }
+  function finishGeneration(survivors, after){
+    var eatenIds = {};
+    moths.forEach(function(m){ if(survivors.indexOf(m) < 0) eatenIds[m.id] = 1; });
+    highlight('mothPath', 1);
+    var nodes = $('moths').querySelectorAll('.moth');
+    nodes.forEach(function(n){ if(eatenIds[n.getAttribute('data-id')]){ n.style.transition = 'opacity .5s'; n.style.opacity = '0'; } });
+    var eatenPale = 0, eatenDark = 0; moths.forEach(function(m){ if(eatenIds[m.id]){ if(m.dark) eatenDark++; else eatenPale++; } });
+    $('mothMsg').textContent = 'Birds ate ' + eatenPale + ' pale and ' + eatenDark + ' dark moths. The survivors will breed.';
+    setTimeout(function(){
+      highlight('mothPath', 2);
+      moths = reproduce(survivors); gen++;
+      mothHist.push([gen, darkFrac()]);
+      drawMoths(); drawMothGraph(); $('pecks').innerHTML = '';
+      highlight('mothPath', 3);
+      $('mothMsg').textContent = 'Generation ' + gen + ': ' + Math.round(darkFrac()*100) + '% of moths are dark. ' +
+        (env === 'soot' ? 'Dark moths are camouflaged on sooty bark.' : 'Pale moths are camouflaged on clean bark.');
+      if(after) after();
+    }, reduce ? 200 : 900);
+  }
+  function nextGen(after){ if(busy) return; busy = true; setButtons(); finishGeneration(huntAuto(), function(){ busy = false; setButtons(); if(after) after(); }); }
+  $('mothNext').addEventListener('click', function(){ nextGen(); });
+  $('mothRun').addEventListener('click', function(){
+    var n = 0;
+    (function go(){ if(n++ < 10) nextGen(go); })();
+  });
+  $('mothReset').addEventListener('click', function(){ if(!busy) resetMoths(); });
+  $('envClean').addEventListener('click', function(){ if(busy) return; env = 'clean'; drawBark(); $('mothMsg').textContent = 'The bark is now clean with lichen. Which moths stand out now?'; });
+  $('envSoot').addEventListener('click', function(){ if(busy) return; env = 'soot'; drawBark(); $('mothMsg').textContent = 'The bark is now black with soot. Which moths stand out now?'; });
+  function setButtons(){ ['mothNext','mothRun','beBird','mothReset','envClean','envSoot'].forEach(function(id){ $(id).disabled = busy; }); }
+
+  // be the bird
+  var birdMode = false, eaten = [], birdT = null;
+  $('moths').addEventListener('click', function(e){
+    if(!birdMode) return;
+    var g = e.target.closest('.moth'); if(!g) return;
+    var id = g.getAttribute('data-id');
+    var m = moths.filter(function(x){ return x.id === id; })[0];
+    if(!m || eaten.indexOf(m) >= 0) return;
+    if(eaten.length >= N/2) return;
+    eaten.push(m);
+    g.style.opacity = '0.12';
+    $('pecks').innerHTML += '<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="14" fill="none" stroke="#e8463a" stroke-width="3"/>';
+    $('mothMsg').textContent = 'You caught ' + eaten.length + ' moths.';
+    if(eaten.length >= N/2) endBird();
+  });
+  $('beBird').addEventListener('click', function(){
+    if(busy) return;
+    busy = true; setButtons(); birdMode = true; eaten = [];
+    var left = 10; $('birdTimer').hidden = false; $('birdTimer').textContent = left + ' s left';
+    $('mothMsg').textContent = 'You are a hungry bird. Click on as many moths as you can see!';
+    highlight('mothPath', 1);
+    birdT = setInterval(function(){ left--; $('birdTimer').textContent = left + ' s left'; if(left <= 0) endBird(); }, 1000);
+  });
+  function endBird(){
+    if(!birdMode) return;
+    clearInterval(birdT); birdMode = false; $('birdTimer').hidden = true;
+    var survivors = moths.filter(function(m){ return eaten.indexOf(m) < 0; });
+    finishGeneration(survivors, function(){ busy = false; setButtons(); });
+  }
+
+  /* ---------- small line graph helper ---------- */
+  function colors(){ var cs = getComputedStyle(document.documentElement); var o = {}; ['--ink','--muted','--line','--accent','--resist','--bg'].forEach(function(k){ o[k] = cs.getPropertyValue(k).trim(); }); return o; }
+  function lineGraph(cv, pts, xLabel, colorKey){
+    var w = cv.clientWidth, h = cv.clientHeight; if(!w) return;
+    var dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
+    var ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+    var C = colors(), L = 40, R = 10, T = 10, B = 28;
+    var maxX = Math.max(10, pts.length ? pts[pts.length-1][0] : 0);
+    function X(v){ return L + v/maxX*(w-L-R); } function Y(p){ return T + (1-p)*(h-T-B); }
+    ctx.font = '11px Atkinson Hyperlegible, system-ui, sans-serif'; ctx.textBaseline = 'middle';
+    [0, .25, .5, .75, 1].forEach(function(p){
+      ctx.strokeStyle = C['--line']; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(L, Y(p)); ctx.lineTo(w-R, Y(p)); ctx.stroke();
+      ctx.fillStyle = C['--muted']; ctx.textAlign = 'right'; ctx.fillText(Math.round(p*100)+'%', L-6, Y(p));
+    });
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    var step = maxX <= 10 ? 1 : maxX <= 30 ? 5 : 10;
+    for(var x=0; x<=maxX; x+=step){ ctx.fillText(x, X(x), h-12); }
+    ctx.fillText(xLabel, L + (w-L-R)/2, h-1);
+    if(pts.length){
+      ctx.strokeStyle = C[colorKey]; ctx.fillStyle = C[colorKey]; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+      ctx.beginPath(); pts.forEach(function(p, i){ if(i) ctx.lineTo(X(p[0]), Y(p[1])); else ctx.moveTo(X(p[0]), Y(p[1])); }); ctx.stroke();
+      pts.forEach(function(p){ ctx.beginPath(); ctx.arc(X(p[0]), Y(p[1]), 3, 0, Math.PI*2); ctx.fill(); });
+    }
+  }
+  function drawMothGraph(){ lineGraph($('mothGraph'), mothHist, 'Generation', '--ink'); }
+
+  /* =========================================================
+     ANTIBIOTIC RESISTANCE
+     ========================================================= */
+  var MAX = 80, bact = [], abxHist = [], stepN = 0, mutated = false;
+  function place(){
+    for(var t=0;t<40;t++){
+      var a = Math.random()*Math.PI*2, r = Math.sqrt(Math.random())*165;
+      var x = 320 + r*Math.cos(a), y = 210 + r*Math.sin(a);
+      var ok = bact.every(function(b){ return (b.x-x)*(b.x-x) + (b.y-y)*(b.y-y) > 380; });
+      if(ok || t === 39) return {x:x, y:y, rot:rnd(0,180)};
+    }
+  }
+  function addBact(res){ var p = place(); p.res = res; bact.push(p); return p; }
+  function drawBact(fadeIds){
+    $('bacteria').innerHTML = bact.map(function(b, i){
+      return '<rect x="'+(b.x-9).toFixed(1)+'" y="'+(b.y-4.5).toFixed(1)+'" width="18" height="9" rx="4.5" transform="rotate('+b.rot.toFixed(0)+' '+b.x.toFixed(1)+' '+b.y.toFixed(1)+')" style="fill:'+(b.res ? 'var(--resist)' : 'var(--bact)')+';stroke:var(--ink);stroke-width:.8" data-i="'+i+'"/>';
+    }).join('');
+    var n = bact.length, r = bact.filter(function(b){ return b.res; }).length;
+    $('abxN').textContent = n;
+    $('abxPct').textContent = (n ? Math.round(r/n*100) : 0) + '%';
+  }
+  function resFrac(){ return bact.length ? bact.filter(function(b){ return b.res; }).length / bact.length : 0; }
+  function logAbx(){ abxHist.push([stepN, resFrac()]); drawAbxGraph(); }
+  function drawAbxGraph(){ lineGraph($('abxGraph'), abxHist, 'Step', '--resist'); }
+  function resetAbx(){
+    bact = []; stepN = 0; mutated = false; abxHist = [];
+    for(var i=0;i<MAX;i++) addBact(false);
+    drawBact(); logAbx(); highlight('abxPath', -1);
+    $('abxTint').setAttribute('opacity', 0);
+    $('abxMsg').textContent = 'A population of bacteria. None of them are resistant to the antibiotic yet.';
+    $('abxMut').disabled = false;
+  }
+  $('abxMut').addEventListener('click', function(){
+    if(!bact.length){ $('abxMsg').textContent = 'There are no bacteria left.'; return; }
+    var normal = bact.filter(function(b){ return !b.res; });
+    if(!normal.length){ $('abxMsg').textContent = 'All the bacteria are already resistant.'; return; }
+    normal[Math.floor(Math.random()*normal.length)].res = true;
+    mutated = true; stepN++; drawBact(); logAbx(); highlight('abxPath', 0);
+    $('abxMsg').textContent = 'A random mutation gave one bacterium an allele for resistance. The antibiotic did not cause this.';
+  });
+  $('abxDrug').addEventListener('click', function(){
+    $('abxTint').setAttribute('opacity', .14);
+    var before = bact.length;
+    bact = bact.filter(function(b){ return b.res; });
+    stepN++; drawBact(); logAbx(); highlight('abxPath', 1);
+    var r = bact.length;
+    $('abxMsg').textContent = r === 0 ? 'The antibiotic killed all ' + before + ' bacteria. None were resistant, so the infection is cured.' :
+      'The antibiotic killed ' + (before - r) + ' bacteria. ' + r + ' resistant bacteria survived.';
+    setTimeout(function(){ $('abxTint').setAttribute('opacity', 0); }, 1200);
+  });
+  $('abxGrow').addEventListener('click', function(){
+    if(!bact.length){ $('abxMsg').textContent = 'There are no bacteria left to reproduce.'; return; }
+    var start = bact.slice();
+    while(bact.length < MAX){
+      var parent = start[Math.floor(Math.random()*start.length)];
+      addBact(parent.res);
+    }
+    stepN++; drawBact(); logAbx(); highlight('abxPath', resFrac() > .9 ? 3 : 2);
+    $('abxMsg').textContent = resFrac() > .9 ?
+      'The survivors reproduced and passed on the resistance allele. This is now a resistant strain: the same antibiotic will not work.' :
+      'The survivors reproduced and passed on their alleles.';
+  });
+  $('abxReset').addEventListener('click', resetAbx);
+
+  /* ---------- quiz ---------- */
+  var Q = [
+    {q:'What is an allele?', o:['A section of DNA that codes for a protein','A different form of a gene','A pair of chromosomes','A type of cell division'], a:1, w:'Alleles are different forms of the same gene, for example T (tall) and t (short).'},
+    {q:'A plant has the genotype Tt. What is it?', o:['Homozygous dominant','Homozygous recessive','Heterozygous','Recessive'], a:2, w:'Heterozygous means the two alleles are different.'},
+    {q:'Two heterozygous tall plants (Tt × Tt) are crossed. What is the expected ratio of tall to short?', o:['1 : 1','3 : 1','1 : 3','All tall'], a:1, w:'TT, Tt, Tt and tt give 3 tall : 1 short.'},
+    {q:'A Tt plant is crossed with a tt plant. What is the probability of a short offspring?', o:['0%','25%','50%','75%'], a:2, w:'Tt, Tt, tt, tt: 2 out of 4 are short, so 50%.'},
+    {q:'A student breeds 8 offspring from Tt × Tt and gets 5 tall and 3 short. Why is this not exactly 3 : 1?', o:['The Punnett square is wrong','Fertilisation is random and the sample is small','Short is dominant','The parents were homozygous'], a:1, w:'A ratio is a prediction. With few offspring, chance makes the results differ from it.'},
+    {q:'Why did dark peppered moths increase in polluted areas?', o:['Moths changed colour to match the bark','Dark moths were camouflaged, so more survived and passed on their alleles','Soot made the moths dark','Birds preferred dark moths'], a:1, w:'Dark moths were harder to see on sooty bark. More survived to reproduce and pass on the dark allele.'},
+    {q:'Where does the variation in natural selection come from?', o:['Organisms choosing to change','Differences in alleles, first caused by mutation','The environment changing the genes on purpose','Learning'], a:1, w:'Variation is caused by different alleles. New alleles come from random mutations.'},
+    {q:'What does "survival of the fittest" mean?', o:['The strongest animals always survive','Individuals best suited to the environment are more likely to survive and reproduce','Only the fastest survive','Animals exercise to survive'], a:1, w:'"Fittest" means best suited to the environment, not strongest.'},
+    {q:'How does a population of bacteria become resistant to an antibiotic?', o:['The antibiotic causes mutations','Bacteria get used to the antibiotic','Resistant bacteria survive treatment and pass on the resistance allele','The person becomes immune'], a:2, w:'A random mutation produces resistance. Resistant bacteria survive, reproduce and pass on the allele.'},
+    {q:'What must doctors use to treat an infection with a resistant strain?', o:['More of the same antibiotic','A different antibiotic','A vaccine for the bacteria','Nothing can be done'], a:1, w:'The resistant strain is not killed by that antibiotic, so a different antibiotic is needed.'}
+  ];
+  var scoreEl = $('score'), quiz = $('quiz'), got = 0, done = 0;
+  function buildQuiz(){
+    quiz.innerHTML = ''; got = 0; done = 0; scoreEl.textContent = '0 / ' + Q.length; scoreEl.className = 'chip';
+    Q.forEach(function(item, qi){
+      var box = document.createElement('div'); box.className = 'q';
+      var p = document.createElement('p'); p.textContent = (qi+1) + '. ' + item.q; box.appendChild(p);
+      var opts = document.createElement('div'); opts.className = 'opts';
+      var why = document.createElement('p'); why.className = 'note'; why.hidden = true; why.textContent = item.w;
+      item.o.forEach(function(txt, oi){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.id = 'q'+qi+'o'+oi; b.textContent = txt;
+        b.addEventListener('click', function(){
+          var all = opts.querySelectorAll('button');
+          all.forEach(function(x){ x.disabled = true; });
+          all[item.a].classList.add('right');
+          if(oi !== item.a) b.classList.add('wrong'); else got++;
+          done++; why.hidden = false;
+          scoreEl.textContent = got + ' / ' + Q.length + (done === Q.length ? ' · finished' : '');
+          if(done === Q.length) scoreEl.className = 'chip good';
+        });
+        opts.appendChild(b);
+      });
+      box.appendChild(opts); box.appendChild(why); quiz.appendChild(box);
+    });
+  }
+  $('resetQuiz').addEventListener('click', buildQuiz);
+  buildQuiz();
+
+  resetMoths(); resetAbx();
+  show(location.hash.slice(1));
+  window.addEventListener('resize', function(){ drawMothGraph(); drawAbxGraph(); });
+})();
+</script>
+
+</body></html>

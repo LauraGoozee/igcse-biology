@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beetroot Permeability Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column of stations in practical order — method → run → results → analyse with the membrane → questions */
+:root{
+  --bg:#f4f0f2; --surface:#ffffff; --surface-2:#faf7f8; --ink:#25141c; --muted:#6c5560; --line:#e2d6dc;
+  --accent:#9c1d5a; --beet:#a3195b; --head:#7d6b74; --tail:#b9aab1; --protein:#2f6fb7;
+  --aq:#ece8f4; --cyto:#f6eef0; --root:#6d1034; --bath:#e3edf5; --bathw:#c9dcec; --good:#2c7a4d; --good-soft:#dcf0e3; --bad:#b3261e; --bad-soft:#f9dedb;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#170f13; --surface:#20161b; --surface-2:#271b21; --ink:#f1e6eb; --muted:#b39ba7; --line:#3a2a32;
+  --accent:#f0679f; --beet:#e83f86; --head:#8a7a82; --tail:#54464d; --protein:#6aa8f0;
+  --aq:#201d2e; --cyto:#2a1d22; --root:#c0336f; --bath:#1a2630; --bathw:#22394b; --good:#63cc8f; --good-soft:#163a26; --bad:#ff8f85; --bad-soft:#47201d;
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#170f13; --surface:#20161b; --surface-2:#271b21; --ink:#f1e6eb; --muted:#b39ba7; --line:#3a2a32;
+  --accent:#f0679f; --beet:#e83f86; --head:#8a7a82; --tail:#54464d; --protein:#6aa8f0;
+  --aq:#201d2e; --cyto:#2a1d22; --root:#c0336f; --bath:#1a2630; --bathw:#22394b; --good:#63cc8f; --good-soft:#163a26; --bad:#ff8f85; --bad-soft:#47201d;
+  color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15.5px; line-height:1.55}
+.wrap{max-width:1100px; margin:0 auto; padding-block:28px 64px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex; flex-direction:column; gap:28px}
+h1,h2,h3{font-family:var(--f-display); text-wrap:balance; margin:0; line-height:1.15}
+h1{font-size:clamp(30px,5vw,46px); font-weight:700; letter-spacing:-0.01em}
+h2{font-size:clamp(22px,3vw,28px); font-weight:700}
+h3{font-size:18px; font-weight:700}
+p{margin:0; max-width:68ch}
+.eyebrow{font-family:var(--f-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+header{display:flex; flex-direction:column; gap:10px}
+.lede{color:var(--muted); font-size:17px}
+.spec{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px}
+.chip{font-family:var(--f-mono); font-size:12px; padding:3px 9px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:var(--surface)}
+.station{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:18px; min-width:0}
+.station-head{display:flex; gap:14px; align-items:baseline}
+.num{font-family:var(--f-mono); font-size:13px; color:var(--accent); border:1.5px solid var(--accent); border-radius:999px; width:28px; height:28px; display:grid; place-items:center; flex:none; transform:translateY(-3px)}
+.station-head > div{display:flex; flex-direction:column; gap:6px; min-width:0}
+.station-head p{color:var(--muted)}
+.hint{font-size:13px; color:var(--muted)}
+.callout{border-left:3px solid var(--accent); background:var(--surface-2); padding:12px 14px; border-radius:0 8px 8px 0; font-size:14.5px}
+.row{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+button{font-family:var(--f-body); font-size:14px; font-weight:500; border-radius:8px; padding:7px 13px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent); color:var(--surface); border-color:var(--accent)}
+button[aria-pressed="true"].tab{background:var(--accent); color:var(--surface); border-color:var(--accent)}
+button:focus-visible, input:focus-visible, summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.opt{display:flex; gap:8px; align-items:center; font-size:14px}
+.ctl{display:flex; flex-direction:column; gap:5px}
+.ctl label{font-weight:500; font-size:14px; display:flex; justify-content:space-between; gap:8px}
+.ctl output{font-family:var(--f-mono); font-size:13px; color:var(--accent); font-variant-numeric:tabular-nums}
+input[type=range]{width:100%; accent-color:var(--accent)}
+
+/* method */
+.method{display:flex; flex-direction:column; gap:0; counter-reset:m}
+.mstep{display:grid; grid-template-columns:34px minmax(0,1fr); gap:12px; padding:12px 0; border-top:1px solid var(--line)}
+.mstep:first-child{border-top:none}
+.mstep .n{font-family:var(--f-mono); font-size:13px; color:var(--accent); padding-top:2px}
+.mstep div{display:flex; flex-direction:column; gap:4px; min-width:0}
+.mstep p{font-size:15px}
+details summary{cursor:pointer; font-size:14px; color:var(--accent); font-weight:500}
+details p, details ul{font-size:14.5px; margin-top:6px}
+details ul{margin:8px 0 0; padding-left:20px; display:flex; flex-direction:column; gap:4px}
+
+/* run */
+.setup{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:22px}
+@media (max-width:820px){ .setup{grid-template-columns:minmax(0,1fr)} }
+.vals{display:flex; flex-wrap:wrap; gap:6px}
+.val{font-family:var(--f-mono); font-size:13px; padding:6px 10px; border-radius:8px; color:var(--muted); font-variant-numeric:tabular-nums}
+.val[aria-pressed="true"]{background:var(--surface); border-color:var(--accent); color:var(--ink); box-shadow:inset 0 0 0 1px var(--accent)}
+.opts{display:flex; flex-direction:column; gap:10px}
+.bench-wrap{display:flex; flex-direction:column; gap:8px; border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--surface-2)}
+.bench{display:flex; gap:12px; overflow-x:auto; padding:4px 2px 6px}
+.bath{flex:none; width:78px; display:flex; flex-direction:column; align-items:center; gap:6px}
+.tank{position:relative; width:78px; height:150px; display:flex; justify-content:center; align-items:flex-end}
+.tank.wb{border:2px solid var(--line); border-top:none; border-radius:0 0 10px 10px; background:linear-gradient(to top, var(--bathw) 62%, transparent 62%)}
+.glass{position:relative; width:34px; height:136px; margin-bottom:6px; border:2px solid var(--muted); border-top:none; border-radius:0 0 17px 17px; overflow:hidden; background:var(--surface)}
+.liquid{position:absolute; left:0; right:0; bottom:0; height:70%; background:var(--aq)}
+.liquid .pig{position:absolute; inset:0; background:var(--beet); opacity:0; transition:opacity 2.4s ease}
+.piece{position:absolute; left:50%; bottom:12px; width:18px; height:30px; margin-left:-9px; border-radius:4px; background:var(--root); transition:transform 1s ease, opacity 1s ease; z-index:2}
+.piece.out{transform:translateY(-150px); opacity:0}
+.bath .lbl{font-family:var(--f-mono); font-size:12.5px; color:var(--ink); font-variant-numeric:tabular-nums}
+.bath .abs{font-family:var(--f-mono); font-size:11.5px; color:var(--muted); min-height:1.3em; font-variant-numeric:tabular-nums}
+.bench-cap{font-size:13.5px; color:var(--muted)}
+.status{font-size:14px; color:var(--muted); min-height:1.4em}
+.status.warn{color:var(--bad)}
+
+.table-box{overflow-x:auto; border:1px solid var(--line); border-radius:10px}
+table{border-collapse:collapse; width:100%; min-width:560px; font-size:14px}
+th,td{padding:7px 10px; border-bottom:1px solid var(--line); text-align:center; font-variant-numeric:tabular-nums}
+th{font-weight:600; font-size:12.5px; color:var(--muted); background:var(--surface-2); line-height:1.3}
+th.sub{font-family:var(--f-mono)}
+td.iv{font-family:var(--f-mono)}
+.gl{border-left:1px solid var(--line)}
+.rd{font-family:var(--f-mono); font-size:14px; padding:4px 8px; background:transparent; border:1px solid transparent; border-radius:6px; min-width:58px}
+.rd:hover{border-color:var(--line)}
+.rd.x{text-decoration:line-through; color:var(--muted); background:var(--bad-soft); border-color:var(--bad)}
+.rd.ok-anom{background:var(--good-soft); border-color:var(--good)}
+td input{width:76px; font-family:var(--f-mono); font-size:13.5px; text-align:center; padding:4px 6px; border-radius:6px; border:1px solid var(--line); background:var(--surface); color:var(--ink)}
+td input.ok{border-color:var(--good); background:var(--good-soft)}
+td input.bad{border-color:var(--bad); background:var(--bad-soft)}
+
+/* analyse */
+.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px}
+@media (max-width:860px){ .two{grid-template-columns:minmax(0,1fr)} }
+.box{border:1px solid var(--line); border-radius:10px; background:var(--surface-2); overflow-x:auto; min-width:0}
+.box svg{display:block; width:100%; min-width:420px; height:auto}
+.placeholder{padding:60px 20px; text-align:center; color:var(--muted)}
+canvas{display:block; width:100%}
+.inset{display:flex; flex-direction:column; gap:10px; min-width:0}
+.state{font-size:14.5px; min-height:4.6em}
+
+/* questions */
+.qs{display:flex; flex-direction:column; gap:12px}
+.q{border:1px solid var(--line); border-radius:10px; padding:14px 16px; background:var(--surface-2); display:flex; flex-direction:column; gap:10px}
+.q-top{display:flex; justify-content:space-between; gap:12px; align-items:baseline}
+.q-top p{font-weight:500}
+.marks{font-family:var(--f-mono); font-size:12.5px; color:var(--muted); flex:none}
+.src{font-family:var(--f-mono); font-size:12px; color:var(--muted)}
+.stem{font-size:14.5px; color:var(--muted); display:flex; flex-direction:column; gap:6px}
+.choices{display:flex; flex-direction:column; gap:6px}
+.choice{text-align:left; font-weight:400; background:var(--surface)}
+.choice.right{border-color:var(--good); background:var(--good-soft)}
+.choice.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.fb{font-size:14px; color:var(--muted)}
+.subhead{font-family:var(--f-display); font-size:19px; font-weight:700; margin-top:6px}
+.perm{display:flex; flex-direction:column; gap:6px; max-width:620px}
+.perm .scale{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; font-size:13.5px; text-align:center}
+.perm .scale span{border:1px solid var(--line); border-radius:8px; padding:8px 6px; background:var(--surface)}
+.perm .arrow{font-size:13px; color:var(--muted); text-align:center; border-top:2px solid var(--muted); position:relative; padding-top:4px}
+.ppgraph{max-width:520px; width:100%; height:auto; display:block}
+footer{font-size:13px; color:var(--muted); display:flex; flex-direction:column; gap:6px}
+@media (prefers-reduced-motion: reduce){ .liquid .pig, .piece{transition:none} }
+</style>
+</head>
+<body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">IAL Biology · Unit 1 · Topic 2 · Core Practical 3</span>
+    <h1>Beetroot Permeability Lab</h1>
+    <p class="lede">Investigate how temperature and ethanol affect the permeability of cell membranes, by measuring how much red pigment leaks out of beetroot cells.</p>
+    <div class="spec"><span class="chip">Spec 2.3 Core Practical 3</span><span class="chip">Links to 2.2 membrane structure</span></div>
+  </header>
+
+  <!-- 1 METHOD -->
+  <section class="station" aria-labelledby="s1">
+    <div class="station-head"><span class="num">1</span><div>
+      <h2 id="s1">The method</h2>
+      <p>Beetroot cells store a red pigment, betalain, in their vacuoles. The pigment can only leak out if the membranes around it are damaged. Read each step, then open “Why?” to check your reasoning.</p>
+    </div></div>
+    <div class="method">
+      <div class="mstep"><span class="n">1</span><div><p>Use a cork borer to cut cylinders of beetroot, then cut them all to the same length.</p>
+        <details><summary>Why?</summary><p>So every piece has the same surface area and volume. A bigger piece would release more pigment whatever the treatment.</p></details></div></div>
+      <div class="mstep"><span class="n">2</span><div><p>Rinse the pieces in distilled water until the water stays clear.</p>
+        <details><summary>Why?</summary><p>Cutting breaks open some cells. Rinsing removes the pigment they released, so only pigment that leaks during the experiment is measured.</p></details></div></div>
+      <div class="mstep"><span class="n">3</span><div><p>Place one piece in each tube containing the same volume of distilled water, in water baths at a range of temperatures. Leave them all for the same time, for example 20 minutes. For the ethanol investigation, use a range of ethanol concentrations at one temperature instead.</p>
+        <details><summary>Why?</summary><p>Volume and time are control variables. More water would dilute the pigment, and a longer time would let more pigment leak out. Let the water reach the bath temperature before adding the beetroot.</p></details></div></div>
+      <div class="mstep"><span class="n">4</span><div><p>Remove the beetroot and shake each tube gently to mix the liquid.</p>
+        <details><summary>Why?</summary><p>The pigment needs to be evenly spread through the liquid before a sample is taken.</p></details></div></div>
+      <div class="mstep"><span class="n">5</span><div><p>Set the colorimeter to a blue-green filter and zero it using a cuvette of distilled water.</p>
+        <details><summary>Why?</summary><p>A red solution absorbs blue-green light most strongly, so this filter gives the most sensitive readings. Zeroing with distilled water means any absorbance measured is due to the pigment only.</p></details></div></div>
+      <div class="mstep"><span class="n">6</span><div><p>Measure the absorbance of a sample of liquid from each tube. Repeat each condition three times.</p>
+        <details><summary>Why?</summary><p>Higher absorbance means more pigment in the water, so the membranes were more permeable. Repeats let you spot anomalies and calculate a mean.</p></details></div></div>
+    </div>
+    <p class="callout"><strong>Safety:</strong> beetroot juice stains skin and clothes. Take care with hot water baths and sharp cork borers. Ethanol is highly flammable, so keep it away from naked flames.</p>
+  </section>
+
+  <!-- 2 RUN -->
+  <section class="station" aria-labelledby="s2">
+    <div class="station-head"><span class="num">2</span><div>
+      <h2 id="s2">Run the investigation</h2>
+      <p>Choose the investigation and the values to test, then run it.</p>
+    </div></div>
+    <div class="row"><button class="tab" id="tabT" type="button" aria-pressed="true">Effect of temperature</button><button class="tab" id="tabE" type="button" aria-pressed="false">Effect of ethanol</button></div>
+    <div class="setup">
+      <div class="ctl">
+        <label id="valsLab">Temperatures / °C</label>
+        <div class="vals" id="vals"></div>
+        <span class="hint" id="valsHint">Three pieces of beetroot are tested at each value. Add values where absorbance changes most quickly.</span>
+      </div>
+      <div class="opts">
+        <label class="opt" for="rinse"><input id="rinse" type="checkbox" checked> Rinse the beetroot before starting</label>
+        <label class="opt" for="zero"><input id="zero" type="checkbox" checked> Zero the colorimeter with distilled water</label>
+        <div class="row"><button id="run" class="primary" type="button">Run investigation</button></div>
+        <span class="hint">Untick a step to see what happens to the results if it is missed.</span>
+      </div>
+    </div>
+    <div class="bench-wrap">
+      <div class="bench" id="bench" aria-hidden="true"></div>
+      <p class="bench-cap" id="benchCap"></p>
+    </div>
+    <p class="status" id="status"></p>
+    <div class="table-box"><table>
+      <thead>
+        <tr><th rowspan="2" id="ivHead">Temperature / °C</th><th colspan="3" class="gl">Absorbance / a.u.</th><th rowspan="2" class="gl">Mean absorbance / a.u.</th></tr>
+        <tr><th class="sub gl">1</th><th class="sub">2</th><th class="sub">3</th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+    <div class="row"><button id="check" type="button">Check my results</button><button id="reveal" type="button">Show answers</button><span class="hint" id="score"></span></div>
+    <p class="hint">Click any reading you think is anomalous to cross it out. Then calculate each mean to 2 d.p., leaving out any anomalies.</p>
+  </section>
+
+  <!-- 3 ANALYSE -->
+  <section class="station" aria-labelledby="s3">
+    <div class="station-head"><span class="num">3</span><div>
+      <h2 id="s3">Explain your results</h2>
+      <p>Plot the mean absorbance, then move the slider to see what is happening to the membrane at each value.</p>
+    </div></div>
+    <div class="two">
+      <div class="inset">
+        <div class="row"><button id="plot" class="primary" type="button">Plot graph</button></div>
+        <div class="box" id="graph"><p class="placeholder">Run the investigation, then press “Plot graph”.</p></div>
+      </div>
+      <div class="inset">
+        <div class="ctl"><label for="look" id="lookLab">Look at the membrane at <output id="lookO">25 °C</output></label><input id="look" type="range" min="0" max="80" step="1" value="25"></div>
+        <div class="box"><canvas id="mem" aria-label="Animated cell membrane with red pigment molecules inside the cell"></canvas></div>
+        <p class="state" id="stateTxt"></p>
+      </div>
+    </div>
+    <p class="hint">In a real beetroot cell the pigment is inside the vacuole, so it has to cross the tonoplast (vacuole membrane) as well as the cell surface membrane. Both are damaged in the same way.</p>
+  </section>
+
+  <!-- 4 PRACTICE -->
+  <section class="station" aria-labelledby="s4">
+    <div class="station-head"><span class="num">4</span><div>
+      <h2 id="s4">Practice questions</h2>
+      <p>Written for practice on this core practical, with suggested marking points.</p>
+    </div></div>
+    <div class="qs">
+      <div class="q"><div class="q-top"><p>Explain the shape of the graph for the effect of temperature on the absorbance of the solution.</p><span class="marks">(4)</span></div>
+        <details><summary>Show marking points</summary><ul>
+          <li>below about 40 °C, absorbance is low and changes little, because the membranes are intact</li>
+          <li>as temperature increases, phospholipids gain kinetic energy and move more, so the bilayer becomes more permeable</li>
+          <li>above about 45 °C, membrane proteins denature, leaving gaps in the membrane</li>
+          <li>more pigment leaks out, so absorbance increases steeply</li>
+          <li>at high temperatures absorbance levels off because almost all the pigment has leaked out</li>
+        </ul></details></div>
+      <div class="q"><div class="q-top"><p>Explain why the beetroot pieces were rinsed before the investigation.</p><span class="marks">(2)</span></div>
+        <details><summary>Show marking points</summary><ul>
+          <li>to remove pigment released from cells damaged when the beetroot was cut</li>
+          <li>so that the absorbance only measures pigment that leaked during the investigation / otherwise absorbance would be too high</li>
+        </ul></details></div>
+      <div class="q"><div class="q-top"><p>Explain why the colorimeter is zeroed using distilled water.</p><span class="marks">(2)</span></div>
+        <details><summary>Show marking points</summary><ul>
+          <li>to calibrate the colorimeter / set a baseline of zero absorbance</li>
+          <li>so that the absorbance measured is due only to the pigment (not the water or the cuvette)</li>
+        </ul></details></div>
+      <div class="q"><div class="q-top"><p>Suggest why increasing the concentration of ethanol increases the permeability of the membrane.</p><span class="marks">(2)</span></div>
+        <details><summary>Show marking points</summary><ul>
+          <li>ethanol is a solvent that dissolves lipids / disrupts the phospholipid bilayer</li>
+          <li>ethanol denatures membrane proteins</li>
+          <li>so gaps form in the membrane and pigment can leak out</li>
+        </ul></details></div>
+      <div class="q"><div class="q-top"><p>Give two variables that should be controlled in the temperature investigation, and how.</p><span class="marks">(2)</span></div>
+        <details><summary>Show marking points</summary><ul>
+          <li>size of beetroot pieces: same cork borer, cut to the same length</li>
+          <li>volume of water: measured with a pipette or measuring cylinder</li>
+          <li>time in the water bath: timed with a stopwatch</li>
+          <li>source of beetroot: all pieces from the same beetroot</li>
+        </ul></details></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Absorbance data are simulated from a model, with random variation and occasional anomalies. Real values depend on the beetroot, the time and the colorimeter.</p>
+    
+  </footer>
+</div>
+
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const rnd = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const r2 = v => Math.round(v * 100) / 100;
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fixSvg = s => s.replace(/<(\w+)([^>]*?)(\/?)>/g, (m, tag, attrs, close) => {
+  let st = '';
+  attrs = attrs.replace(/\s(stroke|fill)="(var\([^)]*\))"/g, (x, p, v) => { st += p + ':' + v + ';'; return ''; });
+  return '<' + tag + attrs + (st ? ' style="' + st + '"' : '') + close + '>';
+});
+function gauss(){ let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.283 * v); }
+
+/* ---------- models ---------- */
+const INV = {
+  temp: { values:[0,10,20,30,40,45,50,55,60,65,70,80], def:[10,20,30,40,50,60,70], unit:'°C', head:'Temperature / °C', xlab:'Temperature / °C', max:80,
+          f: T => 0.06 + 0.002 * T + 1.32 / (1 + Math.exp(-(T - 55) / 4.5)) },
+  eth:  { values:[0,10,20,30,40,50,60,70,80,90,100], def:[0,20,40,60,80,100], unit:'%', head:'Ethanol concentration / %', xlab:'Ethanol concentration / %', max:100,
+          f: e => 0.07 + 1.25 / (1 + Math.exp(-(e - 38) / 8)) }
+};
+let mode = 'temp';
+const sel = { temp: new Set(INV.temp.def), eth: new Set(INV.eth.def) };
+let rows = [], plotted = false;
+
+function renderVals(){
+  const box = $('vals'); box.innerHTML = '';
+  INV[mode].values.forEach(v => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'val'; b.textContent = v;
+    b.setAttribute('aria-pressed', sel[mode].has(v));
+    b.addEventListener('click', () => {
+      if (sel[mode].has(v)){ if (sel[mode].size <= 3) return; sel[mode].delete(v); } else sel[mode].add(v);
+      b.setAttribute('aria-pressed', sel[mode].has(v));
+      $('status').textContent = 'Values changed. Run the investigation again to use them.'; $('status').className = 'status warn';
+    });
+    box.appendChild(b);
+  });
+  $('valsLab').textContent = mode === 'temp' ? 'Temperatures / °C' : 'Ethanol concentrations / %';
+  $('ivHead').textContent = INV[mode].head;
+}
+function setMode(m){
+  mode = m;
+  $('tabT').setAttribute('aria-pressed', m === 'temp'); $('tabE').setAttribute('aria-pressed', m === 'eth');
+  const look = $('look'); look.max = INV[m].max; look.value = m === 'temp' ? 25 : 0;
+  renderVals(); run(); memReset(); lookUpdate();
+}
+$('tabT').addEventListener('click', () => setMode('temp'));
+$('tabE').addEventListener('click', () => setMode('eth'));
+['rinse', 'zero'].forEach(id => $(id).addEventListener('change', () => { $('status').textContent = 'Settings changed. Run the investigation again to use them.'; $('status').className = 'status warn'; }));
+
+function run(){
+  const rinse = $('rinse').checked, zero = $('zero').checked, f = INV[mode].f;
+  const vals = [...sel[mode]].sort((a, b) => a - b);
+  const anomRows = new Set();
+  vals.forEach((_, i) => { if (Math.random() < 0.22) anomRows.add(i); });
+  if (!anomRows.size) anomRows.add(Math.floor(rnd(1, vals.length - 1)));
+  rows = vals.map((v, i) => {
+    const base = f(v);
+    const reps = [0, 1, 2].map(() => {
+      let a = base + gauss() * (0.015 + 0.025 * base);
+      if (!rinse) a += rnd(0.12, 0.18);
+      if (!zero) a += 0.05;
+      return r2(Math.max(0, a));
+    });
+    let anom = -1;
+    if (anomRows.has(i)){ anom = Math.floor(Math.random() * 3); reps[anom] = r2(Math.max(0, reps[anom] + (Math.random() < 0.7 ? 1 : -1) * rnd(0.22, 0.38))); if (reps[anom] < 0.01) reps[anom] = r2(reps[anom] + 0.5); }
+    const good = reps.filter((_, k) => k !== anom);
+    const mean = r2(good.reduce((a, b) => a + b, 0) / good.length);
+    const meanAll = r2(reps.reduce((a, b) => a + b, 0) / 3);
+    return { v, reps, anom, mean, meanAll, crossed: new Set() };
+  });
+  plotted = false;
+  const st = [];
+  if (!rinse) st.push('the beetroot was not rinsed');
+  if (!zero) st.push('the colorimeter was not zeroed');
+  $('status').textContent = st.length ? 'Run complete, but ' + st.join(' and ') + '. Compare these readings with a correct run.' : 'Run complete. Readings taken after 20 minutes.';
+  $('status').className = st.length ? 'status warn' : 'status';
+  renderBench(); renderTable(); renderGraph(); $('score').textContent = '';
+}
+let benchTimers = [];
+function renderBench(){
+  benchTimers.forEach(clearTimeout); benchTimers = [];
+  const b = $('bench'); b.innerHTML = '';
+  const temp = mode === 'temp', items = [];
+  rows.forEach(r => {
+    const d = document.createElement('div'); d.className = 'bath';
+    d.innerHTML = '<div class="tank' + (temp ? ' wb' : '') + '"><div class="glass"><div class="liquid"><div class="pig"></div></div><div class="piece"></div></div></div>' +
+      '<span class="lbl">' + r.v + (temp ? ' °C' : ' %') + '</span><span class="abs"></span>';
+    b.appendChild(d); items.push({ pig: d.querySelector('.pig'), piece: d.querySelector('.piece'), abs: d.querySelector('.abs'), m: r.mean });
+  });
+  const cap = $('benchCap');
+  const phase1 = temp ? 'Each tube holds one piece of beetroot in the same volume of distilled water, in a water bath at the temperature shown. Pigment is leaking out…'
+                      : 'Each tube holds one piece of beetroot in the same volume of ethanol solution, all at the same temperature. Pigment is leaking out…';
+  const done = () => { items.forEach(it => { it.piece.classList.add('out'); }); cap.textContent = 'After 20 minutes the beetroot is removed and each tube is shaken. A sample goes into the colorimeter.';
+    benchTimers.push(setTimeout(() => { items.forEach(it => it.abs.textContent = 'A ≈ ' + it.m.toFixed(2)); cap.textContent = 'Readings taken: the darker the liquid, the higher the absorbance and the more permeable the membranes were. Each tube shows the mean of its three repeats; every reading is in the table.'; }, reduce ? 0 : 1100)); };
+  cap.textContent = phase1;
+  requestAnimationFrame(() => requestAnimationFrame(() => items.forEach(it => it.pig.style.opacity = clamp(it.m / 1.6, 0.03, 0.92).toFixed(2))));
+  benchTimers.push(setTimeout(done, reduce ? 0 : 2600));
+}
+function renderTable(){
+  const tb = $('tbody');
+  tb.innerHTML = rows.map((r, ri) => '<tr><td class="iv">' + r.v + '</td>' +
+    r.reps.map((a, k) => '<td class="' + (k === 0 ? 'gl' : '') + '"><button type="button" class="rd" data-r="' + ri + '" data-k="' + k + '" aria-pressed="false" aria-label="Reading ' + (k + 1) + ' at ' + r.v + ', ' + a.toFixed(2) + '. Click to mark as anomalous">' + a.toFixed(2) + '</button></td>').join('') +
+    '<td class="gl"><input id="m' + ri + '" inputmode="decimal" aria-label="Mean absorbance at ' + r.v + '"></td></tr>').join('');
+  tb.querySelectorAll('.rd').forEach(b => b.addEventListener('click', () => {
+    const r = rows[+b.dataset.r], k = +b.dataset.k;
+    if (r.crossed.has(k)) r.crossed.delete(k); else r.crossed.add(k);
+    b.classList.toggle('x', r.crossed.has(k)); b.classList.remove('ok-anom'); b.setAttribute('aria-pressed', r.crossed.has(k));
+  }));
+}
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; };
+$('check').addEventListener('click', () => {
+  let anomOk = 0, anomTot = 0, meanOk = 0, msg = [];
+  rows.forEach((r, ri) => {
+    const btns = [...document.querySelectorAll('.rd[data-r="' + ri + '"]')];
+    const correctFlags = r.anom < 0 ? r.crossed.size === 0 : (r.crossed.size === 1 && r.crossed.has(r.anom));
+    if (r.anom >= 0) anomTot++;
+    if (r.anom >= 0 && correctFlags){ anomOk++; btns[r.anom].classList.add('ok-anom'); }
+    const el = $('m' + ri); el.classList.remove('ok', 'bad');
+    const n = num(el.value);
+    if (n === null) return;
+    if (Math.abs(n - r.mean) <= 0.011){ el.classList.add('ok'); meanOk++; }
+    else { el.classList.add('bad'); if (r.anom >= 0 && Math.abs(n - r.meanAll) <= 0.011) msg.push(r.v); }
+  });
+  let t = 'Anomalies found: ' + anomOk + ' of ' + anomTot + '. Means correct: ' + meanOk + ' of ' + rows.length + '.';
+  if (msg.length) t += ' At ' + msg.join(', ') + ' your mean includes an anomaly.';
+  $('score').textContent = t;
+});
+$('reveal').addEventListener('click', () => {
+  rows.forEach((r, ri) => {
+    const btns = [...document.querySelectorAll('.rd[data-r="' + ri + '"]')];
+    btns.forEach((b, k) => { const on = k === r.anom; b.classList.toggle('x', on); b.classList.toggle('ok-anom', on); b.setAttribute('aria-pressed', on); });
+    r.crossed = new Set(r.anom >= 0 ? [r.anom] : []);
+    const el = $('m' + ri); el.value = r.mean.toFixed(2); el.classList.remove('bad'); el.classList.add('ok');
+  });
+  $('score').textContent = 'Answers shown. Crossed-out readings are anomalies, left out of the mean.';
+});
+$('run').addEventListener('click', run);
+
+/* ---------- graph ---------- */
+function renderGraph(){
+  const box = $('graph');
+  if (!plotted){ box.innerHTML = '<p class="placeholder">Press “Plot graph” to draw your mean results.</p>'; return; }
+  const W = 520, H = 340, L = 60, R = 18, T = 18, B = 56, xMax = INV[mode].max;
+  const allVals = rows.flatMap(r => r.reps.filter((_, k) => k !== r.anom));
+  const yMax = Math.max(1, Math.ceil(Math.max(...allVals) * 5) / 5);
+  const X = v => L + v / xMax * (W - L - R), Y = v => T + (1 - v / yMax) * (H - T - B);
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Graph of mean absorbance against ' + (mode === 'temp' ? 'temperature' : 'ethanol concentration') + '">';
+  for (let v = 0; v <= yMax + 1e-9; v += 0.2){ const y = Y(v); s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y + '" y2="' + y + '" stroke="var(--line)" stroke-width="0.8"/><text x="' + (L - 7) + '" y="' + (y + 4) + '" text-anchor="end" font-size="11.5" font-family="IBM Plex Mono, monospace" fill="var(--muted)">' + v.toFixed(1) + '</text>'; }
+  const step = mode === 'temp' ? 10 : 20;
+  for (let v = 0; v <= xMax; v += step){ s += '<text x="' + X(v) + '" y="' + (H - B + 18) + '" text-anchor="middle" font-size="11.5" font-family="IBM Plex Mono, monospace" fill="var(--muted)">' + v + '</text>'; }
+  s += '<line x1="' + L + '" x2="' + L + '" y1="' + T + '" y2="' + (H - B) + '" stroke="var(--muted)"/><line x1="' + L + '" x2="' + (W - R) + '" y1="' + (H - B) + '" y2="' + (H - B) + '" stroke="var(--muted)"/>';
+  s += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="13" font-family="IBM Plex Sans, sans-serif" fill="var(--ink)">' + INV[mode].xlab + '</text>';
+  s += '<text transform="translate(16 ' + ((T + H - B) / 2) + ') rotate(-90)" text-anchor="middle" font-size="13" font-family="IBM Plex Sans, sans-serif" fill="var(--ink)">Mean absorbance / a.u.</text>';
+  s += '<polyline points="' + rows.map(r => X(r.v).toFixed(1) + ',' + Y(r.mean).toFixed(1)).join(' ') + '" fill="none" stroke="var(--beet)" stroke-width="2"/>';
+  rows.forEach(r => {
+    const g = r.reps.filter((_, k) => k !== r.anom), lo = Math.min(...g), hi = Math.max(...g), x = X(r.v);
+    s += '<line x1="' + x + '" x2="' + x + '" y1="' + Y(hi) + '" y2="' + Y(lo) + '" stroke="var(--muted)" stroke-width="1.3"/>';
+    s += '<line x1="' + (x - 4) + '" x2="' + (x + 4) + '" y1="' + Y(hi) + '" y2="' + Y(hi) + '" stroke="var(--muted)" stroke-width="1.3"/><line x1="' + (x - 4) + '" x2="' + (x + 4) + '" y1="' + Y(lo) + '" y2="' + Y(lo) + '" stroke="var(--muted)" stroke-width="1.3"/>';
+    s += '<circle cx="' + x + '" cy="' + Y(r.mean) + '" r="4.5" fill="var(--surface)" stroke="var(--beet)" stroke-width="2"/>';
+  });
+  s += '</svg>';
+  box.innerHTML = fixSvg(s);
+}
+$('plot').addEventListener('click', () => { if (rows.length){ plotted = true; renderGraph(); } });
+
+/* ---------- membrane inset ---------- */
+const cv = $('mem'), ctx = cv.getContext('2d');
+const LW = 600, LH = 270, YO = 110, YI = 180, TL = 26;
+const ZONES = [[150, 210], [390, 450]];
+let sc = 1, tt = 0, lips = [], pig = [];
+const slots = []; for (let x = 8; x <= 592; x += 14){ if (!ZONES.some(([a, b]) => x > a - 6 && x < b + 6)) slots.push(x); }
+['o', 'i'].forEach(leaf => slots.forEach(x => lips.push({ leaf, x, ph: rnd(0, 6.28), sp: rnd(.7, 1.3), dy: rnd(-1, 1), r: Math.random() })));
+function memSize(){
+  const w = cv.parentElement.clientWidth, dpr = window.devicePixelRatio || 1;
+  sc = w / LW; cv.style.height = LH * sc + 'px';
+  cv.width = Math.round(w * dpr); cv.height = Math.round(LH * sc * dpr);
+  ctx.setTransform(dpr * sc, 0, 0, dpr * sc, 0, 0);
+}
+function memReset(){ pig = []; for (let i = 0; i < 44; i++) pig.push({ x: rnd(10, LW - 10), y: rnd(YI + 22, LH - 10), st: 'in' }); }
+function memParams(){
+  const v = +$('look').value;
+  let amp, den, alc, P;
+  if (mode === 'temp'){ amp = 0.5 + 4 * v / 80; den = clamp((v - 45) / 20, 0, 1); alc = 0; P = INV.temp.f(v) / 1.55; }
+  else { amp = 1.4; alc = v / 100; den = clamp((v - 50) / 50, 0, 1) * 0.8; P = INV.eth.f(v) / 1.32; }
+  return { v, amp, den, alc, P, disorder: Math.max(den * 0.8, alc * 0.9) };
+}
+function blob(cx, cy, w, h, seed, den){
+  ctx.beginPath();
+  for (let i = 0; i <= 28; i++){
+    const a = i / 28 * 6.283, c = Math.cos(a), s = Math.sin(a);
+    const n = 1 + den * 0.16 * Math.sin(a * 5 + seed + tt * 0.002);
+    const x = cx + Math.sign(c) * Math.pow(Math.abs(c), .42) * w / 2 * n, y = cy + Math.sign(s) * Math.pow(Math.abs(s), .42) * h / 2 * n;
+    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+  }
+  ctx.closePath();
+}
+function memStep(p){
+  tt += 16;
+  pig.forEach(g => {
+    if (g.st === 'in'){
+      g.x = clamp(g.x + rnd(-1.2, 1.2), 6, LW - 6); g.y = clamp(g.y + rnd(-1.2, 1.2), YI + 18, LH - 8);
+      if (g.y < YI + 26 && Math.random() < Math.pow(Math.max(0, p.P - 0.12), 1.5) * 0.06){ g.st = 'mv'; g.ty = rnd(16, YO - 22); }
+    } else if (g.st === 'mv'){ g.y += (g.ty - g.y) * 0.05 - 0.6; if (g.y <= g.ty + 2) g.st = 'out'; }
+    else { g.x = clamp(g.x + rnd(-1.2, 1.2), 6, LW - 6); g.y = clamp(g.y + rnd(-1.2, 1.2), 14, YO - 18); }
+  });
+}
+function memDraw(p){
+  const C = { aq: css('--aq'), cyto: css('--cyto'), s2: css('--surface-2'), head: css('--head'), tail: css('--tail'), pr: css('--protein'), beet: css('--beet'), muted: css('--muted') };
+  ctx.clearRect(0, 0, LW, LH);
+  ctx.fillStyle = C.s2; ctx.fillRect(0, 0, LW, LH);
+  ctx.fillStyle = C.aq; ctx.fillRect(0, 0, LW, YO - 8);
+  ctx.fillStyle = C.cyto; ctx.fillRect(0, YI + 8, LW, LH - YI - 8);
+  lips.forEach(l => {
+    const out = l.leaf === 'o', dir = out ? 1 : -1, yb = out ? YO : YI;
+    const x = l.x + Math.sin(tt * 0.004 * l.sp + l.ph) * p.amp;
+    const displaced = l.r < p.alc * 0.4;
+    const yh = yb - dir * (p.disorder * l.dy * 8 + (displaced ? 30 * p.alc + 8 : 0));
+    const sw = Math.sin(tt * 0.006 * l.sp + l.ph * 2) * p.amp * 0.5;
+    ctx.globalAlpha = displaced ? 0.35 : 1;
+    ctx.strokeStyle = C.tail; ctx.lineWidth = 1.8; ctx.beginPath();
+    ctx.moveTo(x - 2.5, yh + dir * 5); ctx.quadraticCurveTo(x - 2.5 + sw, yh + dir * 15, x - 2.5, yh + dir * TL);
+    ctx.moveTo(x + 2.5, yh + dir * 5); ctx.quadraticCurveTo(x + 2.5 - sw, yh + dir * 15, x + 2.5, yh + dir * (TL - 3));
+    ctx.stroke();
+    ctx.fillStyle = C.head; ctx.beginPath(); ctx.arc(x, yh, 5.5, 0, 6.283); ctx.fill();
+    ctx.globalAlpha = 1;
+  });
+  ctx.fillStyle = C.pr;
+  blob(180, (YO + YI) / 2, 56, 92, 1, p.den); ctx.fill();
+  blob(420, (YO + YI) / 2, 56, 92, 2, p.den); ctx.fill();
+  ctx.fillStyle = C.beet;
+  pig.forEach(g => { ctx.beginPath(); ctx.arc(g.x, g.y, 3, 0, 6.283); ctx.fill(); });
+  ctx.font = '500 12px "IBM Plex Sans", system-ui, sans-serif'; ctx.fillStyle = C.muted;
+  ctx.fillText('Water in the tube', 10, 16); ctx.fillText('Inside the cell: red pigment', 10, LH - 8);
+}
+const STATE = {
+  temp: v => v < 40 ? 'Phospholipids move, but the bilayer stays intact and the proteins keep their shape. Very little pigment leaks out, so absorbance is low.' :
+    v < 60 ? 'Phospholipids have more kinetic energy and move further apart. Membrane proteins start to denature, leaving gaps. Pigment leaks out quickly, so absorbance rises steeply.' :
+    'Most membrane proteins are denatured and the bilayer is disrupted. The membrane is very permeable. Absorbance levels off once nearly all the pigment has leaked out.',
+  eth: v => v < 20 ? 'At low concentrations ethanol has little effect. The membrane stays intact and little pigment leaks out.' :
+    v < 60 ? 'Ethanol is a solvent that dissolves lipids out of the bilayer, so gaps form and pigment leaks out. Absorbance rises steeply.' :
+    'High concentrations of ethanol also denature membrane proteins. The membrane is very permeable, and absorbance levels off once nearly all the pigment has leaked out.'
+};
+function lookUpdate(){
+  const v = +$('look').value;
+  $('lookO').textContent = v + (mode === 'temp' ? ' °C' : ' % ethanol');
+  $('stateTxt').textContent = STATE[mode](v);
+}
+$('look').addEventListener('input', () => { lookUpdate(); memReset(); });
+memSize(); window.addEventListener('resize', memSize); memReset(); lookUpdate();
+function loop(){ const p = memParams(); if (!reduce) memStep(p); memDraw(p); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+
+renderVals(); run();
+})();
+</script>
+</body>
+</html>

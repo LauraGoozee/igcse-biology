@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gas Exchange in the Lungs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column of stations — zoom from lungs to barrier → live alveolus model → Fick calculator */
+:root{
+  --bg:#eef2f6; --surface:#ffffff; --surface-2:#f6f8fb; --ink:#131f2b; --muted:#566676; --line:#d4dde6;
+  --accent:#1f6aa8; --o2:#cf3b3b; --co2:#5a6f86; --art:#c8323c; --vein:#4f63b8; --airway:#9a8f86; --lung:#f4dfe0; --alv:#f0c9cc;
+  --wall:#e7b7a6; --nuc:#8a5a7a; --mucus:#c9c27a; --aq:#e8f0f8; --good:#2c7a4d; --good-soft:#dcf0e3; --bad:#b3261e; --bad-soft:#f9dedb;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e141b; --surface:#151e27; --surface-2:#1a2530; --ink:#e3ebf2; --muted:#93a4b5; --line:#293846;
+  --accent:#6cb2ee; --o2:#ff7a72; --co2:#9fb2c8; --art:#ff6b74; --vein:#8b9cf0; --airway:#8c8279; --lung:#3a2529; --alv:#5a3238;
+  --wall:#7a4a40; --nuc:#c48fb3; --mucus:#8f8a4a; --aq:#172433; --good:#63cc8f; --good-soft:#163a26; --bad:#ff8f85; --bad-soft:#47201d;
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0e141b; --surface:#151e27; --surface-2:#1a2530; --ink:#e3ebf2; --muted:#93a4b5; --line:#293846;
+  --accent:#6cb2ee; --o2:#ff7a72; --co2:#9fb2c8; --art:#ff6b74; --vein:#8b9cf0; --airway:#8c8279; --lung:#3a2529; --alv:#5a3238;
+  --wall:#7a4a40; --nuc:#c48fb3; --mucus:#8f8a4a; --aq:#172433; --good:#63cc8f; --good-soft:#163a26; --bad:#ff8f85; --bad-soft:#47201d;
+  color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15.5px; line-height:1.55}
+.wrap{max-width:1100px; margin:0 auto; padding-block:28px 64px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex; flex-direction:column; gap:28px}
+h1,h2,h3{font-family:var(--f-display); text-wrap:balance; margin:0; line-height:1.15}
+h1{font-size:clamp(30px,5vw,46px); font-weight:700; letter-spacing:-0.01em}
+h2{font-size:clamp(22px,3vw,28px); font-weight:700}
+h3{font-size:18px; font-weight:700}
+p{margin:0; max-width:68ch}
+.eyebrow{font-family:var(--f-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+header{display:flex; flex-direction:column; gap:10px}
+.lede{color:var(--muted); font-size:17px}
+.spec{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px}
+.chip{font-family:var(--f-mono); font-size:12px; padding:3px 9px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:var(--surface)}
+.station{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:18px; min-width:0}
+.station-head{display:flex; gap:14px; align-items:baseline}
+.num{font-family:var(--f-mono); font-size:13px; color:var(--accent); border:1.5px solid var(--accent); border-radius:999px; width:28px; height:28px; display:grid; place-items:center; flex:none; transform:translateY(-3px)}
+.station-head > div{display:flex; flex-direction:column; gap:6px; min-width:0}
+.station-head p{color:var(--muted)}
+.hint{font-size:13px; color:var(--muted)}
+.callout{border-left:3px solid var(--accent); background:var(--surface-2); padding:12px 14px; border-radius:0 8px 8px 0; font-size:14.5px}
+.row{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+button{font-family:var(--f-body); font-size:14px; font-weight:500; border-radius:8px; padding:7px 13px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent); color:var(--surface); border-color:var(--accent)}
+button[aria-pressed="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:var(--surface)}
+button:focus-visible, input:focus-visible, summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.ctl{display:flex; flex-direction:column; gap:5px}
+.ctl label{font-weight:500; font-size:14px; display:flex; justify-content:space-between; gap:8px}
+.ctl output{font-family:var(--f-mono); font-size:13px; color:var(--accent); font-variant-numeric:tabular-nums}
+input[type=range]{width:100%; accent-color:var(--accent)}
+.box{border:1px solid var(--line); border-radius:10px; background:var(--surface-2); overflow:hidden; min-width:0}
+svg{display:block; width:100%; height:auto}
+canvas{display:block; width:100%}
+
+/* zoom */
+.zoom{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px}
+@media (max-width:880px){ .zoom{grid-template-columns:minmax(0,1fr)} }
+.levels{display:flex; flex-wrap:wrap; gap:6px}
+.lv{font-size:13.5px}
+#zoomSvg{transition:opacity .35s ease}
+#zoomSvg.fade{opacity:0}
+.zinfo{display:flex; flex-direction:column; gap:10px}
+.zinfo .scale{font-family:var(--f-mono); font-size:12.5px; color:var(--muted)}
+.zinfo ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px; font-size:14.5px}
+.zinfo li b{font-weight:600}
+
+/* model */
+.model{display:grid; grid-template-columns:minmax(0,1fr) 290px; gap:20px}
+@media (max-width:880px){ .model{grid-template-columns:minmax(0,1fr)} }
+.controls{display:flex; flex-direction:column; gap:14px}
+.scen{display:flex; flex-wrap:wrap; gap:6px}
+.readout{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px}
+@media (max-width:700px){ .readout{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.ro{border:1px solid var(--line); border-radius:9px; padding:8px 10px; background:var(--surface-2); display:flex; flex-direction:column; gap:1px; min-width:0}
+.ro .k{font-size:12px; color:var(--muted)}
+.ro .v{font-family:var(--f-mono); font-size:15px; font-variant-numeric:tabular-nums}
+.key{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:8px 16px; border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:var(--surface-2)}
+.key h3{grid-column:1/-1; font-size:15px}
+.key div{display:flex; align-items:center; gap:10px; font-size:13.5px; min-width:0}
+.key svg{width:34px; height:20px; flex:none}
+.scen-txt{font-size:14.5px; min-height:3em}
+
+/* fick calc */
+.calc{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px}
+@media (max-width:760px){ .calc{grid-template-columns:minmax(0,1fr)} }
+.field{display:flex; flex-direction:column; gap:5px; border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--surface-2)}
+.field label{font-size:13.5px; font-weight:500}
+.field input[type=number]{font-family:var(--f-mono); font-size:16px; padding:6px 8px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); width:100%}
+.field .hint{font-size:12.5px}
+.result{display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:16px; align-items:center; border:1px solid var(--line); border-radius:10px; padding:14px; background:var(--surface-2)}
+@media (max-width:640px){ .result{grid-template-columns:minmax(0,1fr)} }
+.formula{font-family:var(--f-mono); font-size:13.5px; line-height:1.7}
+.big{font-family:var(--f-display); font-size:40px; font-weight:700; color:var(--accent); font-variant-numeric:tabular-nums; line-height:1}
+.bar{height:10px; border-radius:999px; background:var(--line); overflow:hidden; margin-top:8px}
+.bar i{display:block; height:100%; background:var(--accent); border-radius:999px; transition:width .3s}
+
+/* questions */
+.q{border:1px solid var(--line); border-radius:10px; padding:14px 16px; background:var(--surface-2); display:flex; flex-direction:column; gap:10px}
+.q-top{display:flex; justify-content:space-between; gap:12px; align-items:baseline}
+.q-top p{font-weight:500}
+.marks{font-family:var(--f-mono); font-size:12.5px; color:var(--muted); flex:none}
+.src{font-family:var(--f-mono); font-size:12px; color:var(--muted)}
+.stem{font-size:14.5px; color:var(--muted); display:flex; flex-direction:column; gap:6px}
+details summary{cursor:pointer; font-size:14px; color:var(--accent); font-weight:500}
+details ul{margin:8px 0 0; padding-left:20px; display:flex; flex-direction:column; gap:4px; font-size:14.5px}
+.levels-tbl{font-size:14px; margin-top:8px}
+.qs{display:flex; flex-direction:column; gap:12px}
+.egg{max-width:440px}
+footer{font-size:13px; color:var(--muted); display:flex; flex-direction:column; gap:6px}
+@media (prefers-reduced-motion: reduce){ #zoomSvg{transition:none} }
+</style>
+</head>
+<body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">IAL Biology · Unit 1 · Topic 2</span>
+    <h1>Gas Exchange in the Lungs</h1>
+    <p class="lede">Zoom from the lungs down to the two cells that separate air from blood, then see how surface area, distance and the concentration gradient control the rate of gas exchange.</p>
+    <div class="spec"><span class="chip">Spec 2.1(i) properties of gas exchange surfaces</span><span class="chip">2.1(ii) Fick’s law</span><span class="chip">2.1(iii) the mammalian lung</span></div>
+  </header>
+
+  <!-- 1 ZOOM -->
+  <section class="station" aria-labelledby="s1">
+    <div class="station-head"><span class="num">1</span><div>
+      <h2 id="s1">From lungs to the gas exchange surface</h2>
+      <p>Zoom in one level at a time. At each level, look for how the structure gives a large surface area, a short diffusion distance or a steep concentration gradient.</p>
+    </div></div>
+    <div class="levels" role="group" aria-label="Zoom level">
+      <button class="lv" type="button" data-l="0" aria-pressed="true">1 Lungs and airways</button>
+      <button class="lv" type="button" data-l="1" aria-pressed="false">2 Alveoli and capillaries</button>
+      <button class="lv" type="button" data-l="2" aria-pressed="false">3 One alveolus</button>
+      <button class="lv" type="button" data-l="3" aria-pressed="false">4 The barrier</button>
+    </div>
+    <div class="zoom">
+      <div class="box"><svg id="zoomSvg" viewBox="0 0 640 400" role="img" aria-label="Diagram at the selected zoom level"></svg></div>
+      <div class="zinfo">
+        <span class="scale" id="zScale"></span>
+        <h3 id="zTitle"></h3>
+        <ul id="zList"></ul>
+        <div class="row"><button id="zPrev" type="button">Zoom out</button><button id="zNext" class="primary" type="button">Zoom in</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 MODEL -->
+  <section class="station" aria-labelledby="s2">
+    <div class="station-head"><span class="num">2</span><div>
+      <h2 id="s2">Inside an alveolar sac</h2>
+      <p>Each airway ends in a cluster of alveoli, separated by thin walls. Oxygen diffuses from the air into the blood, and carbon dioxide diffuses out. Ventilation and blood flow keep the concentration gradients steep. Try the scenarios, or change the sliders yourself.</p>
+    </div></div>
+    <div class="scen" role="group" aria-label="Scenarios">
+      <button class="sc" type="button" data-s="healthy" aria-pressed="true">Healthy at rest</button>
+      <button class="sc" type="button" data-s="exercise" aria-pressed="false">Exercise</button>
+      <button class="sc" type="button" data-s="emphysema" aria-pressed="false">Emphysema</button>
+      <button class="sc" type="button" data-s="fibrosis" aria-pressed="false">Pulmonary fibrosis</button>
+      <button class="sc" type="button" data-s="cf" aria-pressed="false">Cystic fibrosis mucus</button>
+    </div>
+    <div class="model">
+      <div class="box"><canvas id="alv" aria-label="Animation of oxygen and carbon dioxide diffusing between alveolar air and blood in a capillary"></canvas></div>
+      <div class="controls">
+        <div class="ctl"><label for="kVent">Ventilation <output id="oVent"></output></label><input id="kVent" type="range" min="0" max="10" step="1" value="5"></div>
+        <div class="ctl"><label for="kFlow">Blood flow <output id="oFlow"></output></label><input id="kFlow" type="range" min="0" max="10" step="1" value="5"></div>
+        <div class="ctl"><label for="kSA">Surface area (folding of the alveoli) <output id="oSA"></output></label><input id="kSA" type="range" min="3" max="7" step="1" value="7"></div>
+        <div class="ctl"><label for="kD">Diffusion distance <output id="oD"></output></label><input id="kD" type="range" min="1" max="4" step="1" value="1"></div>
+        <div class="row"><button id="aPlay" type="button">Pause</button><button id="aReset" type="button">Restart</button></div>
+        <label class="ctl" style="flex-direction:row; align-items:center; gap:8px; font-size:14px" for="aLab"><input id="aLab" type="checkbox" checked> Show labels</label>
+      </div>
+    </div>
+    <div class="key" aria-label="Key to the alveolus animation">
+      <h3>Key</h3>
+      <div><svg viewBox="0 0 34 20"><circle cx="13" cy="10" r="4" style="fill:var(--o2)"/><circle cx="20" cy="10" r="4" style="fill:var(--o2)"/></svg>Oxygen molecule (O₂)</div>
+      <div><svg viewBox="0 0 34 20"><circle cx="10" cy="10" r="3.4" style="fill:var(--co2)"/><circle cx="17" cy="10" r="4" style="fill:var(--co2)"/><circle cx="24" cy="10" r="3.4" style="fill:var(--co2)"/></svg>Carbon dioxide molecule (CO₂)</div>
+      <div><svg viewBox="0 0 34 20"><rect x="2" y="2" width="30" height="16" rx="8" style="fill:var(--aq); stroke:var(--line)"/></svg>Air space inside the alveolus</div>
+      <div><svg viewBox="0 0 34 20"><rect x="1" y="6" width="32" height="8" rx="3" style="fill:var(--wall)"/><ellipse cx="17" cy="10" rx="7" ry="3" style="fill:var(--nuc)"/></svg>Alveolar wall: flattened cells (dark = nucleus)</div>
+      <div><svg viewBox="0 0 34 20"><path d="M3 18 Q9 2 17 10 Q25 2 31 18" fill="none" stroke-width="3" style="stroke:var(--wall)"/><line x1="17" y1="10" x2="17" y2="19" stroke-width="3" style="stroke:var(--wall)"/></svg>Wall between two alveoli (lost in emphysema)</div>
+      <div><svg viewBox="0 0 34 20"><defs><linearGradient id="kg" x1="0" x2="1"><stop offset="0" style="stop-color:var(--vein)"/><stop offset="1" style="stop-color:var(--art)"/></linearGradient></defs><rect x="1" y="4" width="32" height="12" rx="6" fill="url(#kg)" opacity=".6"/></svg>Capillary: blue = low O₂, red = high O₂</div>
+      <div><svg viewBox="0 0 34 20"><ellipse cx="17" cy="10" rx="10" ry="6" style="fill:var(--art)"/><ellipse cx="17" cy="10" rx="4" ry="2" style="fill:var(--surface)" opacity=".35"/></svg>Red blood cell</div>
+      <div><svg viewBox="0 0 34 20"><line x1="4" y1="10" x2="26" y2="10" style="stroke:var(--ink)" stroke-width="2.5"/><path d="M26 5 L33 10 L26 15 Z" style="fill:var(--ink)"/></svg>Direction of diffusion</div>
+      <div><svg viewBox="0 0 34 20"><rect x="1" y="6" width="32" height="8" rx="3" style="fill:var(--mucus)"/></svg>Mucus (cystic fibrosis only)</div>
+    </div>
+    <div class="readout">
+      <div class="ro"><span class="k">O₂ in alveolar air</span><span class="v" id="rAirO2">–</span></div>
+      <div class="ro"><span class="k">O₂ into blood</span><span class="v" id="rO2">–</span></div>
+      <div class="ro"><span class="k">CO₂ out of blood</span><span class="v" id="rCO2">–</span></div>
+      <div class="ro"><span class="k">O₂ uptake vs healthy</span><span class="v" id="rRel">–</span></div>
+    </div>
+    <p class="scen-txt" id="scenTxt"></p>
+    <p class="hint">Rates are in arbitrary units from the model, not real measurements. Give each change a few seconds to settle. The “vs healthy” figure compares with the healthy scenario measured in the same way.</p>
+  </section>
+
+  <!-- 3 FICK -->
+  <section class="station" aria-labelledby="s3">
+    <div class="station-head"><span class="num">3</span><div>
+      <h2 id="s3">Fick’s law with real numbers</h2>
+      <p>Rate of diffusion ∝ surface area × difference in concentration ÷ thickness of the surface. The starting values are typical for healthy human lungs at rest.</p>
+    </div></div>
+    <div class="calc">
+      <div class="field"><label for="fSA">Surface area / m²</label><input id="fSA" type="number" min="1" max="200" step="1" value="70"><span class="hint">Healthy adult lungs: roughly 50–100 m², from hundreds of millions of alveoli.</span></div>
+      <div class="field"><label for="fDP">Difference in partial pressure of O₂ / kPa</label><input id="fDP" type="number" min="0" max="20" step="0.1" value="8.0"><span class="hint">Alveolar air about 13.3 kPa; blood arriving in the capillaries about 5.3 kPa.</span></div>
+      <div class="field"><label for="fT">Thickness of barrier / µm</label><input id="fT" type="number" min="0.1" max="20" step="0.1" value="1.0"><span class="hint">Alveolar wall plus capillary wall: typically less than 1 µm.</span></div>
+    </div>
+    <div class="row">
+      <span class="hint">Try:</span>
+      <button type="button" class="fp" data-v="70,8,1">Healthy</button>
+      <button type="button" class="fp" data-v="35,8,1">Emphysema: half the surface area</button>
+      <button type="button" class="fp" data-v="70,8,3">Fibrosis: wall 3 times thicker</button>
+      <button type="button" class="fp" data-v="70,11.3,1">Exercise: blood arrives with less O₂</button>
+      <button type="button" class="fp" data-v="35,4,0.5">Halve all three</button>
+    </div>
+    <div class="result">
+      <div class="formula" id="fForm"></div>
+      <div><div class="big" id="fBig">100%</div><span class="hint">of the healthy rate</span><div class="bar"><i id="fBar"></i></div></div>
+    </div>
+    <p class="callout">Exam tip: Fick’s law gives a rate that is <em>proportional to</em> these factors, so compare values as ratios. Halving surface area halves the rate; halving the thickness doubles it.</p>
+  </section>
+
+  <footer>
+    <p>Diagrams are schematic and not to scale. Values in the model and calculator are illustrative; real lung values vary between people and sources.</p>
+    
+  </footer>
+</div>
+
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const rnd = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fixSvg = s => s.replace(/<(\w+)([^>]*?)(\/?)>/g, (m, tag, attrs, close) => {
+  let st = '';
+  attrs = attrs.replace(/\s(stroke|fill|stop-color)="(var\([^)]*\))"/g, (x, p, v) => { st += p + ':' + v + ';'; return ''; });
+  return '<' + tag + attrs + (st ? ' style="' + st + '"' : '') + close + '>';
+});
+const T = (x, y, txt, o = {}) => '<text x="' + x + '" y="' + y + '" font-family="IBM Plex Sans, sans-serif" font-size="' + (o.size || 13) + '" text-anchor="' + (o.a || 'start') + '" font-weight="' + (o.w || 400) + '" fill="var(' + (o.c || '--ink') + ')">' + txt + '</text>';
+const arrowDefs = '<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker>' +
+  '<marker id="ahO" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--o2)"/></marker>' +
+  '<marker id="ahC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--co2)"/></marker>' +
+  '<linearGradient id="capG" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="var(--vein)"/><stop offset="1" stop-color="var(--art)"/></linearGradient></defs>';
+const lead = (x1, y1, x2, y2) => '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="var(--muted)" stroke-width="1"/>';
+
+/* ================= 1. ZOOM ================= */
+function seeded(seed){ let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+function lungs(){
+  let s = arrowDefs;
+  s += '<path d="M302 60 C220 60 120 100 104 210 C90 310 130 380 205 385 C262 390 296 360 302 310 Z" fill="var(--lung)"/>';
+  s += '<path d="M338 60 C420 60 520 100 536 210 C550 310 510 380 435 385 C378 390 344 360 338 310 Z" fill="var(--lung)"/>';
+  const R = seeded(7);
+  let tree = '', leaves = '';
+  function br(x, y, ang, len, w, d){
+    const x2 = x + Math.cos(ang) * len, y2 = y + Math.sin(ang) * len;
+    tree += '<line x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="var(--airway)" stroke-width="' + w.toFixed(1) + '" stroke-linecap="round"/>';
+    if (d === 0){ leaves += '<circle cx="' + x2.toFixed(1) + '" cy="' + y2.toFixed(1) + '" r="5" fill="var(--alv)" stroke="var(--o2)" stroke-width="0.8"/>'; return; }
+    const spread = 0.36 + R() * 0.2;
+    br(x2, y2, ang - spread, len * (0.66 + R() * 0.08), w * 0.68, d - 1);
+    br(x2, y2, ang + spread, len * (0.66 + R() * 0.08), w * 0.68, d - 1);
+  }
+  tree += '<line x1="320" y1="20" x2="320" y2="130" stroke="var(--airway)" stroke-width="22" stroke-linecap="round"/>';
+  for (let y = 30; y < 125; y += 12) tree += '<path d="M310 ' + y + ' Q320 ' + (y - 4) + ' 330 ' + y + '" fill="none" stroke="var(--surface)" stroke-width="2.5" opacity=".7"/>';
+  br(320, 130, Math.PI * 0.78, 62, 15, 5);
+  br(320, 130, Math.PI * 0.22, 62, 15, 5);
+  s += tree + leaves;
+  s += T(360, 40, 'Trachea · rings of cartilage keep it open', { size: 12.5 });
+  s += lead(358, 36, 334, 40);
+  s += T(20, 40, 'Bronchus', { size: 12.5 }) + lead(70, 44, 280, 150);
+  s += T(14, 236, 'Bronchioles', { size: 12.5 }) + lead(88, 232, 170, 236);
+  s += T(560, 330, 'Alveoli', { size: 12.5 }) + T(560, 346, 'at the ends', { size: 12.5 }) + lead(566, 318, 506, 240);
+  return s;
+}
+function cluster(){
+  let s = arrowDefs;
+  s += '<path d="M300 0 L300 90" stroke="var(--airway)" stroke-width="34" stroke-linecap="round"/>';
+  const pts = [[300, 130], [250, 160], [350, 160], [215, 210], [285, 205], [355, 210], [420, 205], [250, 262], [320, 262], [390, 262], [300, 315], [370, 315], [230, 310]];
+  pts.forEach(([x, y]) => s += '<circle cx="' + x + '" cy="' + y + '" r="38" fill="var(--alv)" stroke="var(--wall)" stroke-width="3"/>');
+  // capillary mesh
+  const caps = ['M120 150 C200 120 240 240 300 230 C360 220 420 140 520 170', 'M120 240 C190 220 230 300 300 290 C370 280 410 230 520 250', 'M140 330 C200 300 260 350 320 340 C380 330 430 300 520 320', 'M180 120 C210 200 200 300 230 360', 'M440 130 C410 200 430 300 400 360'];
+  caps.forEach(d => s += '<path d="' + d + '" fill="none" stroke="url(#capG)" stroke-width="5" stroke-linecap="round" opacity=".9"/>');
+  s += T(330, 30, 'Terminal bronchiole', { size: 12.5 });
+  s += T(470, 90, 'Alveoli', { size: 12.5 }) + lead(468, 94, 440, 190);
+  s += T(20, 120, 'Capillary network', { size: 12.5 }) + lead(70, 126, 124, 150);
+  s += T(20, 375, 'Blood arrives low in O₂', { size: 12, c: '--vein' });
+  s += T(620, 375, 'leaves rich in O₂', { size: 12, c: '--art', a: 'end' });
+  return s;
+}
+function alveolus(){
+  let s = arrowDefs;
+  s += '<circle cx="320" cy="170" r="140" fill="var(--aq)" stroke="var(--wall)" stroke-width="8"/>';
+  s += '<path d="M120 300 C220 330 420 330 520 300 L520 360 C420 390 220 390 120 360 Z" fill="var(--surface)" stroke="url(#capG)" stroke-width="4"/>';
+  [[170, 333], [250, 343], [330, 345], [410, 340], [480, 330]].forEach(([x, y], i) => s += '<ellipse cx="' + x + '" cy="' + y + '" rx="20" ry="10" fill="' + (i < 2 ? 'var(--vein)' : 'var(--art)') + '"/>');
+  s += '<line x1="300" y1="210" x2="300" y2="318" stroke="var(--o2)" stroke-width="3" marker-end="url(#ahO)"/>';
+  s += '<line x1="350" y1="318" x2="350" y2="210" stroke="var(--co2)" stroke-width="3" marker-end="url(#ahC)"/>';
+  s += T(292, 200, 'O₂', { a: 'end', c: '--o2', w: 600 }) + T(358, 200, 'CO₂', { c: '--co2', w: 600 });
+  s += T(320, 110, 'Air in the alveolus', { a: 'middle', size: 13 });
+  s += T(320, 128, 'kept high in O₂ by ventilation', { a: 'middle', size: 11.5, c: '--muted' });
+  s += T(130, 395, 'Capillary · red blood cells pick up O₂ and carry it away', { size: 12.5 });
+  s += T(470, 40, 'Alveolar wall', { size: 12.5 }) + lead(470, 46, 432, 82);
+  return s;
+}
+function barrier(){
+  let s = arrowDefs;
+  s += '<rect x="0" y="0" width="640" height="120" fill="var(--aq)"/>';
+  s += '<path d="M0 120 L640 120 L640 150 C520 150 480 160 400 160 C320 160 300 150 0 150 Z" fill="var(--wall)"/>';
+  s += '<ellipse cx="420" cy="150" rx="40" ry="11" fill="var(--nuc)"/>';
+  s += '<path d="M0 160 L640 160 L640 190 C540 190 260 200 200 190 L0 190 Z" fill="var(--wall)" opacity=".75"/>';
+  s += '<ellipse cx="180" cy="186" rx="38" ry="10" fill="var(--nuc)"/>';
+  s += '<rect x="0" y="198" width="640" height="202" fill="var(--surface)"/>';
+  s += '<ellipse cx="330" cy="275" rx="95" ry="40" fill="var(--art)"/><ellipse cx="330" cy="275" rx="50" ry="16" fill="var(--surface)" opacity=".25"/>';
+  s += '<line x1="560" y1="120" x2="560" y2="198" stroke="var(--ink)" stroke-width="1.5" marker-start="url(#ah)" marker-end="url(#ah)"/>';
+  s += T(570, 164, 'under 1 µm', { size: 12.5, w: 600 });
+  s += '<line x1="250" y1="60" x2="250" y2="240" stroke="var(--o2)" stroke-width="3" marker-end="url(#ahO)"/>';
+  s += '<line x1="290" y1="240" x2="290" y2="60" stroke="var(--co2)" stroke-width="3" marker-end="url(#ahC)"/>';
+  s += T(242, 52, 'O₂', { a: 'end', c: '--o2', w: 600 }) + T(298, 52, 'CO₂', { c: '--co2', w: 600 });
+  s += T(14, 28, 'Air in alveolus');
+  s += T(14, 112, 'Alveolar epithelium: one flattened cell', { size: 12.5 });
+  s += T(14, 218, 'Capillary endothelium: one flattened cell', { size: 12.5 });
+  s += T(14, 380, 'Blood plasma', { size: 12.5, c: '--muted' });
+  s += T(330, 340, 'Red blood cell squeezed against the wall', { size: 12.5, a: 'middle' });
+  return s;
+}
+const LEVELS = [
+  { title:'Lungs and airways', scale:'Scale: whole organ, about 25 cm tall', draw: lungs, pts:[
+    '<b>Large surface area:</b> the trachea branches into bronchi, then thousands of bronchioles, ending in hundreds of millions of alveoli.',
+    '<b>Steep gradient:</b> breathing (ventilation) replaces the air in the lungs, keeping O₂ high and CO₂ low in the alveoli.',
+    'Cartilage rings keep the trachea and bronchi open, so air flows freely.' ] },
+  { title:'Alveoli and capillaries', scale:'Scale: a cluster of alveoli, under 1 mm across', draw: cluster, pts:[
+    '<b>Large surface area:</b> each alveolus is a tiny sac, so together they give a total surface of roughly 50–100 m².',
+    '<b>Steep gradient:</b> a dense capillary network covers every alveolus. Blood flow carries O₂ away as soon as it arrives.',
+    'Blood arriving is low in O₂ and high in CO₂, so both gases have a steep gradient.' ] },
+  { title:'One alveolus', scale:'Scale: one alveolus, about 0.2 mm across', draw: alveolus, pts:[
+    '<b>Short distance:</b> the alveolus and capillary are pressed together, so gases only cross two thin cells.',
+    'O₂ diffuses from the alveolar air into the blood. CO₂ diffuses from the blood into the air, down its own gradient.',
+    'Capillaries are so narrow that red blood cells pass in single file, close to the wall.' ] },
+  { title:'The barrier', scale:'Scale: the wall, under 1 µm thick', draw: barrier, pts:[
+    '<b>Short distance:</b> the alveolar wall and the capillary wall are each one layer of flattened (squamous) cells.',
+    'The total diffusion distance is typically less than 1 µm, much thinner than a single red blood cell.',
+    '<b>Fick’s law:</b> rate ∝ surface area × concentration difference ÷ thickness. The lungs maximise the top and minimise the bottom.' ] }
+];
+let zl = 0;
+function zoomTo(l){
+  zl = clamp(l, 0, 3);
+  const svg = $('zoomSvg');
+  const apply = () => {
+    const L = LEVELS[zl];
+    svg.innerHTML = fixSvg(L.draw());
+    $('zTitle').textContent = L.title; $('zScale').textContent = L.scale;
+    $('zList').innerHTML = L.pts.map(p => '<li>' + p + '</li>').join('');
+    document.querySelectorAll('.lv').forEach(b => b.setAttribute('aria-pressed', +b.dataset.l === zl));
+    $('zPrev').disabled = zl === 0; $('zNext').disabled = zl === 3;
+    svg.classList.remove('fade');
+  };
+  if (reduce || !svg.innerHTML){ apply(); return; }
+  svg.classList.add('fade'); setTimeout(apply, 300);
+}
+document.querySelectorAll('.lv').forEach(b => b.addEventListener('click', () => zoomTo(+b.dataset.l)));
+$('zPrev').addEventListener('click', () => zoomTo(zl - 1));
+$('zNext').addEventListener('click', () => zoomTo(zl + 1));
+zoomTo(0);
+
+/* ================= 2. ALVEOLUS MODEL ================= */
+const cv = $('alv'), ctx = cv.getContext('2d');
+const W = 900, H = 410, CX = 450, CY = 215, CAPW = 28;
+let RA = 118, emph = 0;
+let sc = 1, run = !reduce, mols = [], ev = [];
+const kVent = $('kVent'), kFlow = $('kFlow'), kSA = $('kSA'), kD = $('kD');
+let venO2 = 1, mucus = 0, baseline = null, measuring = null, stepN = 0;
+const SCEN = {
+  healthy:  { v:5, f:5, sa:7, d:1, m:0, txt:'Healthy lungs at rest. Thin walls divide the end of each airway into many small alveoli, giving a large, folded surface for gas exchange. Ventilation keeps alveolar O₂ high and blood flow carries O₂ away, so the gradient stays steep.' },
+  exercise: { v:9, f:9, sa:7, d:1, m:0, ven:0.3, txt:'During exercise, muscles take more O₂ from the blood, so blood returns to the lungs with less O₂. Faster, deeper breathing and faster blood flow keep the gradient steep, so the rate of gas exchange rises.' },
+  emphysema:{ v:5, f:5, sa:3, d:1, m:0, e:1, txt:'In emphysema, the walls between neighbouring alveoli break down. The many small alveoli merge into one larger air space with a smooth inner surface. With far less wall, and the capillaries in those walls lost too, the surface area for gas exchange is much smaller and less O₂ diffuses into the blood.' },
+  fibrosis: { v:5, f:5, sa:7, d:3, m:0, txt:'In pulmonary fibrosis, scar tissue thickens the alveolar walls. The diffusion distance is longer, so the rate of diffusion falls.' },
+  cf:       { v:2, f:5, sa:7, d:2, m:1, txt:'In cystic fibrosis, thick, sticky mucus blocks airways, so less fresh air reaches the alveoli and the gradient falls. Mucus over the surface also increases the diffusion distance.' }
+};
+function size(){
+  const w = cv.parentElement.clientWidth, dpr = window.devicePixelRatio || 1;
+  sc = w / W; cv.style.height = H * sc + 'px';
+  cv.width = Math.round(w * dpr); cv.height = Math.round(H * sc * dpr);
+  ctx.setTransform(dpr * sc, 0, 0, dpr * sc, 0, 0);
+}
+/* compartment model: drives the rates; particles show it */
+const M = { A: 100, B: 40, Ac: 5, Bc: 46, U: 0, Uc: 0 };
+function prm(){ const ven = venO2 < 1; return { vent: +kVent.value, flow: +kFlow.value, K: 0.9 * (+kSA.value / 8) / (+kD.value + (mucus ? 1 : 0)), Bv: ven ? 15 : 40, Bcv: ven ? 60 : 46 }; }
+function mStep(S, p){
+  S.U = p.K * (S.A - S.B) * 0.05; S.Uc = p.K * (S.Bc - S.Ac) * 0.05;
+  S.A += 0.004 * p.vent * (100 - S.A) - 0.12 * S.U;
+  S.B += 0.006 * p.flow * (p.Bv - S.B) + 0.05 * S.U;
+  S.Ac += -0.004 * p.vent * S.Ac + 0.12 * S.Uc;
+  S.Bc += 0.006 * p.flow * (p.Bcv - S.Bc) - 0.05 * S.Uc;
+}
+let trans = [], rbc = [];
+const wallT = () => 8 + 6 * (+kD.value - 1);
+// surface area slider sets how folded the sac is: number of walls between alveoli, and how deep the pockets are
+let NL = 8, LOBE = 2 * Math.PI / 8, PH = -Math.PI / 2 + Math.PI / 8, FA = 1;
+function syncFold(){
+  const L = +kSA.value;
+  FA = clamp((L - 3) / 4, 0, 1);
+  NL = [0, 0, 0, 0, 4, 6, 7, 8][L];
+  if (NL){ LOBE = 2 * Math.PI / NL; PH = -Math.PI / 2 + Math.PI / NL; }
+  RA = 132 - 14 * FA;
+}
+const cusps = () => NL ? Array.from({ length: NL }, (_, k) => PH + k * LOBE) : [];
+function Rb(t){                       // radius of the inner surface of the wall
+  if (!NL) return RA;
+  const u = (((t - PH) % LOBE) + LOBE) % LOBE / LOBE;
+  return RA - 16 * FA + 20 * FA * Math.sin(Math.PI * u);
+}
+const rS = () => RA - 16 * FA - 42 * FA;             // how far each dividing wall reaches inwards
+const angDiff = (a, b) => { let d = (a - b) % 6.283; if (d > 3.1416) d -= 6.283; if (d < -3.1416) d += 6.283; return Math.abs(d); };
+const nearCusp = (t, w) => cusps().some(c => angDiff(t, c) < w);
+function inSeptum(x, y, pad){
+  const r = Math.hypot(x - CX, y - CY), t = Math.atan2(y - CY, x - CX), hw = wallT() / 2 + pad;
+  return cusps().some(c => { if (r < rS() - hw || r > Rb(c) + 2) return false; return Math.abs(r * Math.sin(t - c)) < hw && Math.cos(t - c) > 0; });
+}
+let geoKey = '', geoC = null;
+const geo = () => {
+  const f = 7 / 8, wt = wallT(), key = [kSA.value, wt].join();
+  if (key === geoKey) return geoC;
+  const t0 = Math.PI / 2 + f * Math.PI, t1 = Math.PI / 2 - f * Math.PI, N = 240;
+  const pts = [], th = [];
+  for (let i = 0; i < N; i++){ const t = t0 - (t0 - t1) * i / (N - 1), r = Rb(t) + wt + CAPW / 2; pts.push([CX + r * Math.cos(t), CY + r * Math.sin(t)]); th.push(t); }
+  pts.unshift([0, pts[0][1]]); th.unshift(null);
+  pts.push([W, pts[pts.length - 1][1]]); th.push(null);
+  const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  geoKey = key;
+  geoC = { f, t0, t1, pts, th, cum, len: cum[cum.length - 1], a0: cum[1], a1: cum[cum.length - 2], p0: pts[1], p1: pts[pts.length - 2] };
+  return geoC;
+};
+function seg(G, sv){ let lo = 0, hi = G.cum.length - 2; sv = clamp(sv, 0, G.len); while (lo < hi){ const m = (lo + hi + 1) >> 1; if (G.cum[m] <= sv) lo = m; else hi = m - 1; } return lo; }
+function along(G, sv, off){
+  const i = seg(G, sv), a = G.pts[i], b = G.pts[i + 1], L = Math.max(1e-6, G.cum[i + 1] - G.cum[i]), u = (clamp(sv, 0, G.len) - G.cum[i]) / L;
+  const dx = (b[0] - a[0]) / L, dy = (b[1] - a[1]) / L;
+  return [a[0] + (b[0] - a[0]) * u - dy * off, a[1] + (b[1] - a[1]) * u + dx * off];
+}
+const sToTheta = (G, sv) => { const i = seg(G, sv); return G.th[i] ?? G.th[i + 1]; };
+const thetaToS = (G, t) => { const i = clamp(Math.round((G.t0 - t) / (G.t0 - G.t1) * 239) + 1, 1, G.pts.length - 2); return G.cum[i]; };
+const Ri = t => Rb(t) - (mucus ? 8 : 0) - 5;
+function inAir(x, y){ const r = Math.hypot(x - CX, y - CY), t = Math.atan2(y - CY, x - CX); return r < Ri(t) && !inSeptum(x, y, 3); }
+function airPt(){ for (let i = 0; i < 200; i++){ const a = rnd(0, 6.283), r = Math.sqrt(Math.random()) * (RA + 4), x = CX + r * Math.cos(a), y = CY + r * Math.sin(a); if (inAir(x, y)) return [x, y]; } return [CX, CY]; }
+function reset(){
+  const p = prm(); Object.assign(M, { A: 100, B: p.Bv, Ac: 5, Bc: p.Bcv, U: 0, Uc: 0 });
+  mols = []; trans = []; rbc = [];
+  { const G0 = geo(); for (let sv = 0; sv < G0.len; sv += 34) rbc.push(sv + rnd(-4, 4)); }
+  for (let i = 0; i < 64; i++){ const [x, y] = airPt(); mols.push({ k: 'o2', x, y, z: 'air' }); }
+  for (let i = 0; i < 5; i++){ const [x, y] = airPt(); mols.push({ k: 'co2', x, y, z: 'air' }); }
+  const G = geo();
+  for (let i = 0; i < 26; i++) mols.push({ k: 'co2', s: rnd(0, G.len), off: rnd(-9, 9), z: 'blood' });
+  for (let i = 0; i < 10; i++) mols.push({ k: 'o2', s: rnd(0, G.len * 0.4), off: rnd(-9, 9), z: 'blood' });
+}
+function outputs(){
+  const lv = v => ['none', 'very low', 'very low', 'low', 'low', 'normal', 'normal', 'high', 'high', 'very high', 'very high'][v];
+  $('oVent').textContent = lv(+kVent.value); $('oFlow').textContent = lv(+kFlow.value);
+  $('oSA').textContent = ['', '', '', 'smooth, very small', 'small', 'medium', 'large', 'very large'][+kSA.value];
+  $('oD').textContent = ['', 'thin', 'thicker', 'thick', 'very thick'][+kD.value];
+}
+function setScen(name){
+  const s = SCEN[name];
+  kVent.value = s.v; kFlow.value = s.f; kSA.value = s.sa; kD.value = s.d; mucus = s.m; venO2 = s.ven || 1; syncFold();
+  document.querySelectorAll('.sc').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === name));
+  $('scenTxt').textContent = s.txt; outputs(); reset();
+}
+document.querySelectorAll('.sc').forEach(b => b.addEventListener('click', () => setScen(b.dataset.s)));
+$('aLab').addEventListener('change', () => {});
+[kVent, kFlow, kSA, kD].forEach(el => el.addEventListener('input', () => {
+  document.querySelectorAll('.sc').forEach(b => b.setAttribute('aria-pressed', 'false'));
+  $('scenTxt').textContent = 'Your own settings. Compare the O₂ uptake with the healthy scenario.';
+  if (el === kSA) syncFold();
+  outputs();
+}));
+function step(){
+  const p = prm(), G = geo(), flow = p.flow * 0.5;
+  for (let i = 0; i < 8; i++) mStep(M, p);
+  const th = () => { for (let i = 0; i < 20; i++){ const t = rnd(G.t1 + 0.08, G.t0 - 0.08); if (!nearCusp(t, 0.14)) return t; } return Math.PI / 2; };
+  const Rc = t => Rb(t) + wallT() + CAPW / 2;
+  // gas crossing where the capillary touches the alveolus, at the rate the model gives
+  let a = M.U * 0.35; while (a > 0){ if (Math.random() < Math.min(1, a)){ const t = th(); trans.push({ k: 'o2', th: t, r: Ri(t) - 2, to: Rc(t), dir: 1 }); } a -= 1; }
+  let c = M.Uc * 0.35; while (c > 0){ if (Math.random() < Math.min(1, c)){
+      const cand = mols.filter(m => m.k === 'co2' && m.z === 'blood' && !m.dead && m.s > G.a0 + 8 && m.s < G.a1 - 8 && !nearCusp(sToTheta(G, m.s), 0.14));
+      if (cand.length){ const src = cand[Math.floor(Math.random() * cand.length)]; src.dead = true; const t = sToTheta(G, src.s); trans.push({ k: 'co2', th: t, r: Rc(t), to: Ri(t) - 6, dir: -1 }); }
+    } c -= 1; }
+  trans.forEach(t => {
+    t.r += t.dir * 1.3;
+    if (t.dir > 0 && t.r >= t.to){ t.done = true; mols.push({ k: 'o2', s: thetaToS(G, t.th), off: rnd(-6, 6), z: 'blood' }); }
+    if (t.dir < 0 && t.r <= t.to){ t.done = true; mols.push({ k: 'co2', x: CX + t.r * Math.cos(t.th), y: CY + t.r * Math.sin(t.th), z: 'air' }); }
+    t.x = CX + t.r * Math.cos(t.th); t.y = CY + t.r * Math.sin(t.th);
+  });
+  trans = trans.filter(t => !t.done);
+  // ventilation: fresh air comes down the airway, stale air leaves
+  const air = k => mols.filter(m => m.k === k && (m.z === 'air' || m.z === 'duct') && !m.dead);
+  const o2a = air('o2'), co2a = air('co2');
+  const tO2 = Math.round(M.A * 0.64), tCO2 = Math.round(M.Ac * 1.2);
+  if (o2a.length < tO2 && p.vent > 0 && Math.random() < 0.08 * p.vent) mols.push({ k: 'o2', x: CX + rnd(-14, 14), y: 4, z: 'duct' });
+  if (o2a.length > tO2 + 1){ const far = o2a.filter(m => m.z === 'air').reduce((m, q) => Math.hypot(q.x - CX, q.y - CY) > Math.hypot(m.x - CX, m.y - CY) ? q : m, o2a[0]); far.dead = true; }
+  if (co2a.length > tCO2 + 1 && p.vent > 0 && Math.random() < 0.05 * p.vent){ const q = co2a.find(m => m.z === 'air'); if (q){ q.z = 'out'; } }
+  // blood arriving from the body
+  if (flow > 0){
+    if (Math.random() < flow * 0.012 * p.Bcv / 10) mols.push({ k: 'co2', s: 0, off: rnd(-9, 9), z: 'blood' });
+    if (Math.random() < flow * 0.005 * p.Bv / 10) mols.push({ k: 'o2', s: 0, off: rnd(-9, 9), z: 'blood' });
+  }
+  for (const m of mols){
+    if (m.dead) continue;
+    if (m.z === 'blood'){ m.s += flow + rnd(-0.3, 0.3); m.off = clamp(m.off + rnd(-0.8, 0.8), -10, 10); if (m.s > G.len) m.dead = true; continue; }
+    if (m.z === 'duct'){ m.y += 1.6; m.x += rnd(-1, 1); m.x = clamp(m.x, CX - 16, CX + 16); if (inAir(m.x, m.y + 6)) m.z = 'air'; continue; }
+    if (m.z === 'out'){ m.x += (CX - m.x) * 0.08; m.y -= 1.8; if (m.y < 0) m.dead = true; continue; }
+    let nx = m.x + rnd(-2.2, 2.2), ny = m.y + rnd(-2.2, 2.2);
+    if (!inAir(nx, ny)){ nx = m.x; ny = m.y; if (!inAir(nx, ny)){ const [x, y] = airPt(); nx = x; ny = y; } }
+    m.x = nx; m.y = ny;
+  }
+  rbc = rbc.map(v => v + flow).filter(v => v < G.len);
+  if (flow > 0 && (!rbc.length || Math.min(...rbc) > 34)) rbc.push(0);
+  const blood = mols.filter(m => m.z === 'blood' && !m.dead);
+  if (blood.length > 170) blood.slice(0, blood.length - 170).forEach(m => m.dead = true);
+  mols = mols.filter(m => !m.dead);
+}
+const hex = c => { c = c.replace('#', ''); if (c.length === 3) c = c.split('').map(x => x + x).join(''); return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16)); };
+const mix = (a, b, t) => 'rgb(' + a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',') + ')';
+function draw(){
+  const G = geo(), wt = wallT();
+  const C = { aq: css('--aq'), wall: css('--wall'), mucus: css('--mucus'), s2: css('--surface-2'), art: css('--art'), vein: css('--vein'), o2: css('--o2'), co2: css('--co2'), muted: css('--muted'), ink: css('--ink'), airway: css('--airway'), nuc: css('--nuc') };
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = C.s2; ctx.fillRect(0, 0, W, H);
+  const topR = Rb(-Math.PI / 2);
+  const ring = (rf) => { ctx.beginPath(); for (let i = 0; i <= 360; i++){ const t = i / 360 * 6.283, r = rf(t); i ? ctx.lineTo(CX + r * Math.cos(t), CY + r * Math.sin(t)) : ctx.moveTo(CX + r, CY); } ctx.closePath(); };
+  // airway
+  ctx.fillStyle = C.wall; ctx.fillRect(CX - 24 - wt / 2, 0, 48 + wt, CY - topR + 10);
+  // wall, then air space
+  ctx.fillStyle = C.wall; ring(t => Rb(t) + wt); ctx.fill();
+  ctx.fillStyle = C.aq; ring(Rb); ctx.fill();
+  ctx.fillRect(CX - 20, 0, 40, CY - topR + 14);
+  // walls between neighbouring alveoli (healthy only)
+  ctx.strokeStyle = C.wall; ctx.lineWidth = wt; ctx.lineCap = 'round';
+  cusps().forEach(c => { ctx.beginPath(); ctx.moveTo(CX + (Rb(c) + 2) * Math.cos(c), CY + (Rb(c) + 2) * Math.sin(c)); ctx.lineTo(CX + rS() * Math.cos(c), CY + rS() * Math.sin(c)); ctx.stroke(); });
+  ctx.lineCap = 'butt';
+  if (mucus){
+    ctx.strokeStyle = C.mucus; ctx.lineWidth = 8; ring(t => Rb(t) - 4); ctx.stroke();
+    ctx.lineWidth = wt + 8; ctx.globalAlpha = 0.9; ctx.lineCap = 'round';
+    cusps().forEach(c => { ctx.beginPath(); ctx.moveTo(CX + Rb(c) * Math.cos(c), CY + Rb(c) * Math.sin(c)); ctx.lineTo(CX + rS() * Math.cos(c), CY + rS() * Math.sin(c)); ctx.stroke(); });
+    ctx.lineCap = 'butt'; ctx.globalAlpha = 1;
+    ctx.strokeStyle = C.wall; ctx.lineWidth = wt; ctx.lineCap = 'round';
+    cusps().forEach(c => { ctx.beginPath(); ctx.moveTo(CX + (Rb(c) + 2) * Math.cos(c), CY + (Rb(c) + 2) * Math.sin(c)); ctx.lineTo(CX + rS() * Math.cos(c), CY + rS() * Math.sin(c)); ctx.stroke(); });
+    ctx.lineCap = 'butt';
+    ctx.fillStyle = C.mucus; ctx.fillRect(CX - 20, 0, 10, CY - topR + 8); ctx.fillRect(CX + 10, 0, 10, CY - topR + 8);
+  }
+  // nuclei of the flattened wall cells
+  ctx.fillStyle = C.nuc;
+  const lobeMid = k => PH + (k + 0.5) * LOBE;
+  (!NL ? [-0.25, 0.9, 2.2, 3.5] : [lobeMid(1), lobeMid(3), lobeMid(5), lobeMid(NL - 2)]).forEach(t => { const r = Rb(t) + wt / 2; ctx.beginPath(); ctx.ellipse(CX + r * Math.cos(t), CY + r * Math.sin(t), 9, Math.max(2.5, wt / 2 - 1.5), t + Math.PI / 2, 0, 6.283); ctx.fill(); });
+  cusps().filter((_, k) => FA > 0.5 && (k === 2 || k === NL - 2)).forEach(c => { const r = (Rb(c) + rS()) / 2; ctx.beginPath(); ctx.ellipse(CX + r * Math.cos(c), CY + r * Math.sin(c), 8, Math.max(2.2, wt / 2 - 1.5), c, 0, 6.283); ctx.fill(); });
+  // capillary, coloured from deoxygenated to oxygenated along its length
+  const cv0 = hex(C.vein), cv1 = hex(C.art);
+  ctx.lineWidth = CAPW; ctx.lineCap = 'butt';
+  const N = 120;
+  for (let i = 0; i < N; i++){
+    const s0 = G.len * i / N, s1 = G.len * (i + 1) / N;
+    const tcol = clamp((s0 - G.a0) / Math.max(1, G.a1 - G.a0), 0, 1);
+    ctx.strokeStyle = mix(cv0, cv1, tcol); ctx.globalAlpha = 0.35;
+    const a = along(G, s0, 0), b = along(G, (s0 + s1) / 2, 0), e = along(G, s1 + 1, 0);
+    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.quadraticCurveTo(b[0], b[1], e[0], e[1]); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  // red blood cells
+  rbc.forEach(v => {
+    const [x, y] = along(G, v, 0), [x2, y2] = along(G, v + 1, 0);
+    const tcol = clamp((v - G.a0) / Math.max(1, G.a1 - G.a0), 0, 1);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(Math.atan2(y2 - y, x2 - x));
+    ctx.fillStyle = mix(cv0, cv1, tcol); ctx.globalAlpha = 0.85;
+    ctx.beginPath(); ctx.ellipse(0, 0, 9, 6, 0, 0, 6.283); ctx.fill();
+    ctx.globalAlpha = 0.3; ctx.fillStyle = C.s2; ctx.beginPath(); ctx.ellipse(0, 0, 4, 2, 0, 0, 6.283); ctx.fill();
+    ctx.restore();
+  });
+  // molecules
+  const drawMol = (k, x, y) => {
+    ctx.fillStyle = k === 'o2' ? C.o2 : C.co2; ctx.beginPath();
+    if (k === 'o2'){ ctx.arc(x - 2.4, y, 3, 0, 6.283); ctx.arc(x + 2.4, y, 3, 0, 6.283); }
+    else { ctx.arc(x - 4.6, y, 2.6, 0, 6.283); ctx.arc(x, y, 3, 0, 6.283); ctx.arc(x + 4.6, y, 2.6, 0, 6.283); }
+    ctx.fill();
+  };
+  for (const m of mols){
+    if (m.z === 'blood'){ const [x, y] = along(G, m.s, m.off); drawMol(m.k, x, y); }
+    else drawMol(m.k, m.x, m.y);
+  }
+  trans.forEach(t => t.x !== undefined && drawMol(t.k, t.x, t.y));
+  // labels
+  const arrow = (x1, y1, x2, y2, col) => {
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    const a = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath(); ctx.moveTo(x2 + 9 * Math.cos(a), y2 + 9 * Math.sin(a)); ctx.lineTo(x2 + 7 * Math.cos(a + 2.2), y2 + 7 * Math.sin(a + 2.2)); ctx.lineTo(x2 + 7 * Math.cos(a - 2.2), y2 + 7 * Math.sin(a - 2.2)); ctx.closePath(); ctx.fill();
+  };
+  const P = (ang, r) => [CX + r * Math.cos(ang), CY + r * Math.sin(ang)];
+  // diffusion arrows, always where the capillary touches
+  const aO = 75 * Math.PI / 180, aC = 105 * Math.PI / 180;
+  const Rc = t => Rb(t) + wt + CAPW / 2;
+  let [x1, y1] = P(aO, Ri(aO) - 34), [x2, y2] = P(aO, Rc(aO) - 4); arrow(x1, y1, x2, y2, C.o2);
+  [x1, y1] = P(aC, Rc(aC) - 4); [x2, y2] = P(aC, Ri(aC) - 34); arrow(x1, y1, x2, y2, C.co2);
+  ctx.font = '600 13px "IBM Plex Sans", system-ui, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillStyle = C.o2; [x1, y1] = P(aO, Ri(aO) - 46); ctx.fillText('O₂', x1, y1);
+  ctx.fillStyle = C.co2; [x1, y1] = P(aC, Ri(aC) - 46); ctx.fillText('CO₂', x1, y1);
+  if (!$('aLab').checked) return;
+  const lab = (txt, tx, ty, px, py, align, sub) => {
+    ctx.font = '500 13px "IBM Plex Sans", system-ui, sans-serif'; ctx.textAlign = align;
+    const w = ctx.measureText(txt).width, bx = align === 'left' ? tx - 4 : align === 'right' ? tx - w - 4 : tx - w / 2 - 4;
+    ctx.globalAlpha = 0.85; ctx.fillStyle = C.s2; ctx.fillRect(bx, ty - 14, w + 8, sub ? 34 : 19); ctx.globalAlpha = 1;
+    ctx.fillStyle = C.ink; ctx.fillText(txt, tx, ty);
+    if (sub){ ctx.font = '400 11.5px "IBM Plex Sans", system-ui, sans-serif'; ctx.fillStyle = C.muted; ctx.fillText(sub, tx, ty + 15); }
+    if (px !== null){ ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(align === 'left' ? tx - 4 : tx + 4, ty - 4); ctx.lineTo(px, py); ctx.stroke(); ctx.beginPath(); ctx.arc(px, py, 2.5, 0, 6.283); ctx.fillStyle = C.ink; ctx.fill(); }
+  };
+  lab('Airway', CX + 70, 30, CX + 22, 34, 'left', 'fresh air in, stale air out');
+  lab('Air space', CX, CY - 10, null, null, 'center', 'high O₂, low CO₂');
+  let [wx, wy] = P(Math.PI, Rb(Math.PI) + wt / 2);
+  lab('Alveolar wall', 150, 150, wx, wy, 'right', 'one layer of flat cells');
+  const capAng = Math.PI / 2 + G.f * Math.PI * 0.75;
+  let [cx2, cy2] = P(capAng, Rc(capAng));
+  lab('Capillary', cx2 - 40, Math.min(cy2 + 44, H - 26), cx2, cy2, 'right', 'wall is one cell thick');
+  ctx.font = '500 12.5px "IBM Plex Sans", system-ui, sans-serif';
+  ctx.textAlign = 'left'; ctx.fillStyle = C.vein; ctx.fillText('→ blood from the body (low O₂)', 8, G.p0[1] - CAPW / 2 - 6);
+  ctx.textAlign = 'right'; ctx.fillStyle = C.art; ctx.fillText('blood to the heart (high O₂) →', W - 8, G.p1[1] - CAPW / 2 - 6);
+  if (NL){ const c = PH, r = (Rb(c) + rS()) / 2; lab('Walls between alveoli', 640, 104, CX + r * Math.cos(c), CY + r * Math.sin(c), 'left', FA > 0.7 ? 'many small pockets: large surface area' : 'fewer, shallower pockets: less surface area'); }
+  else { let [ex, ey] = P(-0.5, RA - 3); lab('No walls between alveoli', 610, 112, ex, ey, 'left', 'one large, smooth space: least surface area'); }
+  if (mucus){ let [mx, my] = P(0.35, Rb(0.35) - 4); lab('Mucus', 700, 300, mx, my, 'left', 'thick, sticky layer'); }
+  ctx.textAlign = 'left';
+}
+function readout(){
+  $('rAirO2').textContent = Math.round(M.A) + '% of fresh air';
+  $('rO2').textContent = (M.U * 10).toFixed(1) + ' a.u.';
+  $('rCO2').textContent = (M.Uc * 10).toFixed(1) + ' a.u.';
+  $('rRel').textContent = Math.round(M.U / baseline * 100) + ' %';
+}
+const playB = $('aPlay'); playB.textContent = run ? 'Pause' : 'Play';
+playB.addEventListener('click', () => { run = !run; playB.textContent = run ? 'Pause' : 'Play'; });
+$('aReset').addEventListener('click', reset);
+size(); window.addEventListener('resize', size);
+// healthy steady state, for the "vs healthy" comparison
+(function(){ const S = { A: 100, B: 40, Ac: 5, Bc: 46 }; const p = { vent: 5, flow: 5, K: 0.9 * 7 / 8, Bv: 40, Bcv: 46 }; for (let i = 0; i < 20000; i++) mStep(S, p); baseline = S.U; })();
+setScen('healthy');
+if (reduce){ const p = prm(); for (let i = 0; i < 3000; i++) mStep(M, p); }
+setInterval(readout, 400); readout();
+
+function loop(){ if (run) step(); draw(); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+/* ================= 3. FICK CALCULATOR ================= */
+const fSA = $('fSA'), fDP = $('fDP'), fT = $('fT');
+const H0 = 70 * 8 / 1;
+function fick(){
+  const sa = Math.max(0, +fSA.value || 0), dp = Math.max(0, +fDP.value || 0), t = Math.max(0.01, +fT.value || 0.01);
+  const val = sa * dp / t, pct = val / H0 * 100;
+  $('fForm').innerHTML = 'rate ∝ ' + sa + ' × ' + dp + ' ÷ ' + t + '<br>= ' + (+val.toFixed(1)) + ' (relative units)<br><span style="color:var(--muted)">healthy: 70 × 8.0 ÷ 1.0 = 560</span>';
+  $('fBig').textContent = Math.round(pct) + '%';
+  $('fBar').style.width = clamp(pct / 2, 0, 100) + '%';
+}
+[fSA, fDP, fT].forEach(el => el.addEventListener('input', fick));
+document.querySelectorAll('.fp').forEach(b => b.addEventListener('click', () => { const [a, d, t] = b.dataset.v.split(','); fSA.value = a; fDP.value = d; fT.value = t; fick(); }));
+fick();
+
+})();
+</script>
+</body>
+</html>

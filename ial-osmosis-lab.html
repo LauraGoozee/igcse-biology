@@ -1,0 +1,611 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<title>Osmosis Virtual Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single lab bench column — four sequential stations (model → experiment → analysis → exam practice), each a bench panel */
+:root{
+  --bg:#eef3f4; --surface:#ffffff; --surface-2:#f6f9fa; --ink:#132630; --muted:#56707b; --line:#d3dee2;
+  --water:#13789a; --water-soft:#d3ecf3; --sucrose:#b8700c; --sucrose-soft:#f5e2c2;
+  --potato:#e9d9a4; --potato-edge:#b9a464; --good:#2c7a4d; --good-soft:#dcf0e3; --bad:#b3261e; --bad-soft:#f9dedb;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e171b; --surface:#15222a; --surface-2:#1a2a33; --ink:#e2ecef; --muted:#93a8b1; --line:#2a3c45;
+  --water:#52c2e2; --water-soft:#163f4b; --sucrose:#e6a743; --sucrose-soft:#4a3517;
+  --potato:#8c7c4c; --potato-edge:#b9a464; --good:#63cc8f; --good-soft:#163a26; --bad:#ff8f85; --bad-soft:#47201d;
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0e171b; --surface:#15222a; --surface-2:#1a2a33; --ink:#e2ecef; --muted:#93a8b1; --line:#2a3c45;
+  --water:#52c2e2; --water-soft:#163f4b; --sucrose:#e6a743; --sucrose-soft:#4a3517;
+  --potato:#8c7c4c; --potato-edge:#b9a464; --good:#63cc8f; --good-soft:#163a26; --bad:#ff8f85; --bad-soft:#47201d;
+  color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15.5px; line-height:1.55;}
+.wrap{max-width:1080px; margin:0 auto; padding-block:28px 64px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex; flex-direction:column; gap:28px;}
+h1,h2,h3{font-family:var(--f-display); text-wrap:balance; margin:0; line-height:1.15}
+h1{font-size:clamp(30px,5vw,46px); font-weight:700; letter-spacing:-0.01em}
+h2{font-size:clamp(22px,3vw,28px); font-weight:700}
+h3{font-size:17px; font-weight:500}
+p{margin:0; max-width:68ch}
+.eyebrow{font-family:var(--f-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+header{display:flex; flex-direction:column; gap:10px}
+header .lede{color:var(--muted); font-size:17px}
+.spec{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px}
+.chip{font-family:var(--f-mono); font-size:12px; padding:3px 9px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:var(--surface)}
+
+.station{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:18px; min-width:0}
+.station-head{display:flex; gap:14px; align-items:baseline}
+.num{font-family:var(--f-mono); font-size:13px; color:var(--water); border:1.5px solid var(--water); border-radius:999px; width:28px; height:28px; display:grid; place-items:center; flex:none; transform:translateY(-3px)}
+.station-head div{display:flex; flex-direction:column; gap:6px; min-width:0}
+.station-head p{color:var(--muted)}
+
+/* Particle model */
+.sim-grid{display:grid; grid-template-columns:minmax(0,1fr) 270px; gap:20px}
+@media (max-width:820px){ .sim-grid{grid-template-columns:minmax(0,1fr)} }
+.canvas-box{position:relative; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--surface-2)}
+canvas{display:block; width:100%}
+.side-tag{position:absolute; top:8px; font-family:var(--f-mono); font-size:11.5px; color:var(--muted); background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:2px 7px}
+.side-tag.l{left:8px} .side-tag.r{right:8px}
+.mem-tag{position:absolute; bottom:8px; left:50%; transform:translateX(-50%); font-family:var(--f-mono); font-size:11px; color:var(--muted); background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:2px 7px; white-space:nowrap}
+.controls{display:flex; flex-direction:column; gap:16px}
+.ctl{display:flex; flex-direction:column; gap:6px}
+.ctl label{font-weight:500; font-size:14px; display:flex; justify-content:space-between; gap:8px}
+.ctl output{font-family:var(--f-mono); font-size:13px; color:var(--sucrose); font-variant-numeric:tabular-nums}
+.psi{font-family:var(--f-mono); font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+input[type=range]{width:100%; accent-color:var(--sucrose)}
+.btn-row{display:flex; flex-wrap:wrap; gap:8px}
+button{font-family:var(--f-body); font-size:14px; font-weight:500; border-radius:8px; padding:8px 14px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); cursor:pointer}
+button:hover{border-color:var(--water)}
+button.primary{background:var(--water); color:var(--surface); border-color:var(--water)}
+button.primary:hover{filter:brightness(1.08)}
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible{outline:2px solid var(--water); outline-offset:2px}
+.legend{display:flex; flex-direction:column; gap:6px; font-size:13px; color:var(--muted)}
+.legend span{display:flex; align-items:center; gap:8px}
+.dot{width:10px; height:10px; border-radius:50%; flex:none}
+.readout{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+@media (max-width:620px){ .readout{grid-template-columns:minmax(0,1fr)} }
+.ro{border:1px solid var(--line); border-radius:10px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; background:var(--surface-2); min-width:0}
+.ro .k{font-size:12px; color:var(--muted)}
+.ro .v{font-family:var(--f-mono); font-size:15px; font-variant-numeric:tabular-nums}
+.ro.net .v{font-family:var(--f-body); font-size:14.5px; font-weight:500}
+.callout{border-left:3px solid var(--sucrose); background:var(--sucrose-soft); padding:12px 14px; border-radius:0 8px 8px 0; font-size:14.5px}
+.callout strong{font-weight:600}
+
+/* Experiment */
+.setup{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:22px}
+@media (max-width:820px){ .setup{grid-template-columns:minmax(0,1fr)} }
+.concs{display:flex; flex-wrap:wrap; gap:6px}
+.conc{font-family:var(--f-mono); font-size:13px; padding:6px 10px; border-radius:8px; border:1px solid var(--line); background:var(--surface-2); color:var(--muted); cursor:pointer; font-variant-numeric:tabular-nums}
+.conc[aria-pressed="true"]{background:var(--sucrose-soft); border-color:var(--sucrose); color:var(--ink)}
+.opts{display:flex; flex-direction:column; gap:12px}
+.opt{display:flex; gap:10px; align-items:center; font-size:14px}
+select{font-family:var(--f-body); font-size:14px; padding:6px 8px; border-radius:8px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink)}
+.hint{font-size:13px; color:var(--muted)}
+.bench{display:flex; gap:14px; overflow-x:auto; padding:6px 2px 4px}
+.tube{flex:none; width:64px; display:flex; flex-direction:column; align-items:center; gap:6px}
+.glass{width:46px; height:120px; border:2px solid var(--line); border-top:none; border-radius:0 0 23px 23px; position:relative; overflow:hidden; background:var(--surface-2)}
+.liquid{position:absolute; left:0; right:0; bottom:0; height:78%; background:var(--water-soft)}
+.liquid .sug{position:absolute; inset:0; background:var(--sucrose); }
+.cyl{position:absolute; left:50%; bottom:22px; width:16px; height:44px; margin-left:-8px; background:var(--potato); border:1.5px solid var(--potato-edge); border-radius:4px; transform-origin:50% 100%; transition:transform 1.6s cubic-bezier(.3,.7,.2,1)}
+.tube .lbl{font-family:var(--f-mono); font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums}
+.status{font-size:14px; color:var(--muted); min-height:1.4em}
+.status.warn{color:var(--bad)}
+
+.table-box{overflow-x:auto; border:1px solid var(--line); border-radius:10px}
+table{border-collapse:collapse; width:100%; min-width:860px; font-size:14px}
+th,td{padding:7px 10px; border-bottom:1px solid var(--line); text-align:right; font-variant-numeric:tabular-nums}
+th{font-weight:600; font-size:12.5px; color:var(--muted); background:var(--surface-2); text-align:right; vertical-align:bottom; line-height:1.3}
+th:first-child, td:first-child{text-align:left}
+tbody tr.grp-start td{border-top:2px solid var(--line)}
+td.mono{font-family:var(--f-mono)}
+th.grp{text-align:center; border-left:1px solid var(--line)}
+th.sub{text-align:center; font-family:var(--f-mono)}
+th.sub:nth-child(3n+1), td.gstart, th[rowspan]:last-child{border-left:1px solid var(--line)}
+td.mono{text-align:center}
+td input{width:66px; font-family:var(--f-mono); font-size:13.5px; text-align:right; padding:4px 6px; border-radius:6px; border:1px solid var(--line); background:var(--surface); color:var(--ink)}
+td input.ok{border-color:var(--good); background:var(--good-soft)}
+td input.bad{border-color:var(--bad); background:var(--bad-soft)}
+.score{font-size:14px}
+
+/* Analysis */
+.graph-grid{display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:22px}
+@media (max-width:860px){ .graph-grid{grid-template-columns:minmax(0,1fr)} }
+.graph-box{border:1px solid var(--line); border-radius:10px; background:var(--surface-2); overflow-x:auto}
+.graph-box svg{display:block; width:100%; min-width:460px; height:auto}
+.placeholder{padding:60px 20px; text-align:center; color:var(--muted)}
+.estimate{display:flex; flex-direction:column; gap:10px}
+.estimate input{width:110px; font-family:var(--f-mono); font-size:15px; padding:6px 8px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink)}
+.est-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+.feedback{font-size:14px; padding:10px 12px; border-radius:8px; background:var(--surface-2); border:1px solid var(--line)}
+.feedback.ok{border-color:var(--good); background:var(--good-soft)}
+.feedback.bad{border-color:var(--bad); background:var(--bad-soft)}
+
+/* Questions */
+.qs{display:flex; flex-direction:column; gap:12px}
+.q{border:1px solid var(--line); border-radius:10px; padding:14px 16px; background:var(--surface-2); display:flex; flex-direction:column; gap:10px}
+.q-top{display:flex; justify-content:space-between; gap:12px; align-items:baseline}
+.q-top p{font-weight:500}
+.src{font-family:var(--f-mono); font-size:12px; color:var(--muted)}
+.stem{font-size:14.5px; color:var(--muted)}
+.flow{display:flex; flex-wrap:wrap; align-items:stretch; gap:8px; font-size:13.5px}
+.flow .box{border:1px solid var(--line); background:var(--surface); border-radius:8px; padding:8px 10px; flex:1 1 150px; display:flex; flex-direction:column; gap:2px}
+.flow .box b{font-weight:600}
+.flow .arr{align-self:center; color:var(--muted); font-family:var(--f-mono)}
+.marks{font-family:var(--f-mono); font-size:12.5px; color:var(--muted); flex:none}
+details summary{cursor:pointer; font-size:14px; color:var(--water); font-weight:500}
+details ul{margin:8px 0 0; padding-left:20px; display:flex; flex-direction:column; gap:4px; font-size:14.5px}
+footer{font-size:13px; color:var(--muted); display:flex; flex-direction:column; gap:6px}
+@media (prefers-reduced-motion: reduce){ .cyl{transition:none} }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">IAL Biology · Unit 1 · Topic 2</span>
+    <h1>Osmosis Virtual Lab</h1>
+    <p class="lede">See why water moves at the particle level, then find the water potential of potato tissue using graded sucrose solutions.</p>
+    <div class="spec"><span class="chip">Spec 2.4 osmosis</span><span class="chip">Recommended additional practical: tissue water potential</span></div>
+  </header>
+
+  <!-- 1 PARTICLE MODEL -->
+  <section class="station" aria-labelledby="h1s">
+    <div class="station-head"><span class="num">1</span><div>
+      <h2 id="h1s">Particle model</h2>
+      <p>Water molecules move randomly. Water molecules clustered around a sucrose molecule are not free to move through the membrane. Change the sucrose concentration on each side and watch the counts.</p>
+    </div></div>
+    <div class="sim-grid">
+      <div class="canvas-box">
+        <canvas id="sim" aria-label="Animation of water and sucrose molecules either side of a partially permeable membrane"></canvas>
+        <span class="side-tag l">Side A</span><span class="side-tag r">Side B</span>
+        <span class="mem-tag">partially permeable membrane</span>
+      </div>
+      <div class="controls">
+        <div class="ctl">
+          <label for="cA">Side A sucrose <output id="oA">0.0 mol dm⁻³</output></label>
+          <input id="cA" type="range" min="0" max="1" step="0.1" value="0">
+          <span class="psi" id="pA">ψ ≈ 0 kPa</span>
+        </div>
+        <div class="ctl">
+          <label for="cB">Side B sucrose <output id="oB">0.6 mol dm⁻³</output></label>
+          <input id="cB" type="range" min="0" max="1" step="0.1" value="0.6">
+          <span class="psi" id="pB">ψ ≈ −1487 kPa</span>
+        </div>
+        <div class="btn-row">
+          <button id="simPlay" type="button">Pause</button>
+          <button id="simReset" type="button">Reset molecules</button>
+        </div>
+        <div class="legend">
+          <span><i class="dot" style="background:var(--water)"></i>Free water molecule (can cross)</span>
+          <span><i class="dot" style="border:1.5px solid var(--muted)"></i>Water held around sucrose (cannot cross)</span>
+          <span><i class="dot" style="background:var(--sucrose); width:13px; height:13px"></i>Sucrose (too large to cross)</span>
+        </div>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="ro"><span class="k">Free water molecules, A</span><span class="v" id="fA">–</span></div>
+      <div class="ro"><span class="k">Free water molecules, B</span><span class="v" id="fB">–</span></div>
+      <div class="ro net"><span class="k">Last 10 seconds</span><span class="v" id="net">Watching…</span></div>
+    </div>
+    <p class="callout"><strong>Common misconception:</strong> water does not move "to dilute" a solution. Every water molecule moves randomly. There is a net movement because more free water molecules reach the membrane from the side with the higher water potential. Pure water has the highest water potential (0 kPa); adding solute makes ψ more negative, which means lower.</p>
+  </section>
+
+  <!-- 2 EXPERIMENT -->
+  <section class="station" aria-labelledby="h2s">
+    <div class="station-head"><span class="num">2</span><div>
+      <h2 id="h2s">Potato cylinders in sucrose solutions</h2>
+      <p>Choose your concentrations, run the experiment, then calculate the percentage change in mass for each cylinder and the mean for each concentration.</p>
+    </div></div>
+    <div class="setup">
+      <div class="ctl">
+        <label>Sucrose concentrations / mol dm⁻³</label>
+        <div class="concs" id="concs"></div>
+        <span class="hint">Three cylinders are tested at each concentration. Add extra concentrations near where the mass change switches from gain to loss.</span>
+      </div>
+      <div class="opts">
+        <label class="opt" for="time">Time in solution
+          <select id="time"><option value="15">15 min</option><option value="30" selected>30 min</option><option value="60">60 min</option></select>
+        </label>
+        <label class="opt" for="blot"><input id="blot" type="checkbox" checked> Blot cylinders dry before reweighing</label>
+        <div class="btn-row">
+          <button id="run" class="primary" type="button">Run experiment</button>
+          <button id="newPotato" type="button">New potato</button>
+        </div>
+      </div>
+    </div>
+    <div class="bench" id="bench" aria-hidden="true"></div>
+    <p class="status" id="labStatus"></p>
+    <p class="hint">Cylinder changes on the bench are exaggerated so they are visible. Masses are read from a 2 d.p. balance.</p>
+    <div class="table-box"><table>
+      <thead>
+        <tr><th rowspan="2">Concentration / mol dm⁻³</th><th colspan="3" class="grp">Initial mass / g</th><th colspan="3" class="grp">Final mass / g</th><th colspan="3" class="grp">Change in mass / %</th><th rowspan="2">Mean change in mass / %</th></tr>
+        <tr><th class="sub">1</th><th class="sub">2</th><th class="sub">3</th><th class="sub">1</th><th class="sub">2</th><th class="sub">3</th><th class="sub">1</th><th class="sub">2</th><th class="sub">3</th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+    <div class="btn-row" style="align-items:center">
+      <button id="check" type="button">Check my calculations</button>
+      <button id="reveal" type="button">Show answers</button>
+      <span class="score" id="score"></span>
+    </div>
+    <p class="hint">Percentage change = (final mass − initial mass) ÷ initial mass × 100. Give answers to 1 d.p. and include a minus sign for a loss.</p>
+  </section>
+
+  <!-- 3 ANALYSIS -->
+  <section class="station" aria-labelledby="h3s">
+    <div class="station-head"><span class="num">3</span><div>
+      <h2 id="h3s">Find the isotonic point</h2>
+      <p>Plot mean percentage change in mass against concentration. Where the line crosses zero there is no net movement of water, so the water potential of the solution equals the water potential of the potato cells.</p>
+    </div></div>
+    <div class="graph-grid">
+      <div class="graph-box" id="graph"><p class="placeholder">Run the experiment, then press “Plot graph”.</p></div>
+      <div class="estimate">
+        <div class="btn-row"><button id="plot" class="primary" type="button">Plot graph</button></div>
+        <label class="opt" for="showRange"><input id="showRange" type="checkbox" checked> Show range of repeats</label>
+        <label for="est" style="font-weight:500; font-size:14px">Your estimate of the concentration with no change in mass (mol dm⁻³)</label>
+        <div class="est-row"><input id="est" type="number" step="0.01" min="0" max="1" inputmode="decimal" placeholder="0.00"><button id="checkEst" type="button">Check</button></div>
+        <div class="feedback" id="estFb">Read the value from the graph where the line crosses 0 %.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 QUESTIONS -->
+  <section class="station" aria-labelledby="h4s">
+    <div class="station-head"><span class="num">4</span><div>
+      <h2 id="h4s">Practice questions</h2>
+      <p>Answer these about the experiment you just ran, then check against the marking points.</p>
+    </div></div>
+    <div class="qs">
+      <div class="q"><div class="q-top"><p>Explain why the cylinders in 0.0 mol dm⁻³ sucrose solution increased in mass.</p><span class="marks">(3)</span></div>
+        <details><summary>Show marking points</summary><ul>
+          <li>water potential of the solution is higher than the water potential of the potato cells / cytoplasm</li>
+          <li>water moves into the cells by osmosis</li>
+          <li>(net movement of free water molecules) through the partially permeable (cell surface) membrane</li>
+          <li>cell wall prevents the cells bursting / cells become turgid</li>
+        </ul></details></div>
+      <div class="q"><div class="q-top"><p>Explain why percentage change in mass is calculated, rather than change in mass.</p><span class="marks">(2)</span></div>
+        <details><summary>Show marking points</summary><ul>
+          <li>cylinders have different initial masses</li>
+          <li>allows a valid comparison between cylinders / concentrations</li>
+        </ul></details></div>
+      <div class="q"><div class="q-top"><p>Explain why the cylinders are blotted dry before they are reweighed. Untick “blot” and rerun to test your answer.</p><span class="marks">(2)</span></div>
+        <details><summary>Show marking points</summary><ul>
+          <li>removes solution from the surface of the cylinder</li>
+          <li>surface liquid would add to the mass / final mass would be too high</li>
+          <li>so the mass change only reflects water gained or lost by osmosis</li>
+        </ul></details></div>
+      <div class="q"><div class="q-top"><p>Describe how two variables, other than time, should be controlled in this investigation.</p><span class="marks">(2)</span></div>
+        <details><summary>Show marking points</summary><ul>
+          <li>size / surface area of cylinders: same cork borer and cut to the same length</li>
+          <li>temperature: use a thermostatically controlled water bath</li>
+          <li>volume of solution: same volume measured with a measuring cylinder or pipette</li>
+          <li>source of tissue: all cylinders from the same potato</li>
+        </ul></details></div>
+      <div class="q"><div class="q-top"><p>Use your graph to explain how the water potential of the potato tissue can be estimated.</p><span class="marks">(3)</span></div>
+        <details><summary>Show marking points</summary><ul>
+          <li>read the concentration where the line crosses 0 % change in mass</li>
+          <li>at this concentration there is no net movement of water (into or out of the cells)</li>
+          <li>so the water potential of the tissue equals the water potential of this solution</li>
+        </ul></details></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Water potential values shown are approximate solute potentials for sucrose at 25 °C (ψ ≈ −CRT). Experimental data are simulated, with random variation between cylinders.</p>
+    <p>Questions in section 4 were written for practice.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const psiText = c => c === 0 ? 'ψ ≈ 0 kPa' : 'ψ ≈ −' + Math.round(2479 * c) + ' kPa';
+
+/* ---------- 1. Particle model ---------- */
+const cv = document.getElementById('sim'), ctx = cv.getContext('2d');
+const H = 300, NW = 240, MAXSOL = 34, RB = 15;
+let W = 0;
+const S = { waters: [], solutes: [], running: !reduce, cross: [] };
+const cA = document.getElementById('cA'), cB = document.getElementById('cB');
+
+function size(){
+  const w = cv.parentElement.clientWidth, dpr = window.devicePixelRatio || 1;
+  const old = W;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(H * dpr);
+  cv.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (old && old !== w){ const k = w / old; S.waters.forEach(p => p.x *= k); S.solutes.forEach(p => p.x *= k); }
+  W = w;
+}
+const mid = () => W / 2;
+function rnd(a, b){ return a + Math.random() * (b - a); }
+function spawnWater(side){
+  const x = side === 'A' ? rnd(4, mid() - 4) : rnd(mid() + 4, W - 4);
+  return { x, y: rnd(4, H - 4), vx: rnd(-1, 1), vy: rnd(-1, 1), bound: false };
+}
+function syncSolutes(side){
+  const c = +(side === 'A' ? cA.value : cB.value);
+  const target = Math.round(c * MAXSOL);
+  const mine = S.solutes.filter(s => s.side === side);
+  for (let i = mine.length; i < target; i++){
+    S.solutes.push({ side, x: side === 'A' ? rnd(10, mid() - 10) : rnd(mid() + 10, W - 10), y: rnd(10, H - 10), vx: rnd(-.4, .4), vy: rnd(-.4, .4) });
+  }
+  let excess = mine.length - target;
+  if (excess > 0) S.solutes = S.solutes.filter(s => !(s.side === side && excess-- > 0));
+}
+function resetSim(){
+  S.waters = []; S.solutes = []; S.cross = [];
+  for (let i = 0; i < NW; i++) S.waters.push(spawnWater(i % 2 ? 'A' : 'B'));
+  syncSolutes('A'); syncSolutes('B');
+}
+function step(){
+  const m = mid();
+  for (const s of S.solutes){
+    s.vx += rnd(-.15, .15); s.vy += rnd(-.15, .15);
+    s.vx = Math.max(-.6, Math.min(.6, s.vx)); s.vy = Math.max(-.6, Math.min(.6, s.vy));
+    s.x += s.vx; s.y += s.vy;
+    const lo = s.side === 'A' ? 7 : m + 9, hi = s.side === 'A' ? m - 9 : W - 7;
+    if (s.x < lo){ s.x = lo; s.vx = Math.abs(s.vx); } if (s.x > hi){ s.x = hi; s.vx = -Math.abs(s.vx); }
+    if (s.y < 7){ s.y = 7; s.vy = Math.abs(s.vy); } if (s.y > H - 7){ s.y = H - 7; s.vy = -Math.abs(s.vy); }
+  }
+  const now = performance.now();
+  for (const w of S.waters){
+    const onA = w.x < m;
+    w.bound = false;
+    for (const s of S.solutes){
+      if ((s.side === 'A') !== onA) continue;
+      const dx = s.x - w.x, dy = s.y - w.y;
+      if (dx * dx + dy * dy < RB * RB){ w.bound = true; break; }
+    }
+    w.vx += rnd(-.5, .5); w.vy += rnd(-.5, .5);
+    const sp = Math.hypot(w.vx, w.vy), max = w.bound ? .9 : 2.2;
+    if (sp > max){ w.vx *= max / sp; w.vy *= max / sp; }
+    let nx = w.x + w.vx, ny = w.y + w.vy;
+    if ((nx < m) !== onA){
+      if (w.bound){ w.vx = -w.vx; nx = w.x; }
+      else S.cross.push({ t: now, d: onA ? 1 : -1 });
+    }
+    if (nx < 3){ nx = 3; w.vx = Math.abs(w.vx); } if (nx > W - 3){ nx = W - 3; w.vx = -Math.abs(w.vx); }
+    if (ny < 3){ ny = 3; w.vy = Math.abs(w.vy); } if (ny > H - 3){ ny = H - 3; w.vy = -Math.abs(w.vy); }
+    w.x = nx; w.y = ny;
+  }
+  S.cross = S.cross.filter(c => now - c.t < 10000);
+}
+function draw(){
+  const m = mid();
+  ctx.clearRect(0, 0, W, H);
+  const sucSoft = css('--sucrose-soft');
+  ctx.fillStyle = sucSoft;
+  ctx.globalAlpha = +cA.value * .9; ctx.fillRect(0, 0, m, H);
+  ctx.globalAlpha = +cB.value * .9; ctx.fillRect(m, 0, W - m, H);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = css('--muted'); ctx.lineWidth = 3; ctx.setLineDash([10, 6]);
+  ctx.beginPath(); ctx.moveTo(m, 0); ctx.lineTo(m, H); ctx.stroke(); ctx.setLineDash([]);
+  const water = css('--water'), muted = css('--muted'), suc = css('--sucrose');
+  ctx.fillStyle = suc;
+  for (const s of S.solutes){ ctx.beginPath(); ctx.arc(s.x, s.y, 6.5, 0, 6.283); ctx.fill(); }
+  ctx.lineWidth = 1.3; ctx.strokeStyle = muted; ctx.fillStyle = water;
+  for (const w of S.waters){
+    ctx.beginPath(); ctx.arc(w.x, w.y, 3, 0, 6.283);
+    if (w.bound) ctx.stroke(); else ctx.fill();
+  }
+}
+const fA = document.getElementById('fA'), fB = document.getElementById('fB'), netEl = document.getElementById('net');
+function readout(){
+  const m = mid();
+  let tA = 0, fa = 0, tB = 0, fb = 0;
+  for (const w of S.waters){ if (w.x < m){ tA++; if (!w.bound) fa++; } else { tB++; if (!w.bound) fb++; } }
+  fA.textContent = fa + ' free of ' + tA;
+  fB.textContent = fb + ' free of ' + tB;
+  if (!S.running){ netEl.textContent = 'Paused'; return; }
+  const net = S.cross.reduce((a, c) => a + c.d, 0), total = S.cross.length;
+  if (total < 20) netEl.textContent = 'Watching…';
+  else if (Math.abs(net) <= Math.max(4, total * 0.04)) netEl.textContent = 'No clear net movement: similar numbers cross each way';
+  else netEl.textContent = 'Net movement of water into side ' + (net > 0 ? 'B' : 'A') + ' (' + Math.abs(net) + ' more molecules)';
+}
+function loop(){ if (S.running) step(); draw(); requestAnimationFrame(loop); }
+function onConc(side){
+  const el = side === 'A' ? cA : cB, c = +el.value;
+  document.getElementById('o' + side).textContent = c.toFixed(1) + ' mol dm⁻³';
+  document.getElementById('p' + side).textContent = psiText(c);
+  syncSolutes(side); S.cross = [];
+}
+cA.addEventListener('input', () => onConc('A'));
+cB.addEventListener('input', () => onConc('B'));
+const playBtn = document.getElementById('simPlay');
+playBtn.textContent = S.running ? 'Pause' : 'Play';
+playBtn.addEventListener('click', () => { S.running = !S.running; S.cross = []; playBtn.textContent = S.running ? 'Pause' : 'Play'; });
+document.getElementById('simReset').addEventListener('click', resetSim);
+size(); resetSim(); onConc('A'); onConc('B');
+window.addEventListener('resize', size);
+setInterval(readout, 400); readout();
+requestAnimationFrame(loop);
+
+/* ---------- 2. Experiment ---------- */
+const CONCS = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1];
+const selected = new Set([0, .2, .4, .6, .8, 1]);
+const lab = { ciso: 0, rows: [], plotted: false, stale: false };
+const r1 = v => Math.round(v * 10) / 10, r2 = v => Math.round(v * 100) / 100;
+function gauss(){ let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.283 * v); }
+function newPotato(){ lab.ciso = rnd(0.24, 0.37); }
+function pctModel(c, t){
+  const base = 28 * Math.tanh((lab.ciso - c) / 0.5);
+  return base * (1 - Math.exp(-t / 22)) / (1 - Math.exp(-30 / 22));
+}
+const concBox = document.getElementById('concs');
+CONCS.forEach(c => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'conc'; b.textContent = c.toFixed(1);
+  b.setAttribute('aria-pressed', selected.has(c));
+  b.addEventListener('click', () => {
+    if (selected.has(c)){ if (selected.size <= 2) return; selected.delete(c); } else selected.add(c);
+    b.setAttribute('aria-pressed', selected.has(c)); markStale();
+  });
+  concBox.appendChild(b);
+});
+const statusEl = document.getElementById('labStatus');
+function markStale(){ lab.stale = true; statusEl.textContent = 'Settings changed. Run the experiment again to use them.'; statusEl.className = 'status warn'; }
+document.getElementById('time').addEventListener('change', markStale);
+document.getElementById('blot').addEventListener('change', markStale);
+
+function run(){
+  const t = +document.getElementById('time').value, blot = document.getElementById('blot').checked;
+  lab.rows = [...selected].sort((a, b) => a - b).map(c => {
+    const reps = [0, 1, 2].map(() => {
+      const m0 = r2(rnd(2.0, 3.0));
+      const p = pctModel(c, t) + gauss() * 1.2;
+      let m1 = m0 * (1 + p / 100);
+      if (!blot) m1 += rnd(0.06, 0.14);
+      m1 = r2(m1);
+      return { m0, m1, pc: r1((m1 - m0) / m0 * 100) };
+    });
+    const mean = r1(reps.reduce((a, r) => a + r.pc, 0) / 3);
+    return { c, reps, mean };
+  });
+  lab.stale = false; lab.plotted = false;
+  statusEl.textContent = 'Cylinders left in solution for ' + t + ' min' + (blot ? ', blotted and reweighed.' : ', reweighed without blotting.');
+  statusEl.className = 'status';
+  renderBench(); renderTable(); renderGraph();
+  document.getElementById('score').textContent = '';
+  const fb = document.getElementById('estFb'); fb.className = 'feedback'; fb.textContent = 'Read the value from the graph where the line crosses 0 %.';
+}
+function renderBench(){
+  const bench = document.getElementById('bench');
+  bench.innerHTML = '';
+  const cyls = [];
+  lab.rows.forEach(r => {
+    const d = document.createElement('div'); d.className = 'tube';
+    d.innerHTML = '<div class="glass"><div class="liquid"><div class="sug" style="opacity:' + (r.c * 0.55) + '"></div></div><div class="cyl"></div></div><span class="lbl">' + r.c.toFixed(1) + '</span>';
+    bench.appendChild(d);
+    cyls.push([d.querySelector('.cyl'), r.mean]);
+  });
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    cyls.forEach(([el, mean]) => {
+      const k = Math.max(0.55, 1 + mean / 100 * 1.6);
+      el.style.transform = 'scale(' + Math.sqrt(k).toFixed(3) + ',' + k.toFixed(3) + ')';
+    });
+  }));
+}
+function renderTable(){
+  const tb = document.getElementById('tbody');
+  let html = '';
+  lab.rows.forEach((r, ri) => {
+    html += '<tr><td class="mono">' + r.c.toFixed(1) + '</td>';
+    r.reps.forEach((rep, k) => html += '<td class="mono' + (k === 0 ? ' gstart' : '') + '">' + rep.m0.toFixed(2) + '</td>');
+    r.reps.forEach((rep, k) => html += '<td class="mono' + (k === 0 ? ' gstart' : '') + '">' + rep.m1.toFixed(2) + '</td>');
+    r.reps.forEach((rep, k) => html += '<td class="' + (k === 0 ? 'gstart' : '') + '"><input id="p-' + ri + '-' + k + '" type="text" inputmode="decimal" aria-label="Percentage change, ' + r.c.toFixed(1) + ' mol dm⁻³, cylinder ' + (k + 1) + '"></td>');
+    html += '<td class="gstart"><input id="m-' + ri + '" type="text" inputmode="decimal" aria-label="Mean percentage change, ' + r.c.toFixed(1) + ' mol dm⁻³"></td></tr>';
+  });
+  tb.innerHTML = html;
+}
+function parse(v){ const n = parseFloat(String(v).replace('−', '-').replace(',', '.')); return isNaN(n) ? null : n; }
+function check(){
+  let ok = 0, tot = 0;
+  lab.rows.forEach((r, ri) => {
+    const pairs = r.reps.map((rep, k) => [document.getElementById('p-' + ri + '-' + k), rep.pc]);
+    pairs.push([document.getElementById('m-' + ri), r.mean]);
+    pairs.forEach(([el, ans]) => {
+      tot++; el.classList.remove('ok', 'bad');
+      const v = parse(el.value);
+      if (v === null) return;
+      if (Math.abs(v - ans) <= 0.15){ el.classList.add('ok'); ok++; } else el.classList.add('bad');
+    });
+  });
+  document.getElementById('score').textContent = ok + ' of ' + tot + ' correct';
+}
+function reveal(){
+  lab.rows.forEach((r, ri) => {
+    r.reps.forEach((rep, k) => { const el = document.getElementById('p-' + ri + '-' + k); el.value = rep.pc.toFixed(1); el.classList.remove('bad'); el.classList.add('ok'); });
+    const el = document.getElementById('m-' + ri); el.value = r.mean.toFixed(1); el.classList.remove('bad'); el.classList.add('ok');
+  });
+  document.getElementById('score').textContent = 'Answers shown';
+}
+document.getElementById('run').addEventListener('click', run);
+document.getElementById('newPotato').addEventListener('click', () => { newPotato(); run(); statusEl.textContent = 'New potato. ' + statusEl.textContent; });
+document.getElementById('check').addEventListener('click', check);
+document.getElementById('reveal').addEventListener('click', reveal);
+
+/* ---------- 3. Analysis ---------- */
+function isotonic(){
+  const r = lab.rows;
+  for (let i = 0; i < r.length; i++){
+    if (r[i].mean === 0) return r[i].c;
+    if (i < r.length - 1 && r[i].mean > 0 && r[i + 1].mean < 0){
+      return r[i].c + (r[i].mean / (r[i].mean - r[i + 1].mean)) * (r[i + 1].c - r[i].c);
+    }
+  }
+  return null;
+}
+function renderGraph(){
+  const box = document.getElementById('graph');
+  if (!lab.plotted){ box.innerHTML = '<p class="placeholder">Press “Plot graph” to draw your mean results.</p>'; return; }
+  const showR = document.getElementById('showRange').checked;
+  const vals = lab.rows.flatMap(r => r.reps.map(x => x.pc));
+  const yMax = Math.max(5, Math.ceil(Math.max(...vals) / 5) * 5), yMin = Math.min(-5, Math.floor(Math.min(...vals) / 5) * 5);
+  const Wg = 600, Hg = 380, L = 70, R = 20, T = 20, B = 62;
+  const x = c => L + c * (Wg - L - R), y = v => T + (yMax - v) / (yMax - yMin) * (Hg - T - B);
+  let s = '<svg viewBox="0 0 ' + Wg + ' ' + Hg + '" role="img" aria-label="Graph of mean percentage change in mass against sucrose concentration">';
+  for (let v = yMin; v <= yMax; v += 5){
+    s += '<line x1="' + L + '" x2="' + (Wg - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--line)" stroke-width="' + (v === 0 ? 1.8 : 0.8) + '"/>';
+    s += '<text x="' + (L - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-size="12" font-family="var(--f-mono)" fill="var(--muted)">' + (v < 0 ? '−' + (-v) : v) + '</text>';
+  }
+  for (let c = 0; c <= 10; c += 1){
+    const cx = x(c / 10);
+    s += '<line x1="' + cx + '" x2="' + cx + '" y1="' + T + '" y2="' + (Hg - B) + '" stroke="var(--line)" stroke-width="0.6"/>';
+    if (c % 2 === 0) s += '<text x="' + cx + '" y="' + (Hg - B + 18) + '" text-anchor="middle" font-size="12" font-family="var(--f-mono)" fill="var(--muted)">' + (c / 10).toFixed(1) + '</text>';
+  }
+  s += '<line x1="' + L + '" x2="' + L + '" y1="' + T + '" y2="' + (Hg - B) + '" stroke="var(--muted)" stroke-width="1.2"/>';
+  s += '<text x="' + ((L + Wg - R) / 2) + '" y="' + (Hg - 16) + '" text-anchor="middle" font-size="13" fill="var(--ink)" font-family="var(--f-body)">Concentration of sucrose solution / mol dm⁻³</text>';
+  s += '<text transform="translate(18 ' + ((T + Hg - B) / 2) + ') rotate(-90)" text-anchor="middle" font-size="13" fill="var(--ink)" font-family="var(--f-body)">Mean change in mass / %</text>';
+  const pts = lab.rows.map(r => x(r.c).toFixed(1) + ',' + y(r.mean).toFixed(1)).join(' ');
+  s += '<polyline points="' + pts + '" fill="none" stroke="var(--water)" stroke-width="2"/>';
+  lab.rows.forEach(r => {
+    if (showR){
+      const lo = Math.min(...r.reps.map(q => q.pc)), hi = Math.max(...r.reps.map(q => q.pc)), cx = x(r.c);
+      s += '<line x1="' + cx + '" x2="' + cx + '" y1="' + y(hi) + '" y2="' + y(lo) + '" stroke="var(--muted)" stroke-width="1.3"/>';
+      s += '<line x1="' + (cx - 5) + '" x2="' + (cx + 5) + '" y1="' + y(hi) + '" y2="' + y(hi) + '" stroke="var(--muted)" stroke-width="1.3"/>';
+      s += '<line x1="' + (cx - 5) + '" x2="' + (cx + 5) + '" y1="' + y(lo) + '" y2="' + y(lo) + '" stroke="var(--muted)" stroke-width="1.3"/>';
+    }
+    s += '<circle cx="' + x(r.c) + '" cy="' + y(r.mean) + '" r="4.5" fill="var(--surface)" stroke="var(--water)" stroke-width="2"/>';
+  });
+  s += '</svg>';
+  // move var() colours from presentation attributes into style, where custom properties resolve reliably
+  s = s.replace(/<(\w+)([^>]*?)(\/?)>/g, (m, tag, attrs, close) => {
+    let st = '';
+    attrs = attrs.replace(/\s(stroke|fill|font-family)="(var\([^)]*\))"/g, (x, p, v) => { st += p + ':' + v + ';'; return ''; });
+    return '<' + tag + attrs + (st ? ' style="' + st + '"' : '') + close + '>';
+  });
+  box.innerHTML = s;
+}
+document.getElementById('plot').addEventListener('click', () => { if (!lab.rows.length) return; lab.plotted = true; renderGraph(); });
+document.getElementById('showRange').addEventListener('change', renderGraph);
+document.getElementById('checkEst').addEventListener('click', () => {
+  const fb = document.getElementById('estFb');
+  if (!lab.plotted){ fb.className = 'feedback'; fb.textContent = 'Plot your graph first.'; return; }
+  const iso = isotonic();
+  if (iso === null){ fb.className = 'feedback bad'; fb.textContent = 'Your results never cross 0 %. Add concentrations either side of the change from gain to loss, then run again.'; return; }
+  const v = parse(document.getElementById('est').value);
+  if (v === null){ fb.className = 'feedback'; fb.textContent = 'Enter a concentration first.'; return; }
+  const kpa = Math.round(2479 * iso / 10) * 10;
+  if (Math.abs(v - iso) <= 0.03){
+    fb.className = 'feedback ok';
+    fb.textContent = 'Good reading. Your line crosses 0 % at about ' + iso.toFixed(2) + ' mol dm⁻³. At this concentration there is no net movement of water, so the water potential of the potato cells is about −' + kpa + ' kPa.';
+  } else {
+    fb.className = 'feedback bad';
+    fb.textContent = 'Not quite. Find the point where your line crosses the 0 % gridline, then read straight down to the concentration axis.';
+  }
+});
+
+newPotato(); run();
+})();
+</script>
+
+</body></html>

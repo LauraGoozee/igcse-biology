@@ -1,0 +1,604 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<a href="index.html" style="display:inline-block;margin:10px 16px 0;padding:6px 12px;border-radius:999px;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;color:var(--ink,#18241f);background:var(--panel,var(--surface,#fff));border:1px solid var(--line,#cfd8d3)">← All resources</a>
+
+<title>Skin Temperature Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: three-state lab — big state switch on top, skin diagram with numbered callouts beside a matching numbered explanation, then comparison table, feedback loop, exam answers, quiz */
+:root{
+  --bg:#eef3f6; --surface:#ffffff; --ink:#13222c; --muted:#556874; --line:#d2dce3;
+  --accent:#1d6a86; --accent-soft:#d9ebf2;
+  --cold:#2f6db3; --cold-soft:#dce8f6; --warm:#d0542f; --warm-soft:#f8e0d6;
+  --air:#eaf3f8; --epi:#e9c3a8; --epi-edge:#a87458; --dermis:#f6ddd0; --fat:#fbefc7; --fat-edge:#d9c27a;
+  --blood:#c52d36; --blood-dark:#8e1d27; --wall:#b0606a; --vein:#7a3550; --hairc:#3b2a20; --muscle:#b78a7a; --gland:#7fb6cc; --sweat:#3f97cc;
+  --good:#2f7d4f; --good-soft:#dcefe3; --bad:#b3412f; --bad-soft:#f6dfda;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e161c; --surface:#15212a; --ink:#e4edf2; --muted:#93a7b4; --line:#293a46;
+  --accent:#62b4d2; --accent-soft:#183544;
+  --cold:#6aa5ea; --cold-soft:#1a2c40; --warm:#f08a63; --warm-soft:#3d241b;
+  --air:#132430; --epi:#8a5f48; --epi-edge:#d0a084; --dermis:#3d2c2a; --fat:#4a4127; --fat-edge:#8f7f46;
+  --blood:#e0535b; --blood-dark:#a8303a; --wall:#b56a73; --vein:#a65b7c; --hairc:#e3d2c4; --muscle:#9b7468; --gland:#4f8aa1; --sweat:#7cc3ec;
+  --good:#6cc191; --good-soft:#173326; --bad:#f08a76; --bad-soft:#3a201b; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0e161c; --surface:#15212a; --ink:#e4edf2; --muted:#93a7b4; --line:#293a46;
+  --accent:#62b4d2; --accent-soft:#183544;
+  --cold:#6aa5ea; --cold-soft:#1a2c40; --warm:#f08a63; --warm-soft:#3d241b;
+  --air:#132430; --epi:#8a5f48; --epi-edge:#d0a084; --dermis:#3d2c2a; --fat:#4a4127; --fat-edge:#8f7f46;
+  --blood:#e0535b; --blood-dark:#a8303a; --wall:#b56a73; --vein:#a65b7c; --hairc:#e3d2c4; --muscle:#9b7468; --gland:#4f8aa1; --sweat:#7cc3ec;
+  --good:#6cc191; --good-soft:#173326; --bad:#f08a76; --bad-soft:#3a201b; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);margin:0}
+.wrap{max-width:1140px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:grid;gap:22px}
+header{display:grid;gap:6px}
+.eyebrow{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font:800 clamp(1.7rem,4.2vw,2.6rem)/1.08 var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font:700 1.25rem/1.2 var(--f-display);margin:0;text-wrap:balance}
+h3{font:700 1.05rem/1.25 var(--f-display);margin:0}
+.lede{color:var(--muted);margin:0;max-width:65ch}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* state switch */
+.switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.sw{font:800 1.15rem/1.2 var(--f-display);padding:14px 10px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:grid;gap:2px;text-align:center}
+.sw small{font:400 .82rem var(--f-body);color:var(--muted)}
+.sw[aria-pressed="true"].cold{background:var(--cold-soft);border-color:var(--cold);color:var(--cold)}
+.sw[aria-pressed="true"].normal{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.sw[aria-pressed="true"].hot{background:var(--warm-soft);border-color:var(--warm);color:var(--warm)}
+
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}
+@media (max-width:920px){.lab{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0}
+.stage svg{width:100%;height:auto;display:block}
+.side{display:grid;gap:14px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px;min-width:0}
+.card.hot{border-color:var(--warm)} .card.cold{border-color:var(--cold)} .card.normal{border-color:var(--good)}
+
+.headline{font:800 1.2rem/1.25 var(--f-display);margin:0}
+.headline.hot{color:var(--warm)} .headline.cold{color:var(--cold)} .headline.normal{color:var(--good)}
+
+ol.steps{list-style:none;margin:0;padding:0;display:grid;gap:8px;counter-reset:n}
+ol.steps li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:start;padding:8px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+ol.steps li:hover,ol.steps li.on{background:var(--bg);border-color:var(--line)}
+ol.steps .num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:800 .95rem var(--f-display);color:var(--surface)}
+.hot ol.steps .num{background:var(--warm)} .cold ol.steps .num{background:var(--cold)}
+ol.steps .num.plain{background:var(--muted)!important}
+ol.steps b{display:block}
+ol.steps span.t{font-size:.92rem}
+.extra{font-size:.78rem;color:var(--muted)}
+.note{font-size:.86rem;color:var(--muted);margin:0}
+
+/* thermometer */
+.thermo{display:grid;grid-template-columns:70px minmax(0,1fr);gap:14px;align-items:center}
+.thermo svg{width:70px;height:auto}
+.core{font:800 1.8rem/1 var(--f-display);font-variant-numeric:tabular-nums}
+.core.alert{color:var(--bad)}
+.btn{font:700 .9rem var(--f-body);border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.check{display:flex;gap:8px;align-items:center;font-size:.9rem}
+.check input{accent-color:var(--accent)}
+
+/* table */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{font-family:var(--f-display)}
+thead th.hot{color:var(--warm)} thead th.cold{color:var(--cold)}
+td.hot{background:var(--warm-soft)} td.cold{background:var(--cold-soft)}
+tbody th{font-weight:700}
+
+.path{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+@media (max-width:760px){.path{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.step{border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.86rem;line-height:1.3;background:var(--bg);min-width:0}
+.step b{display:block;font-family:var(--f-display);font-size:.92rem}
+.step .role{color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
+.path.hot .step{background:var(--warm-soft);border-color:var(--warm)}
+.path.cold .step{background:var(--cold-soft);border-color:var(--cold)}
+
+.answers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:900px){.answers{grid-template-columns:minmax(0,1fr)}}
+.answer{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:8px;align-content:start;min-width:0}
+.answer ol,.answer ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.answer .tag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+
+/* svg */
+.s-air{fill:var(--air)}
+.s-epi{fill:var(--epi);stroke:var(--epi-edge);stroke-width:1.5}
+.s-dermis{fill:var(--dermis)}
+.s-fat{fill:var(--fat)}
+.s-fatcell{fill:none;stroke:var(--fat-edge);stroke-width:1.2}
+.s-hair{fill:none;stroke:var(--hairc);stroke-width:4;stroke-linecap:round}
+.s-follicle{fill:var(--epi);stroke:var(--epi-edge);stroke-width:1.5}
+.s-erector{fill:none;stroke:var(--muscle);stroke-width:7;stroke-linecap:round}
+.s-gland{fill:none;stroke:var(--gland);stroke-width:8;stroke-linecap:round;stroke-linejoin:round}
+.s-duct{fill:none;stroke:var(--gland);stroke-width:5;stroke-linecap:round}
+.s-sweat{fill:var(--sweat)}
+.s-vapour{fill:none;stroke:var(--sweat);stroke-width:2.5;stroke-linecap:round}
+.s-cap{fill:none;stroke:var(--blood);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.s-wall{fill:none;stroke:var(--wall);stroke-linecap:butt}
+.s-band{fill:none;stroke:var(--blood-dark);stroke-linecap:butt;stroke-dasharray:3 7;opacity:.55}
+.s-lumen{fill:none;stroke:var(--blood);stroke-linecap:butt}
+.s-vein{fill:none;stroke:var(--vein);stroke-width:14;stroke-linecap:round}
+.s-cell{fill:var(--blood-dark)}
+.s-heat{fill:none;stroke:var(--warm);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.s-label{fill:var(--ink);font:700 13px var(--f-body)}
+.s-big{font:800 15px var(--f-display)}
+.s-small{fill:var(--muted);font:12px var(--f-body)}
+.s-lead{stroke:var(--muted);stroke-width:1}
+.s-layer{fill:var(--muted);font:700 12px var(--f-body);letter-spacing:.06em}
+.badge circle{stroke:var(--surface);stroke-width:2.5}
+.badge text{fill:#ffffff;font:800 14px var(--f-display);text-anchor:middle;dominant-baseline:central}
+.badge .ring{fill:none;stroke-width:3;opacity:0}
+.badge.on .ring{opacity:1}
+.labels-off .lbl{display:none}
+
+.quiz{display:grid;gap:14px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.q p{margin:0;font-weight:700}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font:1rem var(--f-body);border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:9px 12px;border-radius:8px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{background:var(--good-soft);border-color:var(--good);color:var(--good);font-weight:700}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.opt:disabled{cursor:default}
+.chip{display:inline-block;font-weight:700;font-size:.9rem;padding:3px 10px;border-radius:999px;background:var(--bg)}
+.chip.good{background:var(--good-soft);color:var(--good)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">IGCSE Biology · Coordination and response · Homeostasis</div>
+    <h1>The skin and temperature control</h1>
+    <p class="lede">Choose a situation. Compare the skin when the body is too cold and too hot. Each number on the diagram matches a numbered step on the right.</p>
+  </header>
+
+  <div class="switch" role="group" aria-label="Choose a situation">
+    <button class="sw cold" type="button" id="swCold" aria-pressed="false">Too cold<small>e.g. a cold winter day</small></button>
+    <button class="sw normal" type="button" id="swNormal" aria-pressed="false">Normal<small>body at 37 °C</small></button>
+    <button class="sw hot" type="button" id="swHot" aria-pressed="true">Too hot<small>e.g. running on a hot day</small></button>
+  </div>
+
+  <div class="lab">
+    <div class="stage">
+      <svg id="skinSvg" viewBox="0 0 720 430" role="img" aria-label="Cross-section of the skin showing arteriole, capillaries, sweat gland and hair">
+        <rect class="s-air" x="0" y="0" width="720" height="82"/>
+        <rect id="airTint" x="0" y="0" width="720" height="82" opacity="0"/>
+        <rect class="s-dermis" x="0" y="118" width="720" height="214"/>
+        <rect class="s-fat" x="0" y="332" width="720" height="98"/>
+        <g id="fatCells"></g>
+        <path class="s-epi" d="M0 82 Q 30 76 60 82 T 120 82 T 180 82 T 240 82 T 300 82 T 360 82 T 420 82 T 480 82 T 540 82 T 600 82 T 660 82 T 720 82 L 720 118 L 0 118 Z"/>
+        <rect id="flush" x="0" y="76" width="720" height="42" opacity="0"/>
+
+        <!-- hairs (built by script) -->
+        <g id="hairs"></g>
+
+        <!-- blood vessels -->
+        <path id="vein" class="s-vein" d="M490 300 C 506 340, 560 372, 720 378"/>
+        <path id="artWall" class="s-wall" d="M0 302 L 232 300" stroke-width="30"/>
+        <path id="artBand" class="s-band" d="M0 302 L 232 300" stroke-width="30"/>
+        <path id="artLumen" class="s-lumen" d="M0 302 L 232 300" stroke-width="22"/>
+        <g id="caps">
+          <path class="s-cap" d="M232 300 C 244 230, 246 160, 272 136 C 300 120, 420 120, 450 136 C 478 160, 480 230, 490 300"/>
+          <path class="s-cap" d="M290 132 C 298 178, 320 178, 328 128"/>
+          <path class="s-cap" d="M346 127 C 354 178, 376 178, 384 127"/>
+          <path class="s-cap" d="M402 128 C 410 178, 432 178, 440 134"/>
+        </g>
+        <path id="track" d="M0 302 L 232 300 C 244 230, 246 160, 272 136 C 300 120, 420 120, 450 136 C 478 160, 480 230, 490 300 C 506 340, 560 372, 720 378" fill="none" stroke="none"/>
+        <g id="cells"></g>
+
+        <!-- sweat gland -->
+        <path class="s-gland" d="M618 316 c -18 0 -20 -16 -4 -18 c 18 -2 22 16 4 20 c -22 4 -26 -18 -6 -22 c 22 -4 28 16 8 22 c -24 7 -30 -14 -12 -22 c 20 -9 32 8 18 18 c -8 6 -22 4 -22 -4"/>
+        <path id="duct" class="s-duct" d="M600 294 C 608 250, 588 210, 600 170 C 612 136, 590 120, 608 104 C 618 96, 604 90, 612 82"/>
+        <g id="ductDrops"></g>
+        <g id="drops"></g>
+        <g id="vapour"></g>
+        <g id="heat"></g>
+
+        <!-- static labels -->
+        <g class="lbl">
+          <text class="s-layer" x="14" y="104">EPIDERMIS</text>
+          <text class="s-layer" x="14" y="146">DERMIS</text>
+          <text class="s-layer" x="14" y="360">FAT LAYER</text>
+          <text class="s-label" x="20" y="272">Arteriole</text>
+          <line class="s-lead" x1="300" y1="224" x2="262" y2="200"/><text class="s-label" x="296" y="240">Capillaries near the surface</text>
+          <text class="s-label" x="644" y="300">Sweat</text><text class="s-label" x="644" y="316">gland</text>
+          <line class="s-lead" x1="112" y1="214" x2="118" y2="172"/><text class="s-small" x="94" y="228">Hair erector</text><text class="s-small" x="94" y="242">muscle</text><text class="s-label" x="150" y="48">Hairs</text>
+          <text class="s-small" x="640" y="400">to vein</text>
+        </g>
+        <text id="airLabel" class="s-label s-big" x="14" y="26">Hot air</text>
+        <text id="heatLabel" class="s-label" x="470" y="22">Heat lost by radiation</text>
+        <text id="evapLabel" class="s-label" x="494" y="66">Evaporation</text>
+        <text id="artState" class="s-label" x="20" y="340">Arteriole widens</text>
+
+        <!-- numbered badges -->
+        <g id="badges"></g>
+      </svg>
+      <label class="check"><input type="checkbox" id="lblChk" checked> <span>Show labels</span></label>
+    </div>
+
+    <div class="side">
+      <div class="card" id="explain">
+        <p class="headline" id="headline"></p>
+        <ol class="steps" id="steps"></ol>
+      </div>
+      <div class="card">
+        <h3>Core body temperature</h3>
+        <div class="thermo">
+          <svg viewBox="0 0 70 220" aria-hidden="true">
+            <rect x="24" y="10" width="22" height="168" rx="11" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
+            <circle cx="35" cy="190" r="22" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
+            <circle cx="35" cy="190" r="15" id="bulb" fill="var(--good)"/>
+            <rect id="mercury" x="29" y="100" width="12" height="90" rx="6" fill="var(--good)"/>
+            <line x1="20" y1="94" x2="50" y2="94" stroke="var(--ink)" stroke-width="2"/>
+            <text x="54" y="98" font-size="11" fill="var(--ink)" font-weight="700">37</text>
+          </svg>
+          <div style="display:grid;gap:8px">
+            <div class="core" id="coreT">37.0 °C</div>
+            <p class="note" id="coreNote">The responses keep the core temperature close to 37 °C.</p>
+            <button class="btn" type="button" id="noResp">What if the body did not respond?</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Too hot or too cold? Compare</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th scope="col"></th><th scope="col" class="cold">Too cold</th><th scope="col" class="hot">Too hot</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Arterioles to the skin</th><td class="cold">Narrow (vasoconstriction)</td><td class="hot">Widen (vasodilation)</td></tr>
+          <tr><th scope="row">Blood flow near the skin surface</th><td class="cold">Less</td><td class="hot">More</td></tr>
+          <tr><th scope="row">Heat lost by radiation</th><td class="cold">Less</td><td class="hot">More</td></tr>
+          <tr><th scope="row">Sweating</th><td class="cold">Less sweat</td><td class="hot">More sweat, which evaporates</td></tr>
+          <tr><th scope="row">Shivering</th><td class="cold">Yes: muscles release heat</td><td class="hot">No</td></tr>
+          <tr><th scope="row">Skin colour</th><td class="cold">Paler</td><td class="hot">Redder (flushed)</td></tr>
+          <tr><th scope="row">Hairs <span class="extra">(not needed for exam)</span></th><td class="cold">Stand up, trap air</td><td class="hot">Lie flat</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Negative feedback: the control loop</h2>
+    <div class="path" id="loop">
+      <div class="step"><span class="role">Change</span><b id="lp1"></b></div>
+      <div class="step"><span class="role">Receptors</span><b>Detect the change</b>in the skin, and in the brain (blood temperature)</div>
+      <div class="step"><span class="role">Coordinator</span><b>Thermoregulatory centre</b>in the brain</div>
+      <div class="step"><span class="role">Effectors</span><b id="lp4"></b></div>
+      <div class="step"><span class="role">Result</span><b id="lp5"></b></div>
+    </div>
+  </div>
+
+  <div class="answers">
+    <div class="answer">
+      <span class="tag">Exam answer · too hot</span>
+      <ol>
+        <li><b>Vasodilation</b>: arterioles supplying the skin capillaries <b>widen</b>.</li>
+        <li><b>More blood</b> flows near the skin surface.</li>
+        <li><b>More heat is lost</b> by radiation.</li>
+        <li><b>Sweat glands</b> release more sweat.</li>
+        <li>Sweat <b>evaporates</b>, which <b>cools</b> the skin.</li>
+      </ol>
+    </div>
+    <div class="answer">
+      <span class="tag">Exam answer · too cold</span>
+      <ol>
+        <li><b>Vasoconstriction</b>: arterioles supplying the skin capillaries <b>narrow</b>.</li>
+        <li><b>Less blood</b> flows near the skin surface.</li>
+        <li><b>Less heat is lost</b> by radiation.</li>
+        <li><b>Less sweat</b> is produced, so less heat is lost by evaporation.</li>
+        <li><b>Shivering</b>: muscles contract quickly; respiration releases heat.</li>
+      </ol>
+    </div>
+    <div class="answer">
+      <span class="tag">Avoid these mistakes</span>
+      <ul>
+        <li>Capillaries do <b>not</b> move up or down in the skin.</li>
+        <li>Say the <b>arterioles</b> widen or narrow, not the capillaries.</li>
+        <li>Sweat cools you when it <b>evaporates</b>. It is not "cold sweat".</li>
+        <li>Vasoconstriction does not make heat. It <b>reduces heat loss</b>.</li>
+        <li>You do not need to write about hairs.</li>
+      </ul>
+    </div>
+  </div>
+
+  <section class="quiz" aria-labelledby="quizTitle">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <h2 id="quizTitle">Check yourself</h2>
+      <span class="chip" id="score">0 / 8</span>
+    </div>
+    <div id="quiz" class="quiz"></div>
+    <div><button class="btn" id="resetQuiz" type="button">Try the questions again</button></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(id){ return document.getElementById(id); }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+
+  /* fat cells */
+  (function(){
+    var g = '', r = 0;
+    for(var y = 350; y < 440; y += 30){ for(var x = (r % 2 ? 16 : 0); x < 740; x += 34){ g += '<ellipse class="s-fatcell" cx="'+x+'" cy="'+y+'" rx="16" ry="13"/>'; } r++; }
+    $('fatCells').innerHTML = g;
+  })();
+
+  /* hairs: surface position, length outside the skin, erector muscle length */
+  /* hairs: x = where the hair leaves the skin; ax = where the erector muscle attaches under the epidermis */
+  var HAIRS = [{x:100, len:56, ax:142}, {x:205, len:56, ax:241}, {x:680, len:56, ax:718}];
+  var AY = 121, FY = 206;   // muscle attaches to the follicle at depth FY
+  (function(){
+    var g = '';
+    HAIRS.forEach(function(h){
+      var x = h.x;
+      g += '<g class="hunit">' +
+             '<path class="s-follicle" d="M'+(x-13)+' 82 L '+(x-50)+' 246 Q '+(x-58)+' 272 '+(x-34)+' 274 Q '+(x-14)+' 272 '+(x-18)+' 250 L '+(x+13)+' 86 Z"/>' +
+             '<line class="s-hair" x1="'+(x-34)+'" y1="256" x2="'+x+'" y2="82"/>' +
+           '</g>' +
+           '<line class="s-hair hout" x1="'+x+'" y1="82" x2="'+(x+h.len)+'" y2="70"/>' +
+           '<path class="s-erector her" d=""/>';
+    });
+    $('hairs').innerHTML = g;
+    var units = $('hairs').querySelectorAll('.hunit'), outs = $('hairs').querySelectorAll('.hout'), ers = $('hairs').querySelectorAll('.her');
+    HAIRS.forEach(function(h, i){ h.unit = units[i]; h.out = outs[i]; h.er = ers[i]; });
+  })();
+
+  /* ---------- the three states ---------- */
+  var STATES = {
+    hot: {
+      lumen:24, cap:1, flow:1, heat:1, sweat:1, flush:1, hair:12,
+      air:'Hot air', art:'Arteriole widens',
+      headline:'Too hot: the body loses more heat',
+      steps:[
+        {n:1, b:'Arterioles widen (vasodilation)', t:'The muscle in the arteriole wall relaxes, so the arteriole gets wider.'},
+        {n:2, b:'More blood flows near the surface', t:'More blood goes through the capillaries just under the skin. The skin looks redder.'},
+        {n:3, b:'More heat is lost by radiation', t:'Heat moves from the warm blood, out through the skin, to the air.'},
+        {n:4, b:'Sweat glands release more sweat', t:'Sweat travels up the duct to the skin surface.'},
+        {n:5, b:'Sweat evaporates and cools the skin', t:'Evaporation uses heat energy from the body.'}
+      ],
+      loop:['Body temperature rises','Arterioles widen; sweat glands release sweat','More heat lost, temperature falls to 37 °C'],
+      badges:[[150,302],[360,196],[470,48],[600,236],[700,40]],
+      drift:40.6
+    },
+    normal: {
+      lumen:15, cap:.6, flow:.55, heat:.45, sweat:0, flush:0, hair:12,
+      air:'Warm room air', art:'Arteriole: normal width',
+      headline:'Normal: no big response is needed',
+      steps:[
+        {n:'·', b:'Body temperature is close to 37 °C', t:'Some blood flows near the surface and a little heat is lost. Choose Too hot or Too cold to see the responses.'}
+      ],
+      loop:['None: temperature is close to 37 °C','No big change needed','Temperature stays at 37 °C'],
+      badges:[],
+      drift:37
+    },
+    cold: {
+      lumen:5, cap:.2, flow:.12, heat:.12, sweat:0, flush:-1, hair:66,
+      air:'Cold air', art:'Arteriole narrows',
+      headline:'Too cold: the body loses less heat',
+      steps:[
+        {n:1, b:'Arterioles narrow (vasoconstriction)', t:'The muscle in the arteriole wall contracts, so the arteriole gets narrower.'},
+        {n:2, b:'Less blood flows near the surface', t:'Less blood goes through the capillaries under the skin. The skin looks paler.'},
+        {n:3, b:'Less heat is lost by radiation', t:'Less warm blood is near the surface, so less heat escapes.'},
+        {n:4, b:'Less sweat is made', t:'Less heat is lost by evaporation.'},
+        {n:5, b:'Hairs stand up', t:'They trap a layer of air. This is extra: you do not need it for the exam.', extra:true},
+        {n:'+', b:'Shivering (in muscles, not the skin)', t:'Muscles contract quickly. Respiration releases heat.', plain:true}
+      ],
+      loop:['Body temperature falls','Arterioles narrow; less sweat; muscles shiver','Less heat lost, temperature rises to 37 °C'],
+      badges:[[150,302],[360,196],[470,48],[600,236],[250,44]],
+      drift:33.8
+    }
+  };
+
+  var cur = 'hot', vals = {}, target = STATES.hot;
+  ['lumen','cap','flow','heat','sweat','flush','hair'].forEach(function(k){ vals[k] = STATES.hot[k]; });
+  var core = 37, coreTarget = 37, noResponse = false;
+
+  function render(){
+    var st = STATES[cur];
+    ['Cold','Normal','Hot'].forEach(function(k){ $('sw'+k).setAttribute('aria-pressed', ('sw'+k).toLowerCase() === ('sw'+cur) ? 'true' : 'false'); });
+    var ex = $('explain'); ex.className = 'card ' + cur;
+    var hl = $('headline'); hl.className = 'headline ' + cur; hl.textContent = st.headline;
+    $('steps').innerHTML = st.steps.map(function(s, i){
+      return '<li data-i="'+i+'"><span class="num'+(s.plain || s.n==='·' ? ' plain' : '')+'">'+s.n+'</span><span><b>'+s.b+'</b><span class="t">'+s.t+'</span></span></li>';
+    }).join('');
+    $('steps').querySelectorAll('li').forEach(function(li){
+      li.addEventListener('click', function(){ focusStep(+li.getAttribute('data-i')); });
+      li.addEventListener('mouseenter', function(){ focusStep(+li.getAttribute('data-i')); });
+    });
+    var col = cur === 'hot' ? 'var(--warm)' : 'var(--cold)';
+    $('badges').innerHTML = st.badges.map(function(p, i){
+      return '<g class="badge" data-i="'+i+'" style="cursor:pointer"><circle class="ring" cx="'+p[0]+'" cy="'+p[1]+'" r="20" style="stroke:'+col+'"/><circle cx="'+p[0]+'" cy="'+p[1]+'" r="14" style="fill:'+col+'"/><text x="'+p[0]+'" y="'+(p[1]+1)+'">'+(i+1)+'</text></g>';
+    }).join('');
+    $('badges').querySelectorAll('.badge').forEach(function(b){ b.addEventListener('click', function(){ focusStep(+b.getAttribute('data-i')); }); });
+    $('airLabel').textContent = st.air;
+    $('airLabel').style.fill = cur === 'hot' ? 'var(--warm)' : cur === 'cold' ? 'var(--cold)' : 'var(--ink)';
+    $('artState').textContent = st.art;
+    $('artState').style.fill = cur === 'hot' ? 'var(--warm)' : cur === 'cold' ? 'var(--cold)' : 'var(--ink)';
+    $('loop').className = 'path' + (cur === 'normal' ? '' : ' ' + cur);
+    $('lp1').textContent = st.loop[0]; $('lp4').textContent = st.loop[1]; $('lp5').textContent = st.loop[2];
+    $('noResp').disabled = cur === 'normal';
+    noResponse = false; coreTarget = 37; updateNoRespBtn();
+  }
+  function focusStep(i){
+    $('steps').querySelectorAll('li').forEach(function(li, j){ li.classList.toggle('on', j === i); });
+    $('badges').querySelectorAll('.badge').forEach(function(b, j){ b.classList.toggle('on', j === i); });
+  }
+  function setState(s){ cur = s; target = STATES[s]; render(); }
+  $('swCold').addEventListener('click', function(){ setState('cold'); });
+  $('swNormal').addEventListener('click', function(){ setState('normal'); });
+  $('swHot').addEventListener('click', function(){ setState('hot'); });
+  $('lblChk').addEventListener('change', function(e){ $('skinSvg').classList.toggle('labels-off', !e.target.checked); });
+
+  function updateNoRespBtn(){
+    $('noResp').textContent = noResponse ? 'Switch the responses back on' : 'What if the body did not respond?';
+  }
+  $('noResp').addEventListener('click', function(){
+    noResponse = !noResponse;
+    coreTarget = noResponse ? STATES[cur].drift : 37;
+    updateNoRespBtn();
+  });
+
+  /* ---------- animated drawing ---------- */
+  var track = $('track'), trackL = track.getTotalLength(), cells = [], NCELLS = 30;
+  (function(){
+    var h = ''; for(var i=0;i<NCELLS;i++) h += '<circle class="s-cell" r="3.6" cx="-20" cy="-20"/>';
+    $('cells').innerHTML = h;
+    cells = Array.prototype.slice.call($('cells').children).map(function(el, i){ return {el:el, s:i/NCELLS}; });
+  })();
+  var duct = $('duct'), ductL = duct.getTotalLength(), ductPhase = 0, t0 = 0;
+
+  function draw(dt){
+    var k = reduce ? 1 : Math.min(1, dt*3);
+    ['lumen','cap','flow','heat','sweat','flush','hair'].forEach(function(key){ vals[key] = lerp(vals[key], target[key], k); });
+    var v = vals;
+
+    // arteriole
+    $('artLumen').setAttribute('stroke-width', v.lumen.toFixed(1));
+    var wall = v.lumen + 6 + (24 - v.lumen)*0.35;     // wall thicker when muscle contracts
+    $('artWall').setAttribute('stroke-width', wall.toFixed(1));
+    $('artBand').setAttribute('stroke-width', wall.toFixed(1));
+    $('artState').setAttribute('y', (302 + wall/2 + 18).toFixed(1));
+
+    // capillaries: how full of blood
+    $('caps').setAttribute('opacity', (0.15 + 0.85*v.cap).toFixed(2));
+
+    // blood cells
+    var nVis = Math.round(3 + (NCELLS-3)*v.flow);
+    cells.forEach(function(c, i){
+      c.s = (c.s + dt*(0.03 + 0.09*v.flow)) % 1;
+      if(i % Math.max(1, Math.round(NCELLS/nVis)) !== 0 && v.flow < .95){ c.el.setAttribute('cx', -20); return; }
+      var pt = track.getPointAtLength(c.s*trackL);
+      c.el.setAttribute('cx', pt.x.toFixed(1)); c.el.setAttribute('cy', pt.y.toFixed(1));
+    });
+
+    // skin colour
+    var fl = $('flush');
+    if(v.flush >= 0){ fl.style.fill = 'var(--blood)'; fl.setAttribute('opacity', (v.flush*0.28).toFixed(2)); }
+    else { fl.style.fill = '#ffffff'; fl.setAttribute('opacity', (-v.flush*0.3).toFixed(2)); }
+    var tint = $('airTint');
+    tint.style.fill = cur === 'cold' ? 'var(--cold)' : 'var(--warm)';
+    tint.setAttribute('opacity', cur === 'normal' ? 0 : 0.22);
+
+    // heat arrows above the capillaries
+    var hh = '';
+    [290, 345, 400, 450].forEach(function(x){
+      var len = 12 + 46*v.heat, op = (0.25 + 0.75*v.heat).toFixed(2), sw = (2 + 2.5*v.heat).toFixed(1);
+      var y0 = 74, y1 = y0 - len;
+      hh += '<path class="s-heat" style="stroke-width:'+sw+'" opacity="'+op+'" d="M'+x+' '+y0+' q 7 -'+(len/4).toFixed(1)+' 0 -'+(len/2).toFixed(1)+' q -7 -'+(len/4).toFixed(1)+' 0 -'+(len/2).toFixed(1)+'"/>';
+      hh += '<path class="s-heat" style="stroke-width:'+sw+'" opacity="'+op+'" d="M'+(x-7)+' '+(y1+8).toFixed(1)+' l7 -8 l7 8"/>';
+    });
+    $('heat').innerHTML = hh;
+    $('heatLabel').textContent = v.heat > .7 ? 'More heat lost by radiation' : v.heat < .25 ? 'Less heat lost' : 'Heat lost by radiation';
+    $('heatLabel').setAttribute('opacity', 1);
+
+    // sweat moving up the duct
+    ductPhase = (ductPhase + dt*0.35) % 1;
+    var dd = '';
+    if(v.sweat > 0.05){
+      for(var i=0;i<4;i++){
+        var p = (ductPhase + i/4) % 1, pt = duct.getPointAtLength(ductL*p);
+        dd += '<circle class="s-sweat" r="4" cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" opacity="'+v.sweat.toFixed(2)+'"/>';
+      }
+    }
+    $('ductDrops').innerHTML = dd;
+    var drops = '', vap = '';
+    if(v.sweat > 0.05){
+      [584, 600, 614, 628, 642].forEach(function(x, i){ drops += '<ellipse class="s-sweat" cx="'+x+'" cy="'+(76 - (i%2)*2)+'" rx="5.5" ry="7" opacity="'+v.sweat.toFixed(2)+'"/>'; });
+      [590, 616, 640].forEach(function(x){ vap += '<path class="s-vapour" opacity="'+(v.sweat*0.9).toFixed(2)+'" d="M'+x+' 64 q 6 -5 0 -10 q -6 -5 0 -10 q 6 -5 0 -10"/>'; });
+    }
+    $('drops').innerHTML = drops; $('vapour').innerHTML = vap;
+    $('evapLabel').setAttribute('opacity', v.sweat > .3 ? v.sweat.toFixed(2) : 0);
+
+    // hairs: the erector muscle contracts (gets shorter and thicker) and pulls the follicle more upright
+    var a = v.hair*Math.PI/180, e = Math.max(0, Math.min(1, (v.hair - 12)/54));
+    var rot = -11*e, rr = rot*Math.PI/180, c = Math.cos(rr), sn = Math.sin(rr);
+    HAIRS.forEach(function(h){
+      h.unit.setAttribute('transform', 'rotate('+rot.toFixed(2)+' '+h.x+' 82)');
+      h.out.setAttribute('x2', (h.x + h.len*Math.cos(a)).toFixed(1));
+      h.out.setAttribute('y2', (82 - h.len*Math.sin(a)).toFixed(1));
+      // follicle attachment point (right side of follicle), rotated with the follicle
+      var px = -12, py = FY - 82;
+      var fx = h.x + px*c - py*sn, fy = 82 + px*sn + py*c;
+      var mx = (fx + h.ax)/2 + 8*(1-e), my = (fy + AY)/2 + 6*(1-e);   // relaxed muscle bows a little
+      h.er.setAttribute('d', 'M'+fx.toFixed(1)+' '+fy.toFixed(1)+' Q '+mx.toFixed(1)+' '+my.toFixed(1)+' '+h.ax+' '+AY);
+      h.er.style.stroke = e > .5 ? 'var(--cold)' : 'var(--muscle)';
+      h.er.setAttribute('stroke-width', (6 + 5*e).toFixed(1));
+    });
+
+    // core temperature
+    core = lerp(core, coreTarget, reduce ? 1 : Math.min(1, dt*0.6));
+    var alert = Math.abs(core - 37) >= 2;
+    $('coreT').textContent = core.toFixed(1) + ' °C';
+    $('coreT').classList.toggle('alert', alert);
+    var yTop = 94 - (core - 37)*14;   // 14px per degree, 37 °C at y = 94
+    yTop = Math.max(14, Math.min(176, yTop));
+    $('mercury').setAttribute('y', yTop.toFixed(1)); $('mercury').setAttribute('height', (190 - yTop).toFixed(1));
+    var mc = alert ? 'var(--bad)' : 'var(--good)';
+    $('mercury').setAttribute('fill', mc); $('bulb').setAttribute('fill', mc);
+    $('coreNote').textContent = !noResponse ? 'The responses keep the core temperature close to 37 °C.' :
+      (alert ? 'Danger! A change of more than 2 °C can be fatal, because enzymes do not work properly.' :
+       (cur === 'hot' ? 'Without the responses, heat builds up and the body gets hotter...' : 'Without the responses, the body keeps losing heat and gets colder...'));
+  }
+
+  var last = null;
+  function frame(ts){
+    if(last === null) last = ts;
+    var dt = Math.min(0.05, (ts - last)/1000); last = ts;
+    draw(dt);
+    requestAnimationFrame(frame);
+  }
+  render();
+  requestAnimationFrame(frame);
+
+  /* ---------- quiz ---------- */
+  var Q = [
+    {q:'What is the normal core body temperature of humans?', o:['About 33 °C','About 37 °C','About 40 °C','About 45 °C'], a:1, w:'Core body temperature is kept close to 37 °C. This is an example of homeostasis.'},
+    {q:'Which part of the body coordinates temperature control?', o:['The skin','The thermoregulatory centre in the brain','The sweat glands','The heart'], a:1, w:'The thermoregulatory centre in the brain detects the temperature of the blood and coordinates the response.'},
+    {q:'A person is too hot. What happens to the arterioles supplying the skin capillaries?', o:['They narrow (vasoconstriction)','They widen (vasodilation)','They move closer to the surface','They stop carrying blood'], a:1, w:'In vasodilation the arterioles widen, so more blood flows near the skin surface and more heat is lost.'},
+    {q:'How does sweating cool the body?', o:['Sweat is cold','Sweat evaporates, using heat from the skin','Sweat stops blood flow','Sweat reflects sunlight'], a:1, w:'Sweat evaporates from the skin. Evaporation uses heat energy from the body, which cools the skin.'},
+    {q:'A person walks into a cold room. Which TWO skin responses should you describe in the exam?', o:['Vasodilation and more sweat','Vasoconstriction and less sweat','Hairs lie flat and more sweat','Vasodilation and shivering'], a:1, w:'Arterioles narrow so less blood flows near the surface, and less sweat is made. Both reduce heat loss.'},
+    {q:'Why does vasoconstriction help when the body is cold?', o:['It makes heat in the skin','Less blood flows near the surface, so less heat is lost','It makes the capillaries move deeper','It makes the skin sweat more'], a:1, w:'Vasoconstriction does not make heat. It reduces heat loss because less blood flows close to the skin surface.'},
+    {q:'How does shivering warm the body?', o:['Muscles contract quickly and respiration releases heat','Hairs trap air','Blood flows faster to the skin','Sweat glands close'], a:0, w:'Shivering is rapid muscle contraction. The respiration needed for this releases heat.'},
+    {q:'Why is it dangerous if core temperature changes by more than 2 °C?', o:['The skin will burn','Enzymes cannot work properly','Sweat glands stop working','The blood will freeze'], a:1, w:'Enzymes work best near 37 °C. A big change stops them working properly, and this can be fatal.'}
+  ];
+  var scoreEl = $('score'), quiz = $('quiz'), got = 0, done = 0;
+  function buildQuiz(){
+    quiz.innerHTML = ''; got = 0; done = 0; scoreEl.textContent = '0 / ' + Q.length; scoreEl.className = 'chip';
+    Q.forEach(function(item, qi){
+      var box = document.createElement('div'); box.className = 'q';
+      var p = document.createElement('p'); p.textContent = (qi+1) + '. ' + item.q; box.appendChild(p);
+      var opts = document.createElement('div'); opts.className = 'opts';
+      var why = document.createElement('p'); why.className = 'note'; why.hidden = true; why.textContent = item.w;
+      item.o.forEach(function(txt, oi){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.id = 'q'+qi+'o'+oi; b.textContent = txt;
+        b.addEventListener('click', function(){
+          var all = opts.querySelectorAll('button');
+          all.forEach(function(x){ x.disabled = true; });
+          all[item.a].classList.add('right');
+          if(oi !== item.a) b.classList.add('wrong'); else got++;
+          done++; why.hidden = false;
+          scoreEl.textContent = got + ' / ' + Q.length + (done === Q.length ? ' · finished' : '');
+          if(done === Q.length) scoreEl.className = 'chip good';
+        });
+        opts.appendChild(b);
+      });
+      box.appendChild(opts); box.appendChild(why); quiz.appendChild(box);
+    });
+  }
+  $('resetQuiz').addEventListener('click', buildQuiz);
+  buildQuiz();
+})();
+</script>
+
+</body></html>
